@@ -1,12 +1,15 @@
 #include <iostream>
 
 #include "Vector.h"
+#include "Field.h"
 
 int main(void)
 {
 	Vector a(1, 3);
 	Vector b(3, 4);
-	Vector c;
+	Vector c, d;
+
+	Field f(5, 5);
 
 	std::cout << "Hello World!" << std::endl;
 
@@ -20,6 +23,14 @@ int main(void)
 
 	std::cout << "Distance(A,B) = " << a.distanceTo(b) << std::endl;
 	std::cout << "Abs(C) = " << c.abs() << std::endl;
+
+	d = f.wrapCoords(c);
+
+	std::cout << "D = (" << d.x() << ", " << d.y() << ")" << std::endl;
+
+	d = f.unwrapCoords(a, c);
+
+	std::cout << "D = (" << d.x() << ", " << d.y() << ")" << std::endl;
 
 	return 0;
 }
