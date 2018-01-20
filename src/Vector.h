@@ -19,12 +19,20 @@ class Vector
 		float_t abs(void) const;
 		float_t distanceTo(const Vector &other) const;
 
+		/*!
+		 * \returns    The direction of the vector in degrees.
+		 */
+		float_t angle(void) const;
+
 		/* Short, potentially inlined functions */
 		float_t x(void) const { return m_x; };
 		float_t y(void) const { return m_y; };
 
 		void set_x(float_t x) { m_x = x; }
 		void set_y(float_t y) { m_y = y; }
+
+		void rotate(float_t phi);
+		void normalize(void);
 
 		Vector& operator = (const Vector &other)
 		{

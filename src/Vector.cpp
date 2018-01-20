@@ -17,9 +17,34 @@ Vector::Vector(const Vector &v)
 {
 }
 
+float_t Vector::angle(void) const
+{
+	return atan2(m_y, m_x);
+}
+
 float_t Vector::abs(void) const
 {
 	return sqrt(m_x*m_x + m_y*m_y);
+}
+
+void Vector::rotate(float_t phi)
+{
+	float_t cosphi = cos(phi);
+	float_t sinphi = sin(phi);
+
+	float_t tmp_x = cosphi * m_x - sinphi * m_y;
+	float_t tmp_y = sinphi * m_x + cosphi * m_y;
+
+	m_x = tmp_x;
+	m_y = tmp_y;
+}
+
+void Vector::normalize(void)
+{
+	float_t norm = abs();
+
+	m_x /= norm;
+	m_y /= norm;
 }
 
 float_t Vector::distanceTo(const Vector &other) const
