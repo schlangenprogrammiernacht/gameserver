@@ -78,4 +78,10 @@ class Vector
 			m_y /= divisor;
 			return *this;
 		}
+
+		bool operator == (const Vector &other)
+		{
+			return ((m_x == other.m_x) && (m_y == other.m_y));
+		}
+
 };

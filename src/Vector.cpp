@@ -19,7 +19,7 @@ Vector::Vector(const Vector &v)
 
 float_t Vector::angle(void) const
 {
-	return atan2(m_y, m_x);
+	return atan2(m_y, m_x) * 180 / M_PI;
 }
 
 float_t Vector::abs(void) const
