@@ -1,36 +1,25 @@
+#include <thread>
+#include <chrono>
+
 #include <iostream>
 
-#include "Vector.h"
+#include "Bot.h"
 #include "Field.h"
 
 int main(void)
 {
-	Vector a(1, 3);
-	Vector b(3, 4);
-	Vector c, d;
+	std::shared_ptr<Field> f = std::make_shared<Field>(60, 20);
 
-	Field f(5, 5);
+	f->newBot("testBot");
 
-	std::cout << "Hello World!" << std::endl;
+	for(std::size_t i = 0; i < 100; i++) {
+		std::cout << "Frame number #" << i << std::endl;
 
-	std::cout << "A = (" << a.x() << ", " << a.y() << ")" << std::endl;
-	std::cout << "B = (" << b.x() << ", " << b.y() << ")" << std::endl;
-	std::cout << "C = (" << c.x() << ", " << c.y() << ")" << std::endl;
+		f->moveAllBots();
+		f->debugVisualization();
 
-	c = a + b;
-
-	std::cout << "C = (" << c.x() << ", " << c.y() << ")" << std::endl;
-
-	std::cout << "Distance(A,B) = " << a.distanceTo(b) << std::endl;
-	std::cout << "Abs(C) = " << c.abs() << std::endl;
-
-	d = f.wrapCoords(c);
-
-	std::cout << "D = (" << d.x() << ", " << d.y() << ")" << std::endl;
-
-	d = f.unwrapCoords(a, c);
-
-	std::cout << "D = (" << d.x() << ", " << d.y() << ")" << std::endl;
+		std::this_thread::sleep_for(std::chrono::milliseconds(200));
+	}
 
 	return 0;
 }

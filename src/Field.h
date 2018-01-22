@@ -1,6 +1,10 @@
 #pragma once
 
+#include <set>
+#include <memory>
+
 #include "Vector.h"
+#include "Bot.h"
 
 /*!
  * Representation of the playing field.
@@ -11,13 +15,34 @@
  */
 class Field
 {
+	public:
+		typedef std::set< std::shared_ptr<Bot> > BotSet;
+		//typedef std::set< std::shared_ptr<Food> > FoodSet;
+
 	private:
 		float_t m_width;
 		float_t m_height;
 
+		BotSet  m_bots;
+
 	public:
 		Field();
 		Field(float_t w, float_t h);
+
+		/*!
+		 * Create a new Bot on this field.
+		 */
+		void newBot(const std::string &name);
+
+		/*!
+		 * Move all bots.
+		 */
+		void moveAllBots(void);
+
+		/*!
+		 * Get the set of bots.
+		 */
+		const BotSet& getBots(void);
 
 		/*!
 		 * Wrap the coordinates of the given vector into the Fields unique area.
@@ -41,4 +66,9 @@ class Field
 		 * \returns    A new vector containing the unwrapped coordinates.
 		 */
 		Vector unwrapCoords(const Vector &v, const Vector &ref);
+
+		/*!
+		 * Print a text representation of the field for debugging to stdout.
+		 */
+		void debugVisualization(void);
 };
