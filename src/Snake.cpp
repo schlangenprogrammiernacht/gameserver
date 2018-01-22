@@ -1,14 +1,18 @@
+#include "Field.h"
+
 #include "Snake.h"
 
 const float_t Snake::DISTANCE_PER_STEP = 1.0;
 
-Snake::Snake()
+Snake::Snake(Field *field)
+	: m_field(field)
 {
 	std::shared_ptr<Segment> segment = std::make_shared<Segment>();
 	m_segments.push_back(segment);
 }
 
-Snake::Snake(const Vector &startPos, std::size_t startLen)
+Snake::Snake(Field *field, const Vector &startPos, std::size_t startLen)
+	: m_field(field)
 {
 	for(std::size_t i = 0; i < startLen; i++) {
 		std::shared_ptr<Segment> segment = std::make_shared<Segment>();
@@ -26,7 +30,15 @@ float_t Snake::maxRotationPerStep(void)
 
 Vector Snake::currentMovementVector(void)
 {
-	return m_segments[0]->pos - m_segments[1]->pos;
+	Vector head = m_segments[0]->pos;
+	Vector next = m_field->unwrapCoords(m_segments[1]->pos, head);
+
+	if(head == next) {
+		// movement vector undefined
+		return Vector(1, 0);
+	} else {
+		return head - next;
+	}
 }
 
 void Snake::move(float_t targetAngle, bool boost)
@@ -68,11 +80,16 @@ void Snake::move(float_t targetAngle, bool boost)
 		movementVector.rotate(deltaAngle);
 
 		std::shared_ptr<Segment> segment = std::make_shared<Segment>();
-		segment->pos = m_segments[0]->pos + movementVector;
+		segment->pos = m_field->wrapCoords(m_segments[0]->pos + movementVector);
 
 		m_segments.push_front(segment);
 	}
 
 	// force size to previous size (removes end segments)
 	m_segments.resize(oldSize);
+}
+
+const Snake::SegmentList& Snake::getSegments(void)
+{
+	return m_segments;
 }
