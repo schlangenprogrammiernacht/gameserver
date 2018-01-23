@@ -18,6 +18,8 @@ void Field::newBot(const std::string &name)
 {
 	std::shared_ptr<Bot> bot = std::make_shared<Bot>(this, name);
 
+	std::cerr << "Created Bot with ID " << bot->getGUID() << std::endl;
+
 	m_bots.insert(bot);
 }
 

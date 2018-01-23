@@ -3,6 +3,8 @@
 #include <memory>
 #include <string>
 
+#include "IdentifyableObject.h"
+
 #include "Snake.h"
 
 #include "types.h"
@@ -12,7 +14,7 @@ class Field;
 /*!
  * A bot playing this game.
  */
-class Bot
+class Bot : public IdentifyableObject
 {
 	private:
 		std::string             m_name;
