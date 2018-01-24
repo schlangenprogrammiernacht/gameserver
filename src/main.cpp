@@ -8,7 +8,7 @@
 
 int main(void)
 {
-	std::shared_ptr<Field> f = std::make_shared<Field>(60, 20);
+	std::shared_ptr<Field> f = std::make_shared<Field>(60, 20, 30);
 
 	f->newBot("testBot");
 

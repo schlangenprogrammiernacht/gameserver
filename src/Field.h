@@ -2,8 +2,10 @@
 
 #include <set>
 #include <memory>
+#include <random>
 
 #include "Vector.h"
+#include "Food.h"
 #include "Bot.h"
 
 /*!
@@ -17,17 +19,28 @@ class Field
 {
 	public:
 		typedef std::set< std::shared_ptr<Bot> > BotSet;
-		//typedef std::set< std::shared_ptr<Food> > FoodSet;
+		typedef std::set< std::shared_ptr<Food> > FoodSet;
 
 	private:
 		float_t m_width;
 		float_t m_height;
 
 		BotSet  m_bots;
+		FoodSet m_staticFood; //!< Food placed randomly in the field.
+		FoodSet m_dynamicFood; //!< Food generated dynamically by dying snakes.
+
+		std::unique_ptr<std::mt19937> m_rndGen;
+
+		std::unique_ptr< std::normal_distribution<float_t> >       m_foodSizeDistribution;
+		std::unique_ptr< std::uniform_real_distribution<float_t> > m_positionXDistribution;
+		std::unique_ptr< std::uniform_real_distribution<float_t> > m_positionYDistribution;
+
+		void setupRandomness(void);
+		void createStaticFood(std::size_t count);
 
 	public:
 		Field();
-		Field(float_t w, float_t h);
+		Field(float_t w, float_t h, std::size_t food_parts);
 
 		/*!
 		 * Create a new Bot on this field.
