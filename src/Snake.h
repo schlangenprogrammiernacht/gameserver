@@ -33,9 +33,6 @@ class Snake
 		float_t maxRotationPerStep(void);
 		Vector currentMovementVector(void);
 
-		static const std::size_t BOOST_STEPS = 3;
-		static const float_t DISTANCE_PER_STEP;
-
 	public:
 		/*!
 		 * Construct a unit snake (1 segment at 0/0).

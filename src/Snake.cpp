@@ -1,8 +1,8 @@
+#include "config.h"
+
 #include "Field.h"
 
 #include "Snake.h"
-
-const float_t Snake::DISTANCE_PER_STEP = 1.0;
 
 Snake::Snake(Field *field)
 	: m_field(field)
@@ -65,14 +65,14 @@ void Snake::move(float_t targetAngle, bool boost)
 
 	// ensure length of movement vector
 	movementVector.normalize();
-	movementVector *= DISTANCE_PER_STEP;
+	movementVector *= config::SNAKE_DISTANCE_PER_STEP;
 
 	std::size_t oldSize = m_segments.size();
 
 	// create multiple segments while boosting
 	std::size_t steps = 1;
 	if(boost) {
-		steps = BOOST_STEPS;
+		steps = config::SNAKE_BOOST_STEPS;
 	}
 
 	// create new segments at head
