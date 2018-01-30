@@ -48,6 +48,13 @@ class Field
 		void newBot(const std::string &name);
 
 		/*!
+		 * Update all food pieces.
+		 *
+		 * This includes decaying them and replacing them when decayed.
+		 */
+		void updateFood(void);
+
+		/*!
 		 * Move all bots.
 		 */
 		void moveAllBots(void);

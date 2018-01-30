@@ -22,6 +22,9 @@ namespace config {
 	static const float_t     SNAKE_DISTANCE_PER_STEP = 1.0;
 
 	// Food particle size log-normal distribution parameters
-	static const float_t     FOOD_SIZE_MEAN          = 1.5;
-	static const float_t     FOOD_SIZE_STDDEV        = 0.5;
+	static const float_t     FOOD_SIZE_MEAN          = 3.5;
+	static const float_t     FOOD_SIZE_STDDEV        = 2.0;
+
+	// Food decay value per frame
+	static const float_t     FOOD_DECAY_STEP         = 0.100;
 }

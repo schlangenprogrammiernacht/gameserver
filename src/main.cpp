@@ -12,8 +12,10 @@ int main(void)
 
 	f->newBot("testBot");
 
-	for(std::size_t i = 0; i < 100; i++) {
+	for(std::size_t i = 0; /*forever*/ ; i++) {
 		std::cout << "Frame number #" << i << std::endl;
+
+		f->updateFood();
 
 		f->moveAllBots();
 		f->debugVisualization();

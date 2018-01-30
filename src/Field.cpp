@@ -56,6 +56,38 @@ void Field::newBot(const std::string &name)
 	m_bots.insert(bot);
 }
 
+void Field::updateFood(void)
+{
+	// step 1: handle static food.
+	// when static food decays, it is recreated at different coordinates
+	std::size_t foodToGenerate = 0;
+
+	auto sfi = m_staticFood.begin();
+	while(sfi != m_staticFood.end()) {
+		(*sfi)->decay();
+		if((*sfi)->hasDecayed()) {
+			sfi = m_staticFood.erase(sfi);
+			foodToGenerate++;
+		} else {
+			sfi++;
+		}
+	}
+
+	createStaticFood(foodToGenerate);
+
+	// step 2: handle dynamic food
+	// when dynamic food decays, it is removed permanently
+	auto dfi = m_dynamicFood.begin();
+	while(dfi != m_dynamicFood.end()) {
+		(*dfi)->decay();
+		if((*dfi)->hasDecayed()) {
+			dfi = m_staticFood.erase(dfi);
+		} else {
+			dfi++;
+		}
+	}
+}
+
 void Field::moveAllBots(void)
 {
 	for(auto &b: m_bots) {
@@ -136,7 +168,10 @@ void Field::debugVisualization(void)
 			c = '0' + static_cast<int>(f->getValue());
 		}
 
-		rep[pos.y() * intW + pos.x()] = c;
+		size_t x = static_cast<size_t>(pos.x());
+		size_t y = static_cast<size_t>(pos.y());
+
+		rep[y * intW + x] = c;
 	}
 
 	// draw snakes (head = #, rest = +)

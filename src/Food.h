@@ -26,6 +26,9 @@ class Food : public IdentifyableObject
 		 */
 		Food(Field *field, const Vector &pos, float_t value);
 
+		void decay(void);
+		bool hasDecayed(void);
+
 		bool canBeEatenBy(const std::shared_ptr<Snake> &snake) const;
 
 		const Vector& getPosition() const { return m_pos; }

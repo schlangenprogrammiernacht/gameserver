@@ -7,6 +7,16 @@ Food::Food(Field *field, const Vector &pos, float_t value)
 {
 }
 
+void Food::decay(void)
+{
+	m_value -= config::FOOD_DECAY_STEP;
+}
+
+bool Food::hasDecayed(void)
+{
+	return m_value <= 0;
+}
+
 bool Food::canBeEatenBy(const std::shared_ptr<Snake> &snake) const
 {
 	const Snake::SegmentList &snakeSegments = snake->getSegments();
