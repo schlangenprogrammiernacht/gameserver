@@ -38,6 +38,8 @@ class Field
 		void setupRandomness(void);
 		void createStaticFood(std::size_t count);
 
+		bool canFoodBeConsumed(const Vector &headPos, const Vector &foodPos);
+
 	public:
 		Field();
 		Field(float_t w, float_t h, std::size_t food_parts);
@@ -53,6 +55,13 @@ class Field
 		 * This includes decaying them and replacing them when decayed.
 		 */
 		void updateFood(void);
+
+		/*!
+		 * Make all Snakes consume food in their eating range.
+		 *
+		 * \todo This function is searching for a better name.
+		 */
+		void consumeFood(void);
 
 		/*!
 		 * Move all bots.

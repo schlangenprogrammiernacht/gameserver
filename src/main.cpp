@@ -16,6 +16,7 @@ int main(void)
 		std::cout << "Frame number #" << i << std::endl;
 
 		f->updateFood();
+		f->consumeFood();
 
 		f->moveAllBots();
 		f->debugVisualization();

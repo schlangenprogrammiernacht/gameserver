@@ -33,6 +33,27 @@ void Field::createStaticFood(std::size_t count)
 	}
 }
 
+bool Field::canFoodBeConsumed(const Vector &headPos, const Vector &foodPos)
+{
+	float_t hx = headPos.x();
+	float_t hy = headPos.y();
+
+	Vector unwrappedFoodPos = unwrapCoords(foodPos, headPos);
+	float_t fx = unwrappedFoodPos.x();
+	float_t fy = unwrappedFoodPos.y();
+
+	// quick range check
+	if(fx > (hx + config::SNAKE_CONSUME_RANGE) ||
+			fx < (hx - config::SNAKE_CONSUME_RANGE) ||
+			fy > (hy + config::SNAKE_CONSUME_RANGE) ||
+			fy < (hy - config::SNAKE_CONSUME_RANGE)) {
+		return false;
+	}
+
+	// thorough range check
+	return headPos.distanceTo(unwrappedFoodPos) < config::SNAKE_CONSUME_RANGE;
+}
+
 void Field::setupRandomness(void)
 {
 	std::random_device rd;
@@ -84,6 +105,42 @@ void Field::updateFood(void)
 			dfi = m_staticFood.erase(dfi);
 		} else {
 			dfi++;
+		}
+	}
+}
+
+void Field::consumeFood(void)
+{
+	for(auto &b: m_bots) {
+		const Vector& headPos = b->getSnake()->getHeadPosition();
+
+		// step 1: handle static food.
+		// when static food is consumed, it is recreated at different coordinates
+		std::size_t foodToGenerate = 0;
+
+		auto sfi = m_staticFood.begin();
+		while(sfi != m_staticFood.end()) {
+			if(canFoodBeConsumed(headPos, (*sfi)->getPosition())) {
+				b->getSnake()->consume(*sfi);
+				sfi = m_staticFood.erase(sfi);
+				foodToGenerate++;
+			} else {
+				sfi++;
+			}
+		}
+
+		createStaticFood(foodToGenerate);
+
+		// step 2: handle dynamic food
+		// when dynamic food is consumed, it is removed permanently
+		auto dfi = m_dynamicFood.begin();
+		while(dfi != m_dynamicFood.end()) {
+			if(canFoodBeConsumed(headPos, (*dfi)->getPosition())) {
+				b->getSnake()->consume(*dfi);
+				dfi = m_staticFood.erase(dfi);
+			} else {
+				dfi++;
+			}
 		}
 	}
 }

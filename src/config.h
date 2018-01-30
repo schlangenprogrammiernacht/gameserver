@@ -21,10 +21,13 @@ namespace config {
 	// Distance per normal movement step
 	static const float_t     SNAKE_DISTANCE_PER_STEP = 1.0;
 
+	// Distance under which food is consumed around the head of the snake
+	static const float_t     SNAKE_CONSUME_RANGE     = 1.0;
+
 	// Food particle size log-normal distribution parameters
 	static const float_t     FOOD_SIZE_MEAN          = 3.5;
 	static const float_t     FOOD_SIZE_STDDEV        = 2.0;
 
 	// Food decay value per frame
-	static const float_t     FOOD_DECAY_STEP         = 0.100;
+	static const float_t     FOOD_DECAY_STEP         = 0.010;
 }
