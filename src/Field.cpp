@@ -6,16 +6,9 @@
 
 #include "Field.h"
 
-Field::Field()
-	: m_width(128), m_height(128)
-{
-	setupRandomness();
-
-	createStaticFood(100);
-}
-
-Field::Field(float_t w, float_t h, std::size_t food_parts)
-	: m_width(w), m_height(h)
+Field::Field(float_t w, float_t h, std::size_t food_parts,
+				const std::shared_ptr<UpdateTracker> &update_tracker)
+	: m_width(w), m_height(h), m_updateTracker(update_tracker)
 {
 	setupRandomness();
 
@@ -29,7 +22,11 @@ void Field::createStaticFood(std::size_t count)
 		float_t x     = (*m_positionXDistribution)(*m_rndGen);
 		float_t y     = (*m_positionYDistribution)(*m_rndGen);
 
-		m_staticFood.insert( std::make_shared<Food>(this, Vector(x, y), value) );
+		std::shared_ptr<Food> newFood =
+			std::make_shared<Food>(this, Vector(x, y), value);
+
+		m_updateTracker->foodSpawned(newFood);
+		m_staticFood.insert( newFood );
 	}
 }
 
@@ -87,6 +84,7 @@ void Field::updateFood(void)
 	while(sfi != m_staticFood.end()) {
 		(*sfi)->decay();
 		if((*sfi)->hasDecayed()) {
+			m_updateTracker->foodDecayed(*sfi);
 			sfi = m_staticFood.erase(sfi);
 			foodToGenerate++;
 		} else {
@@ -102,6 +100,7 @@ void Field::updateFood(void)
 	while(dfi != m_dynamicFood.end()) {
 		(*dfi)->decay();
 		if((*dfi)->hasDecayed()) {
+			m_updateTracker->foodDecayed(*dfi);
 			dfi = m_staticFood.erase(dfi);
 		} else {
 			dfi++;
@@ -122,6 +121,7 @@ void Field::consumeFood(void)
 		while(sfi != m_staticFood.end()) {
 			if(canFoodBeConsumed(headPos, (*sfi)->getPosition())) {
 				b->getSnake()->consume(*sfi);
+				m_updateTracker->foodConsumed(*sfi, b);
 				sfi = m_staticFood.erase(sfi);
 				foodToGenerate++;
 			} else {
@@ -137,6 +137,7 @@ void Field::consumeFood(void)
 		while(dfi != m_dynamicFood.end()) {
 			if(canFoodBeConsumed(headPos, (*dfi)->getPosition())) {
 				b->getSnake()->consume(*dfi);
+				m_updateTracker->foodConsumed(*dfi, b);
 				dfi = m_staticFood.erase(dfi);
 			} else {
 				dfi++;

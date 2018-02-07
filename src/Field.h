@@ -4,6 +4,8 @@
 #include <memory>
 #include <random>
 
+#include "UpdateTracker.h"
+
 #include "Vector.h"
 #include "Food.h"
 #include "Bot.h"
@@ -35,14 +37,16 @@ class Field
 		std::unique_ptr< std::uniform_real_distribution<float_t> > m_positionXDistribution;
 		std::unique_ptr< std::uniform_real_distribution<float_t> > m_positionYDistribution;
 
+		std::shared_ptr<UpdateTracker> m_updateTracker;
+
 		void setupRandomness(void);
 		void createStaticFood(std::size_t count);
 
 		bool canFoodBeConsumed(const Vector &headPos, const Vector &foodPos);
 
 	public:
-		Field();
-		Field(float_t w, float_t h, std::size_t food_parts);
+		Field(float_t w, float_t h, std::size_t food_parts,
+				const std::shared_ptr<UpdateTracker> &update_tracker);
 
 		/*!
 		 * Create a new Bot on this field.
