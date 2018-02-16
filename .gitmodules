@@ -1,0 +1,3 @@
+[submodule "TcpServer"]
+	path = lib/TcpServer
+	url = https://git.bingo-ev.de/GPN18Programmierspiel/TcpServer.git
