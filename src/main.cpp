@@ -23,8 +23,7 @@ int main(void)
 
 		f->moveAllBots();
 
-		std::cout << tracker->getSerializedEvents() << std::endl;
-		tracker->reset();
+		std::cout << tracker->serialize() << std::endl;
 
 		f->debugVisualization();
 

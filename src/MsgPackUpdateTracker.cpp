@@ -1,4 +1,23 @@
+#include <arpa/inet.h>
+
+#include "Bot.h"
+#include "Food.h"
+
 #include "MsgPackUpdateTracker.h"
+
+/* Private methods */
+
+void MsgPackUpdateTracker::appendPacket(
+		MsgPackUpdateTracker::MessageType type,
+		const std::string &data)
+{
+	std::uint32_t length = ntohl(static_cast<uint32_t>(data.size()));
+
+	m_stream.write(reinterpret_cast<const char*>(&length), sizeof(length));
+	m_stream.write(data.data(), data.size());
+}
+
+/* Public methods */
 
 MsgPackUpdateTracker::MsgPackUpdateTracker()
 {
@@ -9,25 +28,108 @@ void MsgPackUpdateTracker::foodConsumed(
 		const std::shared_ptr<Food> &food,
 		const std::shared_ptr<Bot> &by_bot)
 {
-	m_stream << "food consumed\n";
+	FoodConsumedItem item = {
+		.botID = by_bot->getGUID(),
+		.foodID = by_bot->getGUID()
+	};
+
+	m_consumedFood.push_back(item);
 }
 
 void MsgPackUpdateTracker::foodDecayed(const std::shared_ptr<Food> &food)
 {
-	m_stream << "food decayed\n";
+	m_decayedFood.push_back(food->getGUID());
 }
 
 void MsgPackUpdateTracker::foodSpawned(const std::shared_ptr<Food> &food)
 {
-	m_stream << "food spawned\n";
+	m_spawnedFood.push_back(food);
 }
 
-std::string MsgPackUpdateTracker::getSerializedEvents(void)
+std::string MsgPackUpdateTracker::serialize(void)
 {
-	return m_stream.str();
+	std::ostringstream tmpStream;
+
+	// decayed food
+	tmpStream.str("");
+	msgpack::pack(tmpStream, m_decayedFood);
+	appendPacket(FoodDecay, tmpStream.str());
+
+	// spawned food
+	tmpStream.str("");
+	msgpack::pack(tmpStream, m_spawnedFood);
+	appendPacket(FoodSpawn, tmpStream.str());
+
+	// spawned food
+	tmpStream.str("");
+	msgpack::pack(tmpStream, m_consumedFood);
+	appendPacket(FoodConsume, tmpStream.str());
+
+	std::string result = m_stream.str();
+	reset();
+	return result;
 }
 
 void MsgPackUpdateTracker::reset(void)
 {
+	m_decayedFood.clear();
+	m_consumedFood.clear();
+	m_spawnedFood.clear();
+
 	m_stream.str("");
 }
+
+// MessagePack adaptors
+
+namespace msgpack {
+MSGPACK_API_VERSION_NAMESPACE(MSGPACK_DEFAULT_API_NS) {
+namespace adaptor {
+
+	template <> struct pack< std::shared_ptr<Food> >
+	{
+		template <typename Stream> msgpack::packer<Stream>& operator()(msgpack::packer<Stream>& o, std::shared_ptr<Food> const& v) const
+		{
+			o.pack(v->getGUID());
+
+			const Vector &pos = v->getPosition();
+			o.pack(pos.x());
+			o.pack(pos.y());
+
+			o.pack(v->getValue());
+
+			return o;
+		}
+	};
+
+	template <> struct pack< std::shared_ptr<Bot> >
+	{
+		template <typename Stream> msgpack::packer<Stream>& operator()(msgpack::packer<Stream>& o, std::shared_ptr<Bot> const& v) const
+		{
+			o.pack(v->getGUID());
+
+			o.pack(std::string("unnamed")); // FIXME: pack bot name here
+
+			o.pack(0.0); // FIXME: heading
+			o.pack(1.0); // FIXME: segment radius
+
+			// segments
+			const Snake::SegmentList &segments = v->getSnake()->getSegments();
+			o.pack_array(segments.size());
+			for(auto &s: segments) {
+				o.pack(s->pos().x());
+				o.pack(s->pos().y());
+			}
+
+			// FIXME: colormap: array of RGB values
+			o.pack_array(3);
+			o.pack(0xFF0000);
+			o.pack(0x00FF00);
+			o.pack(0x0000FF);
+
+			return o;
+		}
+	};
+
+} // namespace adaptor
+} // MSGPACK_API_VERSION_NAMESPACE(MSGPACK_DEFAULT_API_NS)
+} // namespace msgpack

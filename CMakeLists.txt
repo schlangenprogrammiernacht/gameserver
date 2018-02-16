@@ -1,7 +1,7 @@
 cmake_minimum_required (VERSION 2.6)
 project (GameServer)
 
-add_subdirectory(lib/TcpServer)
+add_subdirectory(lib/TcpServer/TcpServer/)
 
 # put all .cpp and .h files into the sources variable
 set(sources

@@ -37,11 +37,13 @@ class UpdateTracker
 		virtual void foodSpawned(const std::shared_ptr<Food> &food) = 0;
 
 		/*!
-		 * Get the serialized string of events added since the last reset.
+		 * Serialize the events added since the last reset or serialization.
+		 *
+		 * This also resets all internal state.
 		 *
 		 * \returns   A std::string containing the events in serialized form.
 		 */
-		virtual std::string getSerializedEvents(void) = 0;
+		virtual std::string serialize(void) = 0;
 
 		/*!
 		 * Reset the internal list of events. This is normally called once per

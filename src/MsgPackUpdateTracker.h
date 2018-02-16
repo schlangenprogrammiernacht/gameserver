@@ -2,6 +2,9 @@
 
 #include <sstream>
 
+#include <msgpack.hpp>
+
+#include "types.h"
 #include "UpdateTracker.h"
 
 /*!
@@ -11,7 +14,36 @@
 class MsgPackUpdateTracker : public UpdateTracker
 {
 	private:
+		enum MessageType {
+			/* Initial setup messages */
+			GameInfo,    //!< Generic, static game information (like world size)
+			WorldUpdate, //!< The complete world state
+
+			/* Sent every frame */
+			Tick,        //!< Message signalling a new frame
+			BotSpawn,    //!< A new bot entered the game
+			BotKill,     //!< A bot was killed
+			BotMove,     //!< Bot movement
+			FoodSpawn,   //!< New food created in this frame
+			FoodConsume, //!< Food consumed by bots
+			FoodDecay,   //!< Food decayed
+		};
+
+		// helper structs for serialization
+		struct FoodConsumedItem {
+			guid_t botID;
+			guid_t foodID;
+
+			MSGPACK_DEFINE(botID, foodID);
+		};
+
 		std::ostringstream m_stream;
+
+		std::vector<guid_t>                  m_decayedFood;
+		std::vector< std::shared_ptr<Food> > m_spawnedFood;
+		std::vector<FoodConsumedItem>        m_consumedFood;
+
+		void appendPacket(MessageType type, const std::string &data);
 
 	public:
 		MsgPackUpdateTracker();
@@ -25,7 +57,7 @@ class MsgPackUpdateTracker : public UpdateTracker
 
 		void foodSpawned(const std::shared_ptr<Food> &food);
 
-		std::string getSerializedEvents(void);
+		std::string serialize(void);
 
 		void reset(void);
 };
