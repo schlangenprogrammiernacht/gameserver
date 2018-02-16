@@ -4,6 +4,27 @@ project (GameServer)
 add_subdirectory(lib/TcpServer)
 
 # put all .cpp and .h files into the sources variable
-file(GLOB_RECURSE sources src/*.cpp src/*.h)
+set(sources
+	src/Bot.cpp
+	src/Bot.h
+	src/config.h
+	src/Field.cpp
+	src/Field.h
+	src/Food.cpp
+	src/Food.h
+	src/GUIDGenerator.cpp
+	src/GUIDGenerator.h
+	src/IdentifyableObject.cpp
+	src/IdentifyableObject.h
+	src/main.cpp
+	src/MsgPackUpdateTracker.cpp
+	src/MsgPackUpdateTracker.h
+	src/Snake.cpp
+	src/Snake.h
+	src/types.h
+	src/UpdateTracker.h
+	src/Vector.cpp
+	src/Vector.h
+	)
 
 add_executable(GameServer ${sources})
