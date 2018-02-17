@@ -50,8 +50,6 @@ bool Game::OnConnectionEstablished(TcpSocket &socket)
 {
 	std::cerr << "connection established to " << socket.GetPeer() << std::endl;
 
-	socket.Write("Hello World!\n");
-
 	// TODO: send GameInfoMessage
 	// TODO: send WorldUpdateMessage
 	return true;
@@ -87,7 +85,10 @@ bool Game::OnTimerInterval()
 
 	m_field->moveAllBots();
 
+	// send differential update to all connected clients
 	std::string update = m_updateTracker->serialize();
+	server.Broadcast(update);
+
 	std::cout << hexdump(update) << std::endl;
 
 	m_field->debugVisualization();
