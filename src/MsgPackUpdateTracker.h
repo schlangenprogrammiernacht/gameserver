@@ -43,7 +43,7 @@ class MsgPackUpdateTracker : public UpdateTracker
 		std::vector< std::shared_ptr<Food> > m_spawnedFood;
 		std::vector<FoodConsumedItem>        m_consumedFood;
 
-		void appendPacket(MessageType type, const std::string &data);
+		void appendPacket(MessageType type, uint8_t protocolVersion, const std::string &data);
 
 	public:
 		MsgPackUpdateTracker();
@@ -56,6 +56,12 @@ class MsgPackUpdateTracker : public UpdateTracker
 		void foodDecayed(const std::shared_ptr<Food> &food);
 
 		void foodSpawned(const std::shared_ptr<Food> &food);
+
+		void botSpawned(const std::shared_ptr<Bot> &bot);
+
+		void botKilled(
+				const std::shared_ptr<Bot> &killer,
+				const std::shared_ptr<Bot> &victim);
 
 		std::string serialize(void);
 

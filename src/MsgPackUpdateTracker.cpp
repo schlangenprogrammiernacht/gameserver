@@ -9,12 +9,24 @@
 
 void MsgPackUpdateTracker::appendPacket(
 		MsgPackUpdateTracker::MessageType type,
+		uint8_t protocolVersion,
 		const std::string &data)
 {
-	std::uint32_t length = ntohl(static_cast<uint32_t>(data.size()));
+	// build the full packet (including version and type)
+	std::ostringstream packetBuilder;
+
+	msgpack::pack(packetBuilder, protocolVersion);
+	msgpack::pack(packetBuilder, static_cast<int>(type));
+
+	packetBuilder.write(data.data(), data.size());
+
+	std::string packet = packetBuilder.str();
+
+	// write the full packet to the packet stream
+	std::uint32_t length = ntohl(static_cast<uint32_t>(packet.size()));
 
 	m_stream.write(reinterpret_cast<const char*>(&length), sizeof(length));
-	m_stream.write(data.data(), data.size());
+	m_stream.write(packet.data(), packet.size());
 }
 
 /* Public methods */
@@ -46,24 +58,47 @@ void MsgPackUpdateTracker::foodSpawned(const std::shared_ptr<Food> &food)
 	m_spawnedFood.push_back(food);
 }
 
+void MsgPackUpdateTracker::botSpawned(const std::shared_ptr<Bot> &bot)
+{
+	std::ostringstream tmpStream;
+	msgpack::pack(tmpStream, bot);
+	appendPacket(BotSpawn, 1, tmpStream.str());
+}
+
+void MsgPackUpdateTracker::botKilled(
+		const std::shared_ptr<Bot> &killer,
+		const std::shared_ptr<Bot> &victim)
+{
+	std::ostringstream tmpStream;
+	msgpack::pack(tmpStream, killer->getGUID());
+	msgpack::pack(tmpStream, victim->getGUID());
+	appendPacket(BotKill, 1, tmpStream.str());
+}
+
 std::string MsgPackUpdateTracker::serialize(void)
 {
 	std::ostringstream tmpStream;
 
 	// decayed food
-	tmpStream.str("");
-	msgpack::pack(tmpStream, m_decayedFood);
-	appendPacket(FoodDecay, tmpStream.str());
+	if(!m_decayedFood.empty()) {
+		tmpStream.str("");
+		msgpack::pack(tmpStream, m_decayedFood);
+		appendPacket(FoodDecay, 1, tmpStream.str());
+	}
 
 	// spawned food
-	tmpStream.str("");
-	msgpack::pack(tmpStream, m_spawnedFood);
-	appendPacket(FoodSpawn, tmpStream.str());
+	if(!m_spawnedFood.empty()) {
+		tmpStream.str("");
+		msgpack::pack(tmpStream, m_spawnedFood);
+		appendPacket(FoodSpawn, 1, tmpStream.str());
+	}
 
-	// spawned food
-	tmpStream.str("");
-	msgpack::pack(tmpStream, m_consumedFood);
-	appendPacket(FoodConsume, tmpStream.str());
+	// consumed food
+	if(!m_consumedFood.empty()) {
+		tmpStream.str("");
+		msgpack::pack(tmpStream, m_consumedFood);
+		appendPacket(FoodConsume, 1, tmpStream.str());
+	}
 
 	std::string result = m_stream.str();
 	reset();
@@ -116,8 +151,8 @@ namespace adaptor {
 			const Snake::SegmentList &segments = v->getSnake()->getSegments();
 			o.pack_array(segments.size());
 			for(auto &s: segments) {
-				o.pack(s->pos().x());
-				o.pack(s->pos().y());
+				o.pack(s->pos.x());
+				o.pack(s->pos.y());
 			}
 
 			// FIXME: colormap: array of RGB values

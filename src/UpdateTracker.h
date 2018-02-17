@@ -37,6 +37,23 @@ class UpdateTracker
 		virtual void foodSpawned(const std::shared_ptr<Food> &food) = 0;
 
 		/*!
+		 * Track an event of a new bot spawning.
+		 *
+		 * \param bot   Pointer to the bot that has just spawned.
+		 */
+		virtual void botSpawned(const std::shared_ptr<Bot> &bot) = 0;
+
+		/*!
+		 * Track an event of a bot killing another one (aka. two snakes collided).
+		 *
+		 * \param killer   Pointer to the bot that the victim collided with.
+		 * \param victim   Pointer to the bot that died.
+		 */
+		virtual void botKilled(
+				const std::shared_ptr<Bot> &killer,
+				const std::shared_ptr<Bot> &victim) = 0;
+
+		/*!
 		 * Serialize the events added since the last reset or serialization.
 		 *
 		 * This also resets all internal state.
