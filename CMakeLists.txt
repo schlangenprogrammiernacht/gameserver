@@ -8,10 +8,13 @@ set(sources
 	src/Bot.cpp
 	src/Bot.h
 	src/config.h
+	src/debug_funcs.h
 	src/Field.cpp
 	src/Field.h
 	src/Food.cpp
 	src/Food.h
+	src/Game.cpp
+	src/Game.h
 	src/GUIDGenerator.cpp
 	src/GUIDGenerator.h
 	src/IdentifyableObject.cpp
@@ -28,3 +31,5 @@ set(sources
 	)
 
 add_executable(GameServer ${sources})
+target_include_directories(GameServer PUBLIC lib/TcpServer/TcpServer/include/)
+target_link_libraries(GameServer tcpserver)
