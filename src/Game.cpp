@@ -15,7 +15,9 @@ Game::Game()
 			config::FIELD_STATIC_FOOD,
 			m_updateTracker);
 
-	m_field->newBot("testBot");
+	for(int i = 0; i < 10; i++) {
+		m_field->newBot("testBot");
+	}
 
 	server.AddConnectionEstablishedListener(
 		[this](TcpSocket& socket)

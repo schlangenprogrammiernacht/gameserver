@@ -63,11 +63,18 @@ void Field::setupRandomness(void)
 		std::make_unique< std::uniform_real_distribution<float_t> >(0, m_width);
 	m_positionYDistribution =
 		std::make_unique< std::uniform_real_distribution<float_t> >(0, m_height);
+
+	m_headingDistribution =
+		std::make_unique< std::uniform_real_distribution<float_t> >(-180, 180);
 }
 
 void Field::newBot(const std::string &name)
 {
-	std::shared_ptr<Bot> bot = std::make_shared<Bot>(this, name);
+	float_t x = (*m_positionXDistribution)(*m_rndGen);
+	float_t y = (*m_positionYDistribution)(*m_rndGen);
+	float_t heading = (*m_headingDistribution)(*m_rndGen);
+
+	std::shared_ptr<Bot> bot = std::make_shared<Bot>(this, name, Vector(x,y), heading);
 
 	std::cerr << "Created Bot with ID " << bot->getGUID() << std::endl;
 

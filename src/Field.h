@@ -36,6 +36,7 @@ class Field
 		std::unique_ptr< std::normal_distribution<float_t> >       m_foodSizeDistribution;
 		std::unique_ptr< std::uniform_real_distribution<float_t> > m_positionXDistribution;
 		std::unique_ptr< std::uniform_real_distribution<float_t> > m_positionYDistribution;
+		std::unique_ptr< std::uniform_real_distribution<float_t> > m_headingDistribution;
 
 		std::shared_ptr<UpdateTracker> m_updateTracker;
 
