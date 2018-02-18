@@ -20,6 +20,7 @@ set(sources
 	src/IdentifyableObject.cpp
 	src/IdentifyableObject.h
 	src/main.cpp
+	src/MsgPackAdaptors.h
 	src/MsgPackUpdateTracker.cpp
 	src/MsgPackUpdateTracker.h
 	src/Snake.cpp
