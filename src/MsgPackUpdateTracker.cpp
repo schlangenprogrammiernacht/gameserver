@@ -3,6 +3,8 @@
 #include "Bot.h"
 #include "Food.h"
 
+#include "config.h"
+
 #include "MsgPackAdaptors.h"
 
 #include "MsgPackUpdateTracker.h"
@@ -75,6 +77,37 @@ void MsgPackUpdateTracker::botKilled(
 	msgpack::pack(tmpStream, killer->getGUID());
 	msgpack::pack(tmpStream, victim->getGUID());
 	appendPacket(BotKill, 1, tmpStream.str());
+}
+
+void MsgPackUpdateTracker::gameInfo(void)
+{
+	std::ostringstream tmpStream;
+
+	msgpack::pack(tmpStream, config::FIELD_SIZE_X);
+	msgpack::pack(tmpStream, config::FIELD_SIZE_Y);
+	msgpack::pack(tmpStream, config::FOOD_DECAY_STEP);
+
+	appendPacket(GameInfo, 1, tmpStream.str());
+}
+
+void MsgPackUpdateTracker::worldState(const std::shared_ptr<Field> &field)
+{
+	std::ostringstream tmpStream;
+
+	// add the bots
+	msgpack::pack(tmpStream, field->getBots());
+
+	// add all the food
+	const Field::FoodSet &staticFood = field->getStaticFood();
+	const Field::FoodSet &dynamicFood = field->getDynamicFood();
+
+	Field::FoodSet allFood;
+	allFood.insert(staticFood.begin(), staticFood.end());
+	allFood.insert(dynamicFood.begin(), dynamicFood.end());
+
+	msgpack::pack(tmpStream, allFood);
+
+	appendPacket(WorldUpdate, 1, tmpStream.str());
 }
 
 std::string MsgPackUpdateTracker::serialize(void)

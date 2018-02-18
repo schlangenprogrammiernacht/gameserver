@@ -2,6 +2,7 @@
 
 #include "MsgPackUpdateTracker.h"
 
+#include "config.h"
 #include "debug_funcs.h"
 
 #include "Game.h"
@@ -9,7 +10,10 @@
 Game::Game()
 {
 	m_updateTracker = std::make_shared<MsgPackUpdateTracker>();
-	m_field = std::make_shared<Field>(60, 20, 30, m_updateTracker);
+	m_field = std::make_shared<Field>(
+			config::FIELD_SIZE_X, config::FIELD_SIZE_Y,
+			config::FIELD_STATIC_FOOD,
+			m_updateTracker);
 
 	m_field->newBot("testBot");
 
@@ -50,8 +54,12 @@ bool Game::OnConnectionEstablished(TcpSocket &socket)
 {
 	std::cerr << "connection established to " << socket.GetPeer() << std::endl;
 
-	// TODO: send GameInfoMessage
-	// TODO: send WorldUpdateMessage
+	// send initial state
+	MsgPackUpdateTracker initTracker;
+	initTracker.gameInfo();
+	initTracker.worldState(m_field);
+	socket.Write(initTracker.serialize());
+
 	return true;
 }
 

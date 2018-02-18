@@ -5,6 +5,7 @@
 // forward declarations
 class Food;
 class Bot;
+class Field;
 
 /*!
  * \brief Interface for a game state change tracker.
@@ -52,6 +53,13 @@ class UpdateTracker
 		virtual void botKilled(
 				const std::shared_ptr<Bot> &killer,
 				const std::shared_ptr<Bot> &victim) = 0;
+
+		/*!
+		 * Add a serialized version of the world state to the stream.
+		 *
+		 * \param field   Pointer to the Field containing the world state to be serialized.
+		 */
+		virtual void worldState(const std::shared_ptr<Field> &field) = 0;
 
 		/*!
 		 * Serialize the events added since the last reset or serialization.

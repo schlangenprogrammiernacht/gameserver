@@ -78,6 +78,16 @@ class Field
 		const BotSet& getBots(void);
 
 		/*!
+		 * Get the set of static food.
+		 */
+		const FoodSet& getStaticFood(void);
+
+		/*!
+		 * Get the set of dynamic food.
+		 */
+		const FoodSet& getDynamicFood(void);
+
+		/*!
 		 * Wrap the coordinates of the given vector into the Fields unique area.
 		 *
 		 * \param v    The vector to wrap.

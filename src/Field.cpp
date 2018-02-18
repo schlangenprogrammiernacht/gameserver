@@ -158,6 +158,16 @@ const Field::BotSet& Field::getBots(void)
 	return m_bots;
 }
 
+const Field::FoodSet& Field::getStaticFood(void)
+{
+	return m_staticFood;
+}
+
+const Field::FoodSet& Field::getDynamicFood(void)
+{
+	return m_dynamicFood;
+}
+
 Vector Field::wrapCoords(const Vector &v)
 {
 	Vector result(v);

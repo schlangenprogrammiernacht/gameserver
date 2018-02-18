@@ -63,6 +63,10 @@ class MsgPackUpdateTracker : public UpdateTracker
 				const std::shared_ptr<Bot> &killer,
 				const std::shared_ptr<Bot> &victim);
 
+		void gameInfo(void);
+
+		void worldState(const std::shared_ptr<Field> &field);
+
 		std::string serialize(void);
 
 		void reset(void);
