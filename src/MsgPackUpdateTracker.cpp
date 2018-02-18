@@ -144,7 +144,6 @@ namespace adaptor {
 
 			o.pack(std::string("unnamed")); // FIXME: pack bot name here
 
-			o.pack(0.0); // FIXME: heading
 			o.pack(1.0); // FIXME: segment radius
 
 			// segments
