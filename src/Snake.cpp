@@ -5,7 +5,7 @@
 #include "Snake.h"
 
 Snake::Snake(Field *field)
-	: m_field(field), m_mass(1.0f)
+	: m_field(field), m_mass(1.0f), m_heading(0.0f)
 {
 	std::shared_ptr<Segment> segment = std::make_shared<Segment>();
 	m_segments.push_back(segment);
@@ -13,8 +13,9 @@ Snake::Snake(Field *field)
 	ensureLengthMatchesMass();
 }
 
-Snake::Snake(Field *field, const Vector &startPos, float_t start_mass)
-	: m_field(field), m_mass(start_mass)
+Snake::Snake(Field *field, const Vector &startPos, float_t start_mass,
+		float_t start_heading)
+	: m_field(field), m_mass(start_mass), m_heading(start_heading)
 {
 	// create the first segment manually
 	std::shared_ptr<Segment> segment = std::make_shared<Segment>();
@@ -58,19 +59,6 @@ float_t Snake::maxRotationPerStep(void)
 	return 10.0 / (m_mass/10.0 + 1);
 }
 
-Vector Snake::currentMovementVector(void)
-{
-	Vector head = m_segments[0]->pos;
-	Vector next = m_field->unwrapCoords(m_segments[1]->pos, head);
-
-	if(head == next) {
-		// movement vector undefined
-		return Vector(1, 0);
-	} else {
-		return head - next;
-	}
-}
-
 void Snake::consume(const std::shared_ptr<Food>& food)
 {
 	m_mass += food->getValue();
@@ -80,9 +68,7 @@ void Snake::consume(const std::shared_ptr<Food>& food)
 void Snake::move(float_t targetAngle, bool boost)
 {
 	// calculate delta angle
-	Vector movementVector = currentMovementVector();
-	float_t curAngle = movementVector.angle();
-	float_t deltaAngle = targetAngle - curAngle;
+	float_t deltaAngle = targetAngle - m_heading;
 
 	// normalize delta angle
 	if(deltaAngle > 180) {
@@ -99,10 +85,6 @@ void Snake::move(float_t targetAngle, bool boost)
 		deltaAngle = -maxDelta;
 	}
 
-	// ensure length of movement vector
-	movementVector.normalize();
-	movementVector *= config::SNAKE_DISTANCE_PER_STEP;
-
 	std::size_t oldSize = m_segments.size();
 
 	// create multiple segments while boosting
@@ -113,12 +95,23 @@ void Snake::move(float_t targetAngle, bool boost)
 
 	// create new segments at head
 	for(std::size_t i = 0; i < steps; i++) {
-		movementVector.rotate(deltaAngle * M_PI / 180);
+		// calculate new segment offset
+		m_heading += deltaAngle;
+		Vector movementVector(config::SNAKE_DISTANCE_PER_STEP, 0.0f);
+		movementVector.rotate(m_heading * M_PI / 180);
 
+		// create new segment
 		std::shared_ptr<Segment> segment = std::make_shared<Segment>();
 		segment->pos = m_field->wrapCoords(m_segments[0]->pos + movementVector);
 
 		m_segments.push_front(segment);
+	}
+
+	// normalize heading
+	if(m_heading > 180) {
+		m_heading -= 360;
+	} else if(m_heading < -180) {
+		m_heading += 360;
 	}
 
 	// force size to previous size (removes end segments)

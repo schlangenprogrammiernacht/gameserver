@@ -6,7 +6,7 @@ Bot::Bot(Field *field, const std::string &name)
 	: m_name(name), m_field(field)
 {
 	// TODO: random start coordinates
-	m_snake = std::make_shared<Snake>(field, Vector(10, 10), 5);
+	m_snake = std::make_shared<Snake>(field, Vector(10, 10), 5, -60);
 }
 
 void Bot::move(void)

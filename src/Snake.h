@@ -30,22 +30,24 @@ class Snake
 		 */
 		SegmentList m_segments;
 
+		float_t m_heading; //!< Heading of the snake in degrees (-180°..180°) from x axis
+
 		float_t m_mass; //!< Mass (length) of the snake
 
 		Field *m_field;
 
 		float_t maxRotationPerStep(void);
-		Vector currentMovementVector(void);
 
 		void ensureLengthMatchesMass(void);
 
 	public:
 		/*!
-		 * Construct a unit snake (1 segment at 0/0).
+		 * Construct a unit snake (1 segment at 0/0, heading 0°).
 		 */
 		Snake(Field *field);
 
-		Snake(Field *field, const Vector &start_pos, float_t start_mass);
+		Snake(Field *field, const Vector &start_pos, float_t start_mass,
+				float_t start_heading);
 
 		/*!
 		 * Consume the given food piece.
