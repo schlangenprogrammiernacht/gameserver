@@ -55,6 +55,14 @@ class UpdateTracker
 				const std::shared_ptr<Bot> &victim) = 0;
 
 		/*!
+		 * Track a bot move event.
+		 *
+		 * \param bot   Pointer to the bot that moved.
+		 * \param steps Steps that the bot moved forward.
+		 */
+		virtual void botMoved(const std::shared_ptr<Bot> &bot, std::size_t steps) = 0;
+
+		/*!
 		 * Add a serialized version of the world state to the stream.
 		 *
 		 * \param field   Pointer to the Field containing the world state to be serialized.

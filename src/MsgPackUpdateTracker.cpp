@@ -5,8 +5,6 @@
 
 #include "config.h"
 
-#include "MsgPackAdaptors.h"
-
 #include "MsgPackUpdateTracker.h"
 
 /* Private methods */
@@ -79,6 +77,18 @@ void MsgPackUpdateTracker::botKilled(
 	appendPacket(BotKill, 1, tmpStream.str());
 }
 
+void MsgPackUpdateTracker::botMoved(const std::shared_ptr<Bot> &bot, std::size_t steps)
+{
+	BotMovedItem item;
+
+	const Snake::SegmentList &segments = bot->getSnake()->getSegments();
+
+	item.botID = bot->getGUID();
+	item.newSegments.assign(segments.begin(), segments.begin() + steps);
+	item.segmentRadius = 1.0f; // FIXME: implement in Snake
+	item.snakeLength = segments.size();
+}
+
 void MsgPackUpdateTracker::gameInfo(void)
 {
 	std::ostringstream tmpStream;
@@ -135,6 +145,13 @@ std::string MsgPackUpdateTracker::serialize(void)
 		appendPacket(FoodConsume, 1, tmpStream.str());
 	}
 
+	// moved bots
+	if(!m_movedBots.empty()) {
+		tmpStream.str("");
+		msgpack::pack(tmpStream, m_movedBots);
+		appendPacket(BotMove, 1, tmpStream.str());
+	}
+
 	std::string result = m_stream.str();
 	reset();
 	return result;
@@ -145,6 +162,7 @@ void MsgPackUpdateTracker::reset(void)
 	m_decayedFood.clear();
 	m_consumedFood.clear();
 	m_spawnedFood.clear();
+	m_movedBots.clear();
 
 	m_stream.str("");
 }

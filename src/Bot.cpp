@@ -9,9 +9,9 @@ Bot::Bot(Field *field, const std::string &name, const Vector &startPos, float_t 
 	m_snake = std::make_shared<Snake>(field, startPos, 5, startHeading);
 }
 
-void Bot::move(void)
+std::size_t Bot::move(void)
 {
-	m_snake->move(120); // direction in degrees
+	return m_snake->move(120); // direction in degrees
 }
 
 std::shared_ptr<Snake> Bot::getSnake(void)

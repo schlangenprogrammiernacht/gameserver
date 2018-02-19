@@ -30,8 +30,10 @@ class Bot : public IdentifyableObject
 
 		/*!
 		 * Run the bot's movement code and update the Snake’s position.
+		 *
+		 * \returns   The number of new segments created at the snake's head.
 		 */
-		void move(void);
+		std::size_t move(void);
 
 		std::shared_ptr<Snake> getSnake(void);
 };

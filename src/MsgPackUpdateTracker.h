@@ -4,6 +4,10 @@
 
 #include <msgpack.hpp>
 
+#include "MsgPackAdaptors.h"
+
+#include "Snake.h"
+
 #include "types.h"
 #include "UpdateTracker.h"
 
@@ -37,11 +41,19 @@ class MsgPackUpdateTracker : public UpdateTracker
 			MSGPACK_DEFINE(botID, foodID);
 		};
 
+		struct BotMovedItem {
+			guid_t botID;
+			std::vector< std::shared_ptr<Snake::Segment> > newSegments;
+			std::size_t snakeLength;
+			double      segmentRadius;
+		};
+
 		std::ostringstream m_stream;
 
 		std::vector<guid_t>                  m_decayedFood;
 		std::vector< std::shared_ptr<Food> > m_spawnedFood;
 		std::vector<FoodConsumedItem>        m_consumedFood;
+		std::vector<BotMovedItem>            m_movedBots;
 
 		void appendPacket(MessageType type, uint8_t protocolVersion, const std::string &data);
 
@@ -62,6 +74,8 @@ class MsgPackUpdateTracker : public UpdateTracker
 		void botKilled(
 				const std::shared_ptr<Bot> &killer,
 				const std::shared_ptr<Bot> &victim);
+
+		void botMoved(const std::shared_ptr<Bot> &bot, std::size_t steps);
 
 		void gameInfo(void);
 

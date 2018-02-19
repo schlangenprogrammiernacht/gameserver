@@ -56,8 +56,12 @@ class Snake
 
 		/*!
 		 * Move the snake by one step if boost==false or SNAKE_BOOST_STEPS if boost==true.
+		 *
+		 * \param targetAngle    The target angle the snake should head to (in degrees)
+		 * \param boost          Whether to apply boost
+		 * \returns              The number of segments created during the operation.
 		 */
-		void move(float targetAngle, bool boost = false);
+		std::size_t move(float targetAngle, bool boost = false);
 
 		/*!
 		 * Get the list of segments.

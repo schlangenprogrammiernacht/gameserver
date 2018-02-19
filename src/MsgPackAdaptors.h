@@ -14,6 +14,17 @@ namespace msgpack {
 MSGPACK_API_VERSION_NAMESPACE(MSGPACK_DEFAULT_API_NS) {
 namespace adaptor {
 
+	template <> struct pack< std::shared_ptr<Snake::Segment> >
+	{
+		template <typename Stream> msgpack::packer<Stream>& operator()(msgpack::packer<Stream>& o, std::shared_ptr<Snake::Segment> const& v) const
+		{
+			o.pack(v->pos.x());
+			o.pack(v->pos.y());
+
+			return o;
+		}
+	};
+
 	template <> struct pack< std::shared_ptr<Food> >
 	{
 		template <typename Stream> msgpack::packer<Stream>& operator()(msgpack::packer<Stream>& o, std::shared_ptr<Food> const& v) const
@@ -41,12 +52,7 @@ namespace adaptor {
 			o.pack(1.0); // FIXME: segment radius
 
 			// segments
-			const Snake::SegmentList &segments = v->getSnake()->getSegments();
-			o.pack_array(segments.size());
-			for(auto &s: segments) {
-				o.pack(s->pos.x());
-				o.pack(s->pos.y());
-			}
+			o.pack(v->getSnake()->getSegments());
 
 			// FIXME: colormap: array of RGB values
 			o.pack_array(3);

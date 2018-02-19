@@ -65,7 +65,7 @@ void Snake::consume(const std::shared_ptr<Food>& food)
 	ensureLengthMatchesMass();
 }
 
-void Snake::move(float_t targetAngle, bool boost)
+std::size_t Snake::move(float_t targetAngle, bool boost)
 {
 	// calculate delta angle
 	float_t deltaAngle = targetAngle - m_heading;
@@ -116,6 +116,8 @@ void Snake::move(float_t targetAngle, bool boost)
 
 	// force size to previous size (removes end segments)
 	m_segments.resize(oldSize);
+
+	return steps; // == number of new segments at head
 }
 
 const Snake::SegmentList& Snake::getSegments(void)
