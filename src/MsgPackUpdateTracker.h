@@ -46,7 +46,8 @@ class MsgPackUpdateTracker : public UpdateTracker
 			std::vector< std::shared_ptr<Snake::Segment> > newSegments;
 			std::size_t snakeLength;
 			double      segmentRadius;
-		};
+            MSGPACK_DEFINE(botID, newSegments, snakeLength, segmentRadius);
+        };
 
 		std::ostringstream m_stream;
 
