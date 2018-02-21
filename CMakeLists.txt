@@ -19,6 +19,8 @@ set(sources
 	src/GUIDGenerator.h
 	src/IdentifyableObject.cpp
 	src/IdentifyableObject.h
+	src/LocalView.cpp
+	src/LocalView.h
 	src/main.cpp
 	src/MsgPackAdaptors.h
 	src/MsgPackUpdateTracker.cpp
