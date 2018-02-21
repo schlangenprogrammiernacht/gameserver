@@ -21,7 +21,7 @@ class IdentifyableObject
 		/*!
 		 * Get the GUID of this object.
 		 */
-        guid_t getGUID(void) const
+		guid_t getGUID(void) const
 		{
 			return m_guid;
 		}
