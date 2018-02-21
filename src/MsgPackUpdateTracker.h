@@ -54,7 +54,7 @@ class MsgPackUpdateTracker : public UpdateTracker
 		std::vector<guid_t>                  m_decayedFood;
 		std::vector< std::shared_ptr<Food> > m_spawnedFood;
 		std::vector<FoodConsumedItem>        m_consumedFood;
-		std::vector<BotMovedItem>            m_movedBots;
+		std::vector< std::shared_ptr<BotMovedItem> > m_movedBots;
 
 		void appendPacket(MessageType type, uint8_t protocolVersion, const std::string &data);
 

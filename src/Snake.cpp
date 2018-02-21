@@ -10,7 +10,7 @@ Snake::Snake(Field *field)
 	std::shared_ptr<Segment> segment = std::make_shared<Segment>();
 	m_segments.push_back(segment);
 
-	ensureLengthMatchesMass();
+	ensureSizeMatchesMass();
 }
 
 Snake::Snake(Field *field, const Vector &startPos, float_t start_mass,
@@ -24,10 +24,10 @@ Snake::Snake(Field *field, const Vector &startPos, float_t start_mass,
 	m_segments.push_back(segment);
 
 	// create the other segments
-	ensureLengthMatchesMass();
+	ensureSizeMatchesMass();
 }
 
-void Snake::ensureLengthMatchesMass(void)
+void Snake::ensureSizeMatchesMass(void)
 {
 	std::size_t curLen = m_segments.size();
 	std::size_t targetLen = static_cast<std::size_t>(m_mass + 0.5);
@@ -51,6 +51,9 @@ void Snake::ensureLengthMatchesMass(void)
 		// segments must be removed
 		m_segments.resize(targetLen);
 	}
+
+	// update segment radius
+	m_segmentRadius = std::sqrt(m_mass) / 2;
 }
 
 float_t Snake::maxRotationPerStep(void)
@@ -62,7 +65,7 @@ float_t Snake::maxRotationPerStep(void)
 void Snake::consume(const std::shared_ptr<Food>& food)
 {
 	m_mass += food->getValue();
-	ensureLengthMatchesMass();
+	ensureSizeMatchesMass();
 }
 
 std::size_t Snake::move(float_t targetAngle, bool boost)
@@ -120,12 +123,17 @@ std::size_t Snake::move(float_t targetAngle, bool boost)
 	return steps; // == number of new segments at head
 }
 
-const Snake::SegmentList& Snake::getSegments(void)
+const Snake::SegmentList& Snake::getSegments(void) const
 {
 	return m_segments;
 }
 
-const Vector& Snake::getHeadPosition(void)
+const Vector& Snake::getHeadPosition(void) const
 {
 	return m_segments[0]->pos;
+}
+
+float_t Snake::getSegmentRadius(void) const
+{
+	return m_segmentRadius;
 }

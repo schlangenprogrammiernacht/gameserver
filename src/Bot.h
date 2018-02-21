@@ -35,5 +35,7 @@ class Bot : public IdentifyableObject
 		 */
 		std::size_t move(void);
 
-		std::shared_ptr<Snake> getSnake(void);
+		std::shared_ptr<Snake> getSnake(void) const;
+
+		const std::string &getName(void) const;
 };

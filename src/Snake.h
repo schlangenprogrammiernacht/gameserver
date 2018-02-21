@@ -33,12 +33,16 @@ class Snake
 		float_t m_heading; //!< Heading of the snake in degrees (-180°..180°) from x axis
 
 		float_t m_mass; //!< Mass (length) of the snake
+		float_t m_segmentRadius; //!< Segment radius (calculated from m_mass; cached)
 
 		Field *m_field;
 
 		float_t maxRotationPerStep(void);
 
-		void ensureLengthMatchesMass(void);
+		/*!
+		 * Updates the length of m_segments and calculates the current m_segmentRadius
+		 */
+		void ensureSizeMatchesMass(void);
 
 	public:
 		/*!
@@ -66,11 +70,16 @@ class Snake
 		/*!
 		 * Get the list of segments.
 		 */
-		const SegmentList& getSegments(void);
+		const SegmentList& getSegments(void) const;
 
 		/*!
 		 * Get the Snake's head position. This is a shortcut for getting the
 		 * position of the first segment.
 		 */
-		const Vector& getHeadPosition(void);
+		const Vector& getHeadPosition(void) const;
+
+		/*!
+		 * Get the current segment radius.
+		 */
+		float_t getSegmentRadius(void) const;
 };

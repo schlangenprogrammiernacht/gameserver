@@ -14,7 +14,12 @@ std::size_t Bot::move(void)
 	return m_snake->move(120); // direction in degrees
 }
 
-std::shared_ptr<Snake> Bot::getSnake(void)
+std::shared_ptr<Snake> Bot::getSnake(void) const
 {
 	return m_snake;
+}
+
+const std::string& Bot::getName(void) const
+{
+	return m_name;
 }

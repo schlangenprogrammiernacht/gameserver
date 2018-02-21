@@ -78,6 +78,8 @@ void Field::newBot(const std::string &name)
 
 	std::cerr << "Created Bot with ID " << bot->getGUID() << std::endl;
 
+	m_updateTracker->botSpawned(bot);
+
 	m_bots.insert(bot);
 }
 
@@ -156,7 +158,8 @@ void Field::consumeFood(void)
 void Field::moveAllBots(void)
 {
 	for(auto &b: m_bots) {
-		b->move();
+		size_t steps = b->move();
+		m_updateTracker->botMoved(b, steps);
 	}
 }
 

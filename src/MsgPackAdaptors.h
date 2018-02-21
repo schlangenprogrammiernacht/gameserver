@@ -59,10 +59,8 @@ namespace adaptor {
 		template <typename Stream> msgpack::packer<Stream>& operator()(msgpack::packer<Stream>& o, std::shared_ptr<Bot> const& v) const
 		{
 			o.pack(v->getGUID());
-
-			o.pack(std::string("unnamed")); // FIXME: pack bot name here
-
-			o.pack(1.0); // FIXME: segment radius
+			o.pack(v->getName());
+			o.pack(v->getSnake()->getSegmentRadius());
 
 			// segments
 			o.pack(v->getSnake()->getSegments());

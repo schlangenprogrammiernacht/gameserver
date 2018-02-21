@@ -79,14 +79,16 @@ void MsgPackUpdateTracker::botKilled(
 
 void MsgPackUpdateTracker::botMoved(const std::shared_ptr<Bot> &bot, std::size_t steps)
 {
-	BotMovedItem item;
+	std::shared_ptr<BotMovedItem> item = std::make_shared<BotMovedItem>();
 
 	const Snake::SegmentList &segments = bot->getSnake()->getSegments();
 
-	item.botID = bot->getGUID();
-	item.newSegments.assign(segments.begin(), segments.begin() + steps);
-	item.segmentRadius = 1.0f; // FIXME: implement in Snake
-	item.snakeLength = segments.size();
+	item->botID = bot->getGUID();
+	item->newSegments.assign(segments.begin(), segments.begin() + steps);
+	item->segmentRadius = bot->getSnake()->getSegmentRadius();
+	item->snakeLength = segments.size();
+
+	m_movedBots.push_back(item);
 }
 
 void MsgPackUpdateTracker::gameInfo(void)
