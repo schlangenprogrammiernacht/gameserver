@@ -20,17 +20,21 @@ class MsgPackUpdateTracker : public UpdateTracker
 	private:
 		enum MessageType {
 			/* Initial setup messages */
-			GameInfo,    //!< Generic, static game information (like world size)
-			WorldUpdate, //!< The complete world state
+
+			GameInfo     = 0x00,   //!< Generic, static game information (like world size)
+			WorldUpdate  = 0x01,   //!< The complete world state
 
 			/* Sent every frame */
-			Tick,        //!< Message signalling a new frame
-			BotSpawn,    //!< A new bot entered the game
-			BotKill,     //!< A bot was killed
-			BotMove,     //!< Bot movement
-			FoodSpawn,   //!< New food created in this frame
-			FoodConsume, //!< Food consumed by bots
-			FoodDecay,   //!< Food decayed
+
+			Tick         = 0x10,   //!< Message signalling a new frame
+
+			BotSpawn     = 0x20,   //!< A new bot entered the game
+			BotKill      = 0x21,   //!< A bot was killed
+			BotMove      = 0x22,   //!< Bot movement
+
+			FoodSpawn    = 0x30,   //!< New food created in this frame
+			FoodConsume  = 0x31,   //!< Food consumed by bots
+			FoodDecay    = 0x32,   //!< Food decayed
 		};
 
 		// helper structs for serialization
