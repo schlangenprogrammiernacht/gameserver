@@ -34,5 +34,7 @@ set(sources
 	)
 
 add_executable(GameServer ${sources})
-target_include_directories(GameServer PUBLIC lib/TcpServer/TcpServer/include/)
+target_include_directories(GameServer PUBLIC
+	lib/TcpServer/TcpServer/include/
+	lib/msgpack-c/include/)
 target_link_libraries(GameServer tcpserver)
