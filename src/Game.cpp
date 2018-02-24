@@ -99,9 +99,9 @@ bool Game::OnTimerInterval()
 	std::string update = m_updateTracker->serialize();
 	server.Broadcast(update);
 
-	std::cout << hexdump(update) << std::endl;
+	//std::cout << hexdump(update) << std::endl;
 
-	m_field->debugVisualization();
+	//m_field->debugVisualization();
 
 	return true;
 }
@@ -112,8 +112,8 @@ int Game::Main()
 		return -1;
 	}
 
-	//server.AddIntervalTimer(16666); // 60 fps
-	server.AddIntervalTimer(1000000); // 1 fps
+	server.AddIntervalTimer(16666); // 60 fps
+	//server.AddIntervalTimer(1000000); // 1 fps
 
 	while(true) {
 		server.Poll(1000);

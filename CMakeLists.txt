@@ -22,7 +22,7 @@ set(sources
 	src/LocalView.cpp
 	src/LocalView.h
 	src/main.cpp
-	src/MsgPackAdaptors.h
+	src/MsgPackProtocol.h
 	src/MsgPackUpdateTracker.cpp
 	src/MsgPackUpdateTracker.h
 	src/Snake.cpp

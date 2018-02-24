@@ -9,26 +9,12 @@
 
 /* Private methods */
 
-void MsgPackUpdateTracker::appendPacket(
-		MsgPackUpdateTracker::MessageType type,
-		uint8_t protocolVersion,
-		const std::string &data)
+void MsgPackUpdateTracker::appendMessage(const msgpack::sbuffer &buf)
 {
-	// build the full packet (including version and type)
-	std::ostringstream packetBuilder;
+	uint32_t length = htonl(static_cast<uint32_t>(buf.size()));
 
-	msgpack::pack(packetBuilder, protocolVersion);
-	msgpack::pack(packetBuilder, static_cast<int>(type));
-
-	packetBuilder.write(data.data(), data.size());
-
-	std::string packet = packetBuilder.str();
-
-	// write the full packet to the packet stream
-	std::uint32_t length = ntohl(static_cast<uint32_t>(packet.size()));
-
-	m_stream.write(reinterpret_cast<const char*>(&length), sizeof(length));
-	m_stream.write(packet.data(), packet.size());
+	m_stream.write(reinterpret_cast<char*>(&length), sizeof(length));
+	m_stream.write(buf.data(), buf.size());
 }
 
 /* Public methods */
@@ -42,116 +28,117 @@ void MsgPackUpdateTracker::foodConsumed(
 		const std::shared_ptr<Food> &food,
 		const std::shared_ptr<Bot> &by_bot)
 {
-	FoodConsumedItem item = {
-		.botID = by_bot->getGUID(),
-		.foodID = by_bot->getGUID()
-	};
+	MsgPackProtocol::FoodConsumeItem item;
 
-	m_consumedFood.push_back(item);
+	item.bot_id = by_bot->getGUID();
+	item.food_id = food->getGUID();
+
+	m_foodConsumeMessage->items.push_back(item);
 }
 
 void MsgPackUpdateTracker::foodDecayed(const std::shared_ptr<Food> &food)
 {
-	m_decayedFood.push_back(food->getGUID());
+	m_foodDecayMessage->food_ids.push_back(food->getGUID());
 }
 
 void MsgPackUpdateTracker::foodSpawned(const std::shared_ptr<Food> &food)
 {
-	m_spawnedFood.push_back(food);
+	m_foodSpawnMessage->new_food.push_back(food);
 }
 
 void MsgPackUpdateTracker::botSpawned(const std::shared_ptr<Bot> &bot)
 {
-	std::ostringstream tmpStream;
-	msgpack::pack(tmpStream, bot);
-	appendPacket(BotSpawn, 1, tmpStream.str());
+	MsgPackProtocol::BotSpawnMessage msg;
+	msg.bot = bot;
+
+	msgpack::sbuffer buf;
+	msgpack::pack(buf, msg);
+	appendMessage(buf);
 }
 
 void MsgPackUpdateTracker::botKilled(
 		const std::shared_ptr<Bot> &killer,
 		const std::shared_ptr<Bot> &victim)
 {
-	std::ostringstream tmpStream;
-	msgpack::pack(tmpStream, killer->getGUID());
-	msgpack::pack(tmpStream, victim->getGUID());
-	appendPacket(BotKill, 1, tmpStream.str());
+	MsgPackProtocol::BotKillMessage msg;
+	msg.killer_id = killer->getGUID();
+	msg.victim_id = victim->getGUID();
+
+	msgpack::sbuffer buf;
+	msgpack::pack(buf, msg);
+	appendMessage(buf);
 }
 
 void MsgPackUpdateTracker::botMoved(const std::shared_ptr<Bot> &bot, std::size_t steps)
 {
-	std::shared_ptr<BotMovedItem> item = std::make_shared<BotMovedItem>();
+	MsgPackProtocol::BotMoveItem item;
 
 	const Snake::SegmentList &segments = bot->getSnake()->getSegments();
 
-	item->botID = bot->getGUID();
-	item->newSegments.assign(segments.begin(), segments.begin() + steps);
-	item->segmentRadius = bot->getSnake()->getSegmentRadius();
-	item->snakeLength = segments.size();
+	item.bot_id = bot->getGUID();
+	item.new_segments.assign(segments.begin(), segments.begin() + steps);
+	item.current_segment_radius = bot->getSnake()->getSegmentRadius();
+	item.current_length = segments.size();
 
-	m_movedBots.push_back(item);
+	m_botMoveMessage->items.push_back(item);
 }
 
 void MsgPackUpdateTracker::gameInfo(void)
 {
-	std::ostringstream tmpStream;
+	MsgPackProtocol::GameInfoMessage msg;
 
-	msgpack::pack(tmpStream, config::FIELD_SIZE_X);
-	msgpack::pack(tmpStream, config::FIELD_SIZE_Y);
-	msgpack::pack(tmpStream, config::FOOD_DECAY_STEP);
+	msg.world_size_x = config::FIELD_SIZE_X;
+	msg.world_size_y = config::FIELD_SIZE_Y;
+	msg.food_decay_per_frame = config::FOOD_DECAY_STEP;
 
-	appendPacket(GameInfo, 1, tmpStream.str());
+	msgpack::sbuffer buf;
+	msgpack::pack(buf, msg);
+	appendMessage(buf);
 }
 
 void MsgPackUpdateTracker::worldState(const std::shared_ptr<Field> &field)
 {
-	std::ostringstream tmpStream;
+	MsgPackProtocol::WorldUpdateMessage msg;
 
-	// add the bots
-	msgpack::pack(tmpStream, field->getBots());
+	msg.bots = field->getBots();
+	msg.food = field->getStaticFood();
 
-	// add all the food
-	const Field::FoodSet &staticFood = field->getStaticFood();
-	const Field::FoodSet &dynamicFood = field->getDynamicFood();
+	const Field::FoodSet &dynFood = field->getDynamicFood();
+	msg.food.insert(dynFood.begin(), dynFood.end());
 
-	Field::FoodSet allFood;
-	allFood.insert(staticFood.begin(), staticFood.end());
-	allFood.insert(dynamicFood.begin(), dynamicFood.end());
-
-	msgpack::pack(tmpStream, allFood);
-
-	appendPacket(WorldUpdate, 1, tmpStream.str());
+	msgpack::sbuffer buf;
+	msgpack::pack(buf, msg);
+	appendMessage(buf);
 }
 
 std::string MsgPackUpdateTracker::serialize(void)
 {
-	std::ostringstream tmpStream;
-
 	// decayed food
-	if(!m_decayedFood.empty()) {
-		tmpStream.str("");
-		msgpack::pack(tmpStream, m_decayedFood);
-		appendPacket(FoodDecay, 1, tmpStream.str());
+	if(!m_foodDecayMessage->food_ids.empty()) {
+		msgpack::sbuffer buf;
+		msgpack::pack(buf, m_foodDecayMessage);
+		appendMessage(buf);
 	}
 
 	// spawned food
-	if(!m_spawnedFood.empty()) {
-		tmpStream.str("");
-		msgpack::pack(tmpStream, m_spawnedFood);
-		appendPacket(FoodSpawn, 1, tmpStream.str());
+	if(!m_foodSpawnMessage->new_food.empty()) {
+		msgpack::sbuffer buf;
+		msgpack::pack(buf, m_foodSpawnMessage);
+		appendMessage(buf);
 	}
 
 	// consumed food
-	if(!m_consumedFood.empty()) {
-		tmpStream.str("");
-		msgpack::pack(tmpStream, m_consumedFood);
-		appendPacket(FoodConsume, 1, tmpStream.str());
+	if(!m_foodConsumeMessage->items.empty()) {
+		msgpack::sbuffer buf;
+		msgpack::pack(buf, m_foodConsumeMessage);
+		appendMessage(buf);
 	}
 
 	// moved bots
-	if(!m_movedBots.empty()) {
-		tmpStream.str("");
-		msgpack::pack(tmpStream, m_movedBots);
-		appendPacket(BotMove, 1, tmpStream.str());
+	if(!m_botMoveMessage->items.empty()) {
+		msgpack::sbuffer buf;
+		msgpack::pack(buf, m_botMoveMessage);
+		appendMessage(buf);
 	}
 
 	std::string result = m_stream.str();
@@ -161,10 +148,10 @@ std::string MsgPackUpdateTracker::serialize(void)
 
 void MsgPackUpdateTracker::reset(void)
 {
-	m_decayedFood.clear();
-	m_consumedFood.clear();
-	m_spawnedFood.clear();
-	m_movedBots.clear();
+	m_foodConsumeMessage = std::make_unique<MsgPackProtocol::FoodConsumeMessage>();
+	m_foodSpawnMessage = std::make_unique<MsgPackProtocol::FoodSpawnMessage>();
+	m_foodDecayMessage = std::make_unique<MsgPackProtocol::FoodDecayMessage>();
+	m_botMoveMessage = std::make_unique<MsgPackProtocol::BotMoveMessage>();
 
 	m_stream.str("");
 }

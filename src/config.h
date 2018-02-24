@@ -13,11 +13,11 @@
 namespace config {
 
 	// Field size
-	static const float_t     FIELD_SIZE_X            = 60;
-	static const float_t     FIELD_SIZE_Y            = 20;
+	static const float_t     FIELD_SIZE_X            = 1024;
+	static const float_t     FIELD_SIZE_Y            = 1024;
 
 	// Items of static food on field
-	static const std::size_t FIELD_STATIC_FOOD       = 30;
+	static const std::size_t FIELD_STATIC_FOOD       = 10000;
 
 	// Radius around the head of a snake in which food is eaten
 	static const float_t     SNAKE_EATING_RADIUS     = 2.0;
