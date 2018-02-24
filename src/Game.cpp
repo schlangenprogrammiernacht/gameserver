@@ -112,7 +112,8 @@ int Game::Main()
 		return -1;
 	}
 
-	server.AddIntervalTimer(16666); // 60 fps
+	//server.AddIntervalTimer(16666); // 60 fps
+	server.AddIntervalTimer(50000); // 20 fps
 	//server.AddIntervalTimer(1000000); // 1 fps
 
 	while(true) {

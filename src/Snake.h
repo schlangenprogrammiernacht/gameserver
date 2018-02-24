@@ -82,4 +82,9 @@ class Snake
 		 * Get the current segment radius.
 		 */
 		float_t getSegmentRadius(void) const;
+
+		/*!
+		 * Check if this Snake can consume the given Food.
+		 */
+		bool canConsume(const std::shared_ptr<Food> &food);
 };

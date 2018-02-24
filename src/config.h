@@ -17,7 +17,7 @@ namespace config {
 	static const float_t     FIELD_SIZE_Y            = 1024;
 
 	// Items of static food on field
-	static const std::size_t FIELD_STATIC_FOOD       = 10000;
+	static const std::size_t FIELD_STATIC_FOOD       = 5000;
 
 	// Radius around the head of a snake in which food is eaten
 	static const float_t     SNAKE_EATING_RADIUS     = 2.0;
@@ -28,7 +28,8 @@ namespace config {
 	// Distance per normal movement step
 	static const float_t     SNAKE_DISTANCE_PER_STEP = 1.0;
 
-	// Distance under which food is consumed around the head of the snake
+	// Distance multiplier for the Snake’s consume range. This is multiplied with
+	// the Snake’s segment radius.
 	static const float_t     SNAKE_CONSUME_RANGE     = 1.0;
 
 	// Food particle size log-normal distribution parameters

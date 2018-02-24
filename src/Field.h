@@ -43,8 +43,6 @@ class Field
 		void setupRandomness(void);
 		void createStaticFood(std::size_t count);
 
-		bool canFoodBeConsumed(const Vector &headPos, const Vector &foodPos);
-
 	public:
 		Field(float_t w, float_t h, std::size_t food_parts,
 				const std::shared_ptr<UpdateTracker> &update_tracker);
