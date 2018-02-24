@@ -21,6 +21,8 @@ class Bot : public IdentifyableObject
 		Field                  *m_field;
 		std::shared_ptr<Snake>  m_snake;
 
+		float_t                 m_heading;
+
 	public:
 		/*!
 		 * Creates a new bot identified by the given name on the given playing
