@@ -23,6 +23,8 @@ class Bot : public IdentifyableObject
 
 		float_t                 m_heading;
 
+		size_t m_moveCounter;
+
 	public:
 		/*!
 		 * Creates a new bot identified by the given name on the given playing
