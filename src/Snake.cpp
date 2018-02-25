@@ -59,7 +59,7 @@ void Snake::ensureSizeMatchesMass(void)
 float_t Snake::maxRotationPerStep(void)
 {
 	// TODO: make this better?
-	return 10.0 / (m_mass/10.0 + 1);
+	return 10.0 / (m_segmentRadius/10.0 + 1);
 }
 
 void Snake::consume(const std::shared_ptr<Food>& food)
