@@ -43,10 +43,7 @@ Game::Game()
 	server.AddTimerListener(
 		[this](int, uint64_t expirationCount)
 		{
-			for (uint64_t i=0; i<expirationCount; i++)
-			{
-				OnTimerInterval();
-			}
+			OnTimerInterval();
 			return true;
 		}
 	);
