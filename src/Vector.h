@@ -33,6 +33,7 @@ class Vector
 
 		void rotate(float_t phi);
 		void normalize(void);
+		void normalizeToLength(float_t len);
 
 		Vector& operator = (const Vector &other)
 		{
@@ -49,6 +50,11 @@ class Vector
 		Vector operator - (const Vector &delta)
 		{
 			return Vector(m_x - delta.m_x, m_y - delta.m_y);
+		}
+
+		Vector operator * (float_t factor)
+		{
+			return Vector(m_x * factor, m_y * factor);
 		}
 
 		Vector& operator += (const Vector &delta)

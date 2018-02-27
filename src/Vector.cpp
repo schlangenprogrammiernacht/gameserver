@@ -47,6 +47,14 @@ void Vector::normalize(void)
 	m_y /= norm;
 }
 
+void Vector::normalizeToLength(float_t len)
+{
+	float_t norm = abs();
+
+	m_x *= len / norm;
+	m_y *= len / norm;
+}
+
 float_t Vector::distanceTo(const Vector &other) const
 {
 	float_t dx = other.m_x - m_x;
