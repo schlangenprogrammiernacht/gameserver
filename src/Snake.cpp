@@ -29,8 +29,15 @@ Snake::Snake(Field *field, const Vector &startPos, float_t start_mass,
 
 void Snake::ensureSizeMatchesMass(void)
 {
+	m_targetSegmentDistance = pow(
+			m_mass * config::SNAKE_SEGMENT_DISTANCE_FACTOR,
+			config::SNAKE_SEGMENT_DISTANCE_EXPONENT);
+
 	std::size_t curLen = m_segments.size();
-	std::size_t targetLen = static_cast<std::size_t>(m_mass + 0.5);
+	std::size_t targetLen = static_cast<std::size_t>(
+			m_mass / m_targetSegmentDistance);
+			//pow(m_mass, config::SNAKE_NSEGMENTS_EXPONENT));
+
 
 	// ensure there are at least 2 segments to define movement direction
 	if(targetLen < 2) {
@@ -90,6 +97,16 @@ std::size_t Snake::move(float_t targetAngle, bool boost)
 
 	std::size_t oldSize = m_segments.size();
 
+	// unwrap all coordinates
+	for(std::size_t i = 0; i < m_segments.size(); i++) {
+		auto &ref = (i == 0) ? m_segments[0]->pos : m_segments[i-1]->pos;
+		m_segments[i]->pos = m_field->unwrapCoords(m_segments[i]->pos, ref);
+	}
+
+	// remove the head from the segment list (will be re-added later)
+	std::shared_ptr<Segment> headSegment = m_segments[0];
+	m_segments.erase(m_segments.begin());
+
 	// create multiple segments while boosting
 	std::size_t steps = 1;
 	if(boost) {
@@ -103,12 +120,28 @@ std::size_t Snake::move(float_t targetAngle, bool boost)
 		Vector movementVector(config::SNAKE_DISTANCE_PER_STEP, 0.0f);
 		movementVector.rotate(m_heading * M_PI / 180);
 
-		// create new segment
-		std::shared_ptr<Segment> segment = std::make_shared<Segment>();
-		segment->pos = m_field->wrapCoords(m_segments[0]->pos + movementVector);
+		headSegment->pos += movementVector;
 
-		m_segments.push_front(segment);
+		m_movedSinceLastSpawn += config::SNAKE_DISTANCE_PER_STEP;
+
+		// create new segments, if necessary
+		while(m_movedSinceLastSpawn > m_targetSegmentDistance) {
+			// vector from the first segment to the direction of the head
+			Vector newSegmentOffset = headSegment->pos - m_segments[0]->pos;
+			newSegmentOffset.normalizeToLength(m_targetSegmentDistance);
+
+			m_movedSinceLastSpawn -= m_targetSegmentDistance;
+
+			// create new segment
+			std::shared_ptr<Segment> segment = std::make_shared<Segment>();
+			segment->pos = m_segments[0]->pos + newSegmentOffset;
+
+			m_segments.push_front(segment);
+		}
 	}
+
+	// re-add head
+	m_segments.push_front(headSegment);
 
 	// normalize heading
 	if(m_heading > 180) {
@@ -120,7 +153,19 @@ std::size_t Snake::move(float_t targetAngle, bool boost)
 	// force size to previous size (removes end segments)
 	m_segments.resize(oldSize);
 
-	return steps; // == number of new segments at head
+	// pull-together effect
+	for(std::size_t i = 1; i < m_segments.size()-1; i++) {
+		m_segments[i]->pos =
+			m_segments[i]->pos * (1 - config::SNAKE_PULL_FACTOR) +
+			(m_segments[i+1]->pos * 0.5 + m_segments[i-1]->pos * 0.5) * config::SNAKE_PULL_FACTOR;
+	}
+
+	// wrap coordinates
+	for(std::size_t i = 0; i < m_segments.size(); i++) {
+		m_segments[i]->pos = m_field->wrapCoords(m_segments[i]->pos);
+	}
+
+	return m_segments.size(); // == number of new segments at head
 }
 
 const Snake::SegmentList& Snake::getSegments(void) const

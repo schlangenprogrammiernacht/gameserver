@@ -28,6 +28,12 @@ namespace config {
 	// Distance per normal movement step
 	static const float_t     SNAKE_DISTANCE_PER_STEP = 1.0;
 
+	static const float_t     SNAKE_PULL_FACTOR        = 0.10;
+
+	// segment distance = (mass * factor)^exponent
+	static const float_t     SNAKE_SEGMENT_DISTANCE_FACTOR   = 0.2;
+	static const float_t     SNAKE_SEGMENT_DISTANCE_EXPONENT = 0.3;
+
 	// Distance multiplier for the Snake’s consume range. This is multiplied with
 	// the Snake’s segment radius.
 	static const float_t     SNAKE_CONSUME_RANGE     = 1.0;
@@ -37,5 +43,5 @@ namespace config {
 	static const float_t     FOOD_SIZE_STDDEV        = 2.0;
 
 	// Food decay value per frame
-	static const float_t     FOOD_DECAY_STEP         = 0.010;
+	static const float_t     FOOD_DECAY_STEP         = 0.001;
 }
