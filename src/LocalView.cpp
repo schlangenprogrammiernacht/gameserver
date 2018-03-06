@@ -1,35 +1,40 @@
+#include "Field.h"
+
 #include "LocalView.h"
 
-LocalView::LocalView(Field *field, const Vector &center, float_t radius)
-	: m_field(field), m_center(center), m_radius(radius),
-	  m_mustRecalculateSnakeSegmentInfo(true), m_mustRecalculateFoodInfo(true)
+LocalView::LocalView(const Field *field, const Vector &center, float_t radius)
+	: m_field(field), m_center(center), m_radius(radius)
 {
+}
+
+void LocalView::appendFood(const GlobalView::FoodInfoList &foodInfo)
+{
+	for(auto &f: foodInfo) {
+		// create new element at the end of the list
+		auto elem = m_foodInfo.emplace(m_foodInfo.end());
+
+		elem->pos = m_field->wrapCoords(f.food->getPosition());
+		elem->food = f.food;
+	}
+}
+
+void LocalView::appendSegments(const GlobalView::SnakeSegmentInfoList &segmentInfo)
+{
+	for(auto &s: segmentInfo) {
+		// create new element at the end of the list
+		auto elem = m_segmentInfo.emplace(m_segmentInfo.end());
+
+		elem->pos = m_field->wrapCoords(s.segment->pos);
+		elem->bot = s.bot;
+	}
 }
 
 const LocalView::SnakeSegmentInfoList& LocalView::getSnakeSegments(void)
 {
-	if(!m_mustRecalculateSnakeSegmentInfo) {
-		return m_segmentInfo;
-	}
-
-	// TODO: update segmentInfo
-
 	return m_segmentInfo;
 }
 
 const LocalView::FoodInfoList& LocalView::getFood(void)
 {
-	if(!m_mustRecalculateFoodInfo) {
-		return m_foodInfo;
-	}
-
-	// TODO: update foodInfo
-
 	return m_foodInfo;
-}
-
-void LocalView::forceRecalculation(void)
-{
-	m_mustRecalculateSnakeSegmentInfo = true;
-	m_mustRecalculateFoodInfo = true;
 }

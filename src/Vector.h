@@ -42,17 +42,17 @@ class Vector
 			return *this;
 		}
 
-		Vector operator + (const Vector &delta)
+		Vector operator + (const Vector &delta) const
 		{
 			return Vector(m_x + delta.m_x, m_y + delta.m_y);
 		}
 
-		Vector operator - (const Vector &delta)
+		Vector operator - (const Vector &delta) const
 		{
 			return Vector(m_x - delta.m_x, m_y - delta.m_y);
 		}
 
-		Vector operator * (float_t factor)
+		Vector operator * (float_t factor) const
 		{
 			return Vector(m_x * factor, m_y * factor);
 		}

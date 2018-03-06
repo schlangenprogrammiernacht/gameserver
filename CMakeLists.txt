@@ -15,6 +15,8 @@ set(sources
 	src/Food.h
 	src/Game.cpp
 	src/Game.h
+	src/GlobalView.cpp
+	src/GlobalView.h
 	src/GUIDGenerator.cpp
 	src/GUIDGenerator.h
 	src/IdentifyableObject.cpp

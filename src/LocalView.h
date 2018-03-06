@@ -3,6 +3,8 @@
 #include <memory>
 #include <vector>
 
+#include "GlobalView.h"
+
 #include "Vector.h"
 
 // forward declaration
@@ -37,10 +39,7 @@ class LocalView
 		SnakeSegmentInfoList m_segmentInfo;
 		FoodInfoList m_foodInfo;
 
-		bool m_mustRecalculateSnakeSegmentInfo;
-		bool m_mustRecalculateFoodInfo;
-
-		Field   *m_field;
+		const Field *m_field;
 		Vector   m_center;
 		float_t  m_radius;
 
@@ -52,7 +51,21 @@ class LocalView
 		 * \param center  The center point of the local view.
 		 * \param radius  The radius of the local view.
 		 */
-		LocalView(Field *field, const Vector &center, float_t radius);
+		LocalView(const Field *field, const Vector &center, float_t radius);
+
+		/*!
+		 * Append food extracted from a GlobalView.
+		 *
+		 * \param foodInfo   Food info from the GlobalView.
+		 */
+		void appendFood(const GlobalView::FoodInfoList &foodInfo);
+
+		/*!
+		 * Append segments extracted from a GlobalView.
+		 *
+		 * \param segmentInfo   Segment info from the GlobalView.
+		 */
+		void appendSegments(const GlobalView::SnakeSegmentInfoList &segmentInfo);
 
 		/*!
 		 * Get the snake segment info list.
@@ -79,9 +92,4 @@ class LocalView
 		 * \returns   The list of food items.
 		 */
 		const FoodInfoList& getFood(void);
-
-		/*!
-		 * Clear the caches and recalculate on the next call to any get-method.
-		 */
-		void forceRecalculation(void);
 };

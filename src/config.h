@@ -12,6 +12,9 @@
 
 namespace config {
 
+	// GlobalView grid unit
+	static const float_t     GLOBALVIEW_GRID_UNIT    = 10.0;
+
 	// Field size
 	static const float_t     FIELD_SIZE_X            = 1024;
 	static const float_t     FIELD_SIZE_Y            = 1024;

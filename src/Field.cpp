@@ -140,22 +140,22 @@ void Field::moveAllBots(void)
 	}
 }
 
-const Field::BotSet& Field::getBots(void)
+const Field::BotSet& Field::getBots(void) const
 {
 	return m_bots;
 }
 
-const Field::FoodSet& Field::getStaticFood(void)
+const Field::FoodSet& Field::getStaticFood(void) const
 {
 	return m_staticFood;
 }
 
-const Field::FoodSet& Field::getDynamicFood(void)
+const Field::FoodSet& Field::getDynamicFood(void) const
 {
 	return m_dynamicFood;
 }
 
-Vector Field::wrapCoords(const Vector &v)
+Vector Field::wrapCoords(const Vector &v) const
 {
 	Vector result(v);
 
@@ -178,7 +178,7 @@ Vector Field::wrapCoords(const Vector &v)
 	return result;
 }
 
-Vector Field::unwrapCoords(const Vector &v, const Vector &ref)
+Vector Field::unwrapCoords(const Vector &v, const Vector &ref) const
 {
 	Vector result(v);
 
@@ -256,4 +256,9 @@ void Field::debugVisualization(void)
 	}
 
 	std::cout << std::endl;
+}
+
+Vector Field::getSize(void) const
+{
+	return Vector(m_width, m_height);
 }

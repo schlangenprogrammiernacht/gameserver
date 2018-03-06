@@ -74,17 +74,17 @@ class Field
 		/*!
 		 * Get the set of bots.
 		 */
-		const BotSet& getBots(void);
+		const BotSet& getBots(void) const;
 
 		/*!
 		 * Get the set of static food.
 		 */
-		const FoodSet& getStaticFood(void);
+		const FoodSet& getStaticFood(void) const;
 
 		/*!
 		 * Get the set of dynamic food.
 		 */
-		const FoodSet& getDynamicFood(void);
+		const FoodSet& getDynamicFood(void) const;
 
 		/*!
 		 * Wrap the coordinates of the given vector into the Fields unique area.
@@ -92,7 +92,7 @@ class Field
 		 * \param v    The vector to wrap.
 		 * \returns    A new vector containing the wrapped coordinates.
 		 */
-		Vector wrapCoords(const Vector &v);
+		Vector wrapCoords(const Vector &v) const;
 
 		/*!
 		 * Unwrap the coordinates of the given vector with respect to a reference
@@ -107,10 +107,15 @@ class Field
 		 * \param ref  The reference vector.
 		 * \returns    A new vector containing the unwrapped coordinates.
 		 */
-		Vector unwrapCoords(const Vector &v, const Vector &ref);
+		Vector unwrapCoords(const Vector &v, const Vector &ref) const;
 
 		/*!
 		 * Print a text representation of the field for debugging to stdout.
 		 */
 		void debugVisualization(void);
+
+		/*!
+		 * Get the size of the field.
+		 */
+		Vector getSize(void) const;
 };
