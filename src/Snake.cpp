@@ -205,5 +205,5 @@ bool Snake::canConsume(const std::shared_ptr<Food> &food)
 	}
 
 	// thorough range check
-	return headPos.distanceTo(unwrappedFoodPos) < maxRange;
+	return headPos.squareDistanceTo(unwrappedFoodPos) < (maxRange*maxRange);
 }

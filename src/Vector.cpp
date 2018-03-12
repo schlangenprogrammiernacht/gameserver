@@ -63,3 +63,11 @@ float_t Vector::distanceTo(const Vector &other) const
 	return sqrt(dx*dx + dy*dy);
 }
 
+float_t Vector::squareDistanceTo(const Vector &other) const
+{
+	float_t dx = other.m_x - m_x;
+	float_t dy = other.m_y - m_y;
+
+	return dx*dx + dy*dy;
+}
+

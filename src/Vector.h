@@ -18,6 +18,7 @@ class Vector
 
 		float_t abs(void) const;
 		float_t distanceTo(const Vector &other) const;
+		float_t squareDistanceTo(const Vector &other) const;
 
 		/*!
 		 * \returns    The direction of the vector in degrees.
