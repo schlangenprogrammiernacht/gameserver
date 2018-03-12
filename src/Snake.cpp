@@ -195,14 +195,17 @@ bool Snake::canConsume(const std::shared_ptr<Food> &food)
 	float_t fx = unwrappedFoodPos.x();
 	float_t fy = unwrappedFoodPos.y();
 
-	// quick range check
 	float_t maxRange = m_segmentRadius * config::SNAKE_CONSUME_RANGE;
+
+	// quick range check
+#if 0 // no longer used because of LocalView
 	if(fx > (hx + maxRange) ||
 			fx < (hx - maxRange) ||
 			fy > (hy + maxRange) ||
 			fy < (hy - maxRange)) {
 		return false;
 	}
+#endif
 
 	// thorough range check
 	return headPos.squareDistanceTo(unwrappedFoodPos) < (maxRange*maxRange);

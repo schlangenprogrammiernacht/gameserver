@@ -2,6 +2,8 @@
 #include <vector>
 #include <algorithm>
 
+#include "LocalView.h"
+
 #include "config.h"
 
 #include "Field.h"
@@ -45,6 +47,11 @@ void Field::setupRandomness(void)
 
 	m_headingDistribution =
 		std::make_unique< std::uniform_real_distribution<float_t> >(-180, 180);
+}
+
+void Field::updateGlobalView(void)
+{
+	m_globalView.rebuild(this);
 }
 
 void Field::newBot(const std::string &name)
@@ -98,37 +105,40 @@ void Field::updateFood(void)
 
 void Field::consumeFood(void)
 {
+	// update the global view for faster processing
+	updateGlobalView();
+
 	for(auto &b: m_bots) {
-		// step 1: handle static food.
-		// when static food is consumed, it is recreated at different coordinates
 		std::size_t foodToGenerate = 0;
 
-		auto sfi = m_staticFood.begin();
-		while(sfi != m_staticFood.end()) {
-			if(b->getSnake()->canConsume(*sfi)) {
-				b->getSnake()->consume(*sfi);
-				m_updateTracker->foodConsumed(*sfi, b);
-				sfi = m_staticFood.erase(sfi);
-				foodToGenerate++;
-			} else {
-				sfi++;
+		// create a LocalView for this bot which contains only the food close to
+		// the bot’s head
+		std::shared_ptr<LocalView> localView = m_globalView.extractLocalView(
+				b->getSnake()->getHeadPosition(),
+				b->getSnake()->getSegmentRadius() * config::SNAKE_CONSUME_RANGE);
+
+		const LocalView::FoodInfoList &foodList = localView->getFood();
+
+		// iterate over all food items, check if they can be consumed and if so,
+		// consume it and regenerate it if it was a static food item
+		auto fi = foodList.begin();
+		while(fi != foodList.end()) {
+			if(b->getSnake()->canConsume(fi->food)) {
+				b->getSnake()->consume(fi->food);
+				m_updateTracker->foodConsumed(fi->food, b);
+
+				if(m_staticFood.count(fi->food) > 0) {
+					m_staticFood.erase(fi->food);
+					foodToGenerate++;
+				} else if(m_dynamicFood.count(fi->food) > 0) {
+					m_dynamicFood.erase(fi->food);
+				}
 			}
+
+			fi++;
 		}
 
 		createStaticFood(foodToGenerate);
-
-		// step 2: handle dynamic food
-		// when dynamic food is consumed, it is removed permanently
-		auto dfi = m_dynamicFood.begin();
-		while(dfi != m_dynamicFood.end()) {
-			if(b->getSnake()->canConsume(*dfi)) {
-				b->getSnake()->consume(*dfi);
-				m_updateTracker->foodConsumed(*dfi, b);
-				dfi = m_staticFood.erase(dfi);
-			} else {
-				dfi++;
-			}
-		}
 	}
 }
 

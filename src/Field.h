@@ -5,6 +5,7 @@
 #include <random>
 
 #include "UpdateTracker.h"
+#include "GlobalView.h"
 
 #include "Vector.h"
 #include "Food.h"
@@ -40,8 +41,12 @@ class Field
 
 		std::shared_ptr<UpdateTracker> m_updateTracker;
 
+		GlobalView m_globalView;
+
 		void setupRandomness(void);
 		void createStaticFood(std::size_t count);
+
+		void updateGlobalView(void);
 
 	public:
 		Field(float_t w, float_t h, std::size_t food_parts,
