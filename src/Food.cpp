@@ -16,12 +16,3 @@ bool Food::hasDecayed(void)
 {
 	return m_value <= 0;
 }
-
-bool Food::canBeEatenBy(const std::shared_ptr<Snake> &snake) const
-{
-	const Snake::SegmentList &snakeSegments = snake->getSegments();
-
-	float_t distance = m_pos.distanceTo(snakeSegments[0]->pos);
-
-	return distance < config::SNAKE_EATING_RADIUS;
-}

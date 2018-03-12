@@ -29,8 +29,6 @@ class Food : public IdentifyableObject
 		void decay(void);
 		bool hasDecayed(void);
 
-		bool canBeEatenBy(const std::shared_ptr<Snake> &snake) const;
-
 		const Vector& getPosition() const { return m_pos; }
 		float_t       getValue() const { return m_value; }
 };
