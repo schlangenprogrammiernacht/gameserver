@@ -210,3 +210,12 @@ bool Snake::canConsume(const std::shared_ptr<Food> &food)
 	// thorough range check
 	return headPos.squareDistanceTo(unwrappedFoodPos) < (maxRange*maxRange);
 }
+
+void Snake::convertToFood(void) const
+{
+	float_t foodPerSegment = m_mass / m_segments.size() * config::SNAKE_CONVERSION_FACTOR;
+
+	for(auto &s: m_segments) {
+		m_field->createDynamicFood(foodPerSegment, s->pos, m_segmentRadius);
+	}
+}

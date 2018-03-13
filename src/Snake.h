@@ -91,4 +91,10 @@ class Snake
 		 * Check if this Snake can consume the given Food.
 		 */
 		bool canConsume(const std::shared_ptr<Food> &food);
+
+		/*!
+		 * Convert this Snake to Food. This is normally the last action before the
+		 * Snake is removed from the Field.
+		 */
+		void convertToFood(void) const;
 };

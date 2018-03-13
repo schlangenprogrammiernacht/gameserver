@@ -39,6 +39,15 @@ class Bot : public IdentifyableObject
 		 */
 		std::size_t move(void);
 
+		/*!
+		 * Check collision with any bots on the Field using the Field’s GlobalView
+		 * object.
+		 *
+		 * \returns   The Bot that this Bot collided with or NULL if no collision
+		 *            occurred.
+		 */
+		std::shared_ptr<Bot> checkCollision(void) const;
+
 		std::shared_ptr<Snake> getSnake(void) const;
 
 		const std::string &getName(void) const;

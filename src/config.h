@@ -30,6 +30,9 @@ namespace config {
 
 	static const float_t     SNAKE_PULL_FACTOR        = 0.10;
 
+	// Factor of snake mass to convert to food when snake dies
+	static const float_t     SNAKE_CONVERSION_FACTOR  = 0.50;
+
 	// segment distance = (mass * factor)^exponent
 	static const float_t     SNAKE_SEGMENT_DISTANCE_FACTOR   = 0.2;
 	static const float_t     SNAKE_SEGMENT_DISTANCE_EXPONENT = 0.3;

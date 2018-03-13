@@ -15,7 +15,7 @@ std::size_t GlobalView::hashMapEntryFromVector(const Vector &vec)
 			static_cast<std::size_t>(vec.x() / config::GLOBALVIEW_GRID_UNIT);
 }
 
-void GlobalView::normalizeHashMapCoord(long *coord, std::size_t range)
+void GlobalView::normalizeHashMapCoord(long *coord, std::size_t range) const
 {
 	while(*coord < 0) {
 		*coord += range;
@@ -81,7 +81,7 @@ void GlobalView::rebuild(const Field *field)
 	}
 }
 
-std::shared_ptr<LocalView> GlobalView::extractLocalView(const Vector &center, float_t radius)
+std::shared_ptr<LocalView> GlobalView::extractLocalView(const Vector &center, float_t radius) const
 {
 	if(!m_field) {
 		return NULL;

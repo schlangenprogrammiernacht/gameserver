@@ -28,6 +28,8 @@ class Field
 		float_t m_width;
 		float_t m_height;
 
+		float_t m_maxSegmentRadius;
+
 		BotSet  m_bots;
 		FoodSet m_staticFood; //!< Food placed randomly in the field.
 		FoodSet m_dynamicFood; //!< Food generated dynamically by dying snakes.
@@ -37,7 +39,9 @@ class Field
 		std::unique_ptr< std::normal_distribution<float_t> >       m_foodSizeDistribution;
 		std::unique_ptr< std::uniform_real_distribution<float_t> > m_positionXDistribution;
 		std::unique_ptr< std::uniform_real_distribution<float_t> > m_positionYDistribution;
-		std::unique_ptr< std::uniform_real_distribution<float_t> > m_headingDistribution;
+		std::unique_ptr< std::uniform_real_distribution<float_t> > m_angleDegreesDistribution;
+		std::unique_ptr< std::uniform_real_distribution<float_t> > m_angleRadDistribution;
+		std::unique_ptr< std::uniform_real_distribution<float_t> > m_simple0To1Distribution;
 
 		std::shared_ptr<UpdateTracker> m_updateTracker;
 
@@ -47,6 +51,7 @@ class Field
 		void createStaticFood(std::size_t count);
 
 		void updateGlobalView(void);
+		void updateMaxSegmentRadius(void);
 
 	public:
 		Field(float_t w, float_t h, std::size_t food_parts,
@@ -72,7 +77,7 @@ class Field
 		void consumeFood(void);
 
 		/*!
-		 * Move all bots.
+		 * Move all bots and check collisions.
 		 */
 		void moveAllBots(void);
 
@@ -90,6 +95,18 @@ class Field
 		 * Get the set of dynamic food.
 		 */
 		const FoodSet& getDynamicFood(void) const;
+
+		/*!
+		 * Add dynamic food equally distributed in the given circle.
+		 *
+		 * Every Food item has values according to the config::FOOD_SIZE_MEAN and
+		 * config::FOOD_SIZE_STDDEV constants.
+		 *
+		 * \param totalValue   Total (average) value of the food created.
+		 * \param center       Center of the distribution circle.
+		 * \param radius       Radius of the distribution circle.
+		 */
+		void createDynamicFood(float_t totalValue, const Vector &center, float_t radius);
 
 		/*!
 		 * Wrap the coordinates of the given vector into the Fields unique area.
@@ -123,4 +140,16 @@ class Field
 		 * Get the size of the field.
 		 */
 		Vector getSize(void) const;
+
+		/*!
+		 * Get the global view of the field for fast collision checking.
+		 *
+		 * \returns   A constant reference to the internal GlobalView instance.
+		 */
+		const GlobalView& getGlobalView(void) const;
+
+		/*!
+		 * Get the maximum segment radius of any Snake on the Field.
+		 */
+		float_t getMaxSegmentRadius(void) const;
 };

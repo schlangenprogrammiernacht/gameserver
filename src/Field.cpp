@@ -10,7 +10,8 @@
 
 Field::Field(float_t w, float_t h, std::size_t food_parts,
 				const std::shared_ptr<UpdateTracker> &update_tracker)
-	: m_width(w), m_height(h), m_updateTracker(update_tracker)
+	: m_width(w), m_height(h), m_updateTracker(update_tracker),
+	  m_maxSegmentRadius(0)
 {
 	setupRandomness();
 
@@ -45,8 +46,13 @@ void Field::setupRandomness(void)
 	m_positionYDistribution =
 		std::make_unique< std::uniform_real_distribution<float_t> >(0, m_height);
 
-	m_headingDistribution =
+	m_angleDegreesDistribution =
 		std::make_unique< std::uniform_real_distribution<float_t> >(-180, 180);
+	m_angleRadDistribution =
+		std::make_unique< std::uniform_real_distribution<float_t> >(-M_PI, M_PI);
+
+	m_simple0To1Distribution =
+		std::make_unique< std::uniform_real_distribution<float_t> >(0, 1);
 }
 
 void Field::updateGlobalView(void)
@@ -54,11 +60,24 @@ void Field::updateGlobalView(void)
 	m_globalView.rebuild(this);
 }
 
+void Field::updateMaxSegmentRadius(void)
+{
+	m_maxSegmentRadius = 0;
+
+	for(auto &b: m_bots) {
+		float_t segmentRadius = b->getSnake()->getSegmentRadius();
+
+		if(segmentRadius > m_maxSegmentRadius) {
+			m_maxSegmentRadius = segmentRadius;
+		}
+	}
+}
+
 void Field::newBot(const std::string &name)
 {
 	float_t x = (*m_positionXDistribution)(*m_rndGen);
 	float_t y = (*m_positionYDistribution)(*m_rndGen);
-	float_t heading = (*m_headingDistribution)(*m_rndGen);
+	float_t heading = (*m_angleDegreesDistribution)(*m_rndGen);
 
 	std::shared_ptr<Bot> bot = std::make_shared<Bot>(this, name, Vector(x,y), heading);
 
@@ -96,7 +115,7 @@ void Field::updateFood(void)
 		(*dfi)->decay();
 		if((*dfi)->hasDecayed()) {
 			m_updateTracker->foodDecayed(*dfi);
-			dfi = m_staticFood.erase(dfi);
+			dfi = m_dynamicFood.erase(dfi);
 		} else {
 			dfi++;
 		}
@@ -140,13 +159,35 @@ void Field::consumeFood(void)
 
 		createStaticFood(foodToGenerate);
 	}
+
+	updateMaxSegmentRadius();
 }
 
 void Field::moveAllBots(void)
 {
-	for(auto &b: m_bots) {
-		size_t steps = b->move();
-		m_updateTracker->botMoved(b, steps);
+	auto bi = m_bots.begin();
+	while(bi != m_bots.end()) {
+		size_t steps = (*bi)->move();
+
+		std::shared_ptr<Bot> killer = (*bi)->checkCollision();
+
+		if(killer) {
+			// collision detected, convert the colliding bot to food
+			(*bi)->getSnake()->convertToFood();
+
+			// keep a pointer which can be handed to the update tracker
+			std::shared_ptr<Bot> victim = *bi;
+
+			// remove the bot from the field
+			bi = m_bots.erase(bi);
+
+			m_updateTracker->botKilled(killer, victim);
+		} else {
+			// no collision, bot still alive
+			m_updateTracker->botMoved((*bi), steps);
+
+			bi++;
+		}
 	}
 }
 
@@ -163,6 +204,29 @@ const Field::FoodSet& Field::getStaticFood(void) const
 const Field::FoodSet& Field::getDynamicFood(void) const
 {
 	return m_dynamicFood;
+}
+
+void Field::createDynamicFood(float_t totalValue, const Vector &center, float_t radius)
+{
+	// create at least 1 food item
+	std::size_t count = 1 + totalValue / config::FOOD_SIZE_MEAN;
+
+	for(std::size_t i = 0; i < count; i++) {
+		float_t value = (*m_foodSizeDistribution)(*m_rndGen);
+		float_t x     = (*m_positionXDistribution)(*m_rndGen);
+		float_t y     = (*m_positionYDistribution)(*m_rndGen);
+
+		Vector offset(radius * (*m_simple0To1Distribution)(*m_rndGen), 0);
+		offset.rotate((*m_angleRadDistribution)(*m_rndGen));
+
+		Vector pos = center + offset;
+
+		std::shared_ptr<Food> newFood =
+			std::make_shared<Food>(this, pos, value);
+
+		m_updateTracker->foodSpawned(newFood);
+		m_dynamicFood.insert( newFood );
+	}
 }
 
 Vector Field::wrapCoords(const Vector &v) const
@@ -271,4 +335,14 @@ void Field::debugVisualization(void)
 Vector Field::getSize(void) const
 {
 	return Vector(m_width, m_height);
+}
+
+const GlobalView& Field::getGlobalView(void) const
+{
+	return m_globalView;
+}
+
+float_t Field::getMaxSegmentRadius(void) const
+{
+	return m_maxSegmentRadius;
 }

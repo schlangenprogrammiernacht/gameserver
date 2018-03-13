@@ -1,3 +1,5 @@
+#include "LocalView.h"
+
 #include "Field.h"
 
 #include "Bot.h"
@@ -18,6 +20,44 @@ std::size_t Bot::move(void)
 	}
 
 	return m_snake->move(m_heading); // direction in degrees
+}
+
+std::shared_ptr<Bot> Bot::checkCollision(void) const
+{
+	const GlobalView &globalView = m_field->getGlobalView();
+
+	float_t maxCollisionDistance =
+		m_snake->getSegmentRadius() + m_field->getMaxSegmentRadius();
+
+	Vector headPos = m_snake->getHeadPosition();
+
+	// create a LocalView for this bot which contains only the snake segments
+	// close to the bot’s head
+	std::shared_ptr<LocalView> localView = globalView.extractLocalView(
+			headPos,
+			maxCollisionDistance);
+
+	for(auto &fi: localView->getSnakeSegments()) {
+		if(fi.bot->getGUID() == this->getGUID()) {
+			// prevent self-collision
+			continue;
+		}
+
+		// get actual distance to segment
+		float_t dist = headPos.squareDistanceTo(fi.pos);
+
+		// get maximum distance for collision detection
+		float_t collisionDist =
+			m_snake->getSegmentRadius() + fi.bot->getSnake()->getSegmentRadius();
+		collisionDist *= collisionDist; // square it
+
+		if(dist < collisionDist) {
+			// collision detected!
+			return fi.bot;
+		}
+	}
+
+	return NULL;
 }
 
 std::shared_ptr<Snake> Bot::getSnake(void) const
