@@ -37,7 +37,7 @@ class Snake
 		float_t m_segmentRadius; //!< Segment radius (calculated from m_mass; cached)
 		float_t m_targetSegmentDistance; //!< Distance between the segments
 
-		float_t m_movedSinceLastSpawn; //!< Distance the head has moved since the last spawned segment
+		float_t m_movedSinceLastSpawn = 0; //!< Distance the head has moved since the last spawned segment
 
 		Field *m_field;
 

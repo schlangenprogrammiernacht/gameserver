@@ -221,7 +221,7 @@ void Field::createDynamicFood(float_t totalValue, const Vector &center, float_t 
 		Vector offset(radius * (*m_simple0To1Distribution)(*m_rndGen), 0);
 		offset.rotate((*m_angleRadDistribution)(*m_rndGen));
 
-		Vector pos = center + offset;
+		Vector pos = wrapCoords(center + offset);
 
 		std::shared_ptr<Food> newFood =
 			std::make_shared<Food>(this, pos, value);
