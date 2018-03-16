@@ -181,6 +181,8 @@ void Field::moveAllBots(void)
 			// remove the bot from the field
 			bi = m_bots.erase(bi);
 
+			newBot(victim->getName());
+
 			m_updateTracker->botKilled(killer, victim);
 		} else {
 			// no collision, bot still alive
