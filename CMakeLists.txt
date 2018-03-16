@@ -3,6 +3,8 @@ project (GameServer)
 
 add_subdirectory(lib/TcpServer/TcpServer/)
 
+set(CMAKE_CXX_FLAGS "-Wall -pedantic")
+
 # put all .cpp and .h files into the sources variable
 set(sources
 	src/Bot.cpp
