@@ -1,8 +1,9 @@
-cmake_minimum_required (VERSION 2.6)
-project (GameServer)
+cmake_minimum_required (VERSION 3.2)
+project (GameServer VERSION 0.1 LANGUAGES CXX)
 
-add_subdirectory(lib/TcpServer/TcpServer/)
+add_subdirectory(lib/TcpServer/TcpServer)
 
+set (CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_FLAGS "-Wall -pedantic")
 
 # put all .cpp and .h files into the sources variable
@@ -35,10 +36,20 @@ set(sources
 	src/UpdateTracker.h
 	src/Vector.cpp
 	src/Vector.h
-	)
+)
 
-add_executable(GameServer ${sources})
-target_include_directories(GameServer PUBLIC
+include_directories(
+	${CMAKE_PROJECT_NAME}
+	lib/msgpack-c/include/
 	lib/TcpServer/TcpServer/include/
-	lib/msgpack-c/include/)
-target_link_libraries(GameServer tcpserver)
+)
+
+add_executable(
+	${CMAKE_PROJECT_NAME}
+	${sources}
+)
+
+target_link_libraries(
+	${CMAKE_PROJECT_NAME}
+	tcpserver
+)
