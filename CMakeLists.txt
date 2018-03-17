@@ -40,9 +40,10 @@ set(sources
 
 include_directories(
 	${CMAKE_PROJECT_NAME}
-	lib/sol2
 	lib/msgpack-c/include/
 	lib/TcpServer/TcpServer/include/
+	lib/sol2
+	/usr/include/lua5.3
 )
 
 add_executable(
@@ -53,4 +54,5 @@ add_executable(
 target_link_libraries(
 	${CMAKE_PROJECT_NAME}
 	tcpserver
+	lua5.3
 )
