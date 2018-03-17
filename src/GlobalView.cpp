@@ -114,13 +114,13 @@ std::shared_ptr<LocalView> GlobalView::extractLocalView(const Vector &center, fl
 			localView->appendSegments(m_segmentInfoHashMap[hashMapEntry]);
 
 			y++;
-			if(y > m_hashMapSizeY) {
+			if(y >= m_hashMapSizeY) {
 				y = 0;
 			}
 		}
 
 		x++;
-		if(x > m_hashMapSizeX) {
+		if(x >= m_hashMapSizeX) {
 			x = 0;
 		}
 	}
