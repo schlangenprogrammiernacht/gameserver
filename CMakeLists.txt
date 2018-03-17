@@ -40,6 +40,7 @@ set(sources
 
 include_directories(
 	${CMAKE_PROJECT_NAME}
+	lib/sol2
 	lib/msgpack-c/include/
 	lib/TcpServer/TcpServer/include/
 )
