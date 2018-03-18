@@ -2,13 +2,13 @@
 
 #include <memory>
 #include <string>
-#include <sol.hpp>
 
 #include "IdentifyableObject.h"
 #include "Snake.h"
 #include "types.h"
 
 class Field;
+class LuaBot;
 
 /*!
  * A bot playing this game.
@@ -19,13 +19,11 @@ class Bot : public IdentifyableObject
 		std::string             m_name;
 		Field                  *m_field;
 		std::shared_ptr<Snake>  m_snake;
+		std::unique_ptr<LuaBot> m_lua_bot;
 
 		float_t                 m_heading;
 
 		size_t m_moveCounter;
-
-		sol::state m_lua_state;
-		sol::environment m_lua_safe_env;
 
 	public:
 		/*!
@@ -33,6 +31,7 @@ class Bot : public IdentifyableObject
 		 * field.
 		 */
 		Bot(Field *field, const std::string &name, const Vector &startPos, float_t startHeading);
+		~Bot();
 
 		/*!
 		 * Run the bot's movement code and update the Snake’s position.

@@ -10,6 +10,8 @@ set(CMAKE_CXX_FLAGS "-Wall -pedantic")
 set(sources
 	src/Bot.cpp
 	src/Bot.h
+	src/LuaBot.cpp
+	src/LuaBot.h
 	src/config.h
 	src/debug_funcs.h
 	src/Field.cpp
