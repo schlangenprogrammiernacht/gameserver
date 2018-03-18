@@ -81,13 +81,13 @@ void GlobalView::rebuild(const Field *field)
 	}
 }
 
-std::shared_ptr<LocalView> GlobalView::extractLocalView(const Vector &center, float_t radius) const
+std::unique_ptr<LocalView> GlobalView::extractLocalView(const Vector &center, float_t radius) const
 {
 	if(!m_field) {
-		return NULL;
+		return nullptr;
 	}
 
-	std::shared_ptr<LocalView> localView = std::make_shared<LocalView>(m_field, center, radius);
+	auto localView = std::make_unique<LocalView>(m_field, center, radius);
 
 	long hashMapCenterX = static_cast<long>(center.x() / config::GLOBALVIEW_GRID_UNIT + 0.5f);
 	long hashMapCenterY = static_cast<long>(center.y() / config::GLOBALVIEW_GRID_UNIT + 0.5f);
@@ -126,4 +126,48 @@ std::shared_ptr<LocalView> GlobalView::extractLocalView(const Vector &center, fl
 	}
 
 	return localView;
+}
+
+void GlobalView::findFood(const Vector &center, float_t radius, FoodCallback callback) const
+{
+	long hashMapCenterX = static_cast<long>(center.x() / config::GLOBALVIEW_GRID_UNIT + 0.5f);
+	long hashMapCenterY = static_cast<long>(center.y() / config::GLOBALVIEW_GRID_UNIT + 0.5f);
+	long hashMapDist = static_cast<long>(radius / config::GLOBALVIEW_GRID_UNIT) + 1;
+
+	long hashMapStartX = hashMapCenterX - hashMapDist;
+	long hashMapStartY = hashMapCenterY - hashMapDist;
+	long hashMapEndX   = hashMapCenterX + hashMapDist + 1;
+	long hashMapEndY   = hashMapCenterY + hashMapDist + 1;
+
+	normalizeHashMapCoord(&hashMapStartX, m_hashMapSizeX);
+	normalizeHashMapCoord(&hashMapStartY, m_hashMapSizeY);
+	normalizeHashMapCoord(&hashMapEndX, m_hashMapSizeX);
+	normalizeHashMapCoord(&hashMapEndY, m_hashMapSizeY);
+
+	long x = hashMapStartX;
+	while(x != hashMapEndX) {
+		long y = hashMapStartY;
+		while(y != hashMapEndY) {
+			long hashMapEntry = m_hashMapSizeX * y + x;
+
+			for (auto& item: m_foodInfoHashMap[hashMapEntry])
+			{
+				auto dist = item.food->getPosition() - center;
+				if (dist.abs() <= radius)
+				{
+					callback(dist, item);
+				}
+			}
+
+			y++;
+			if(y >= m_hashMapSizeY) {
+				y = 0;
+			}
+		}
+
+		x++;
+		if(x >= m_hashMapSizeX) {
+			x = 0;
+		}
+	}
 }

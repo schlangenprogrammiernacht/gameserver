@@ -1,11 +1,14 @@
 #pragma once
 #include <sol.hpp>
+#include "LocalView.h"
+
+class Bot;
 
 class LuaBot
 {
 	public:
 		bool init();
-		bool step(float last_heading, float &next_heading, bool &speed);
+		bool step(Bot& bot, float &next_heading, bool &speed);
 
 	private:
 		bool m_initialized = false;

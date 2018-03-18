@@ -21,9 +21,10 @@ Bot::~Bot()
 
 std::size_t Bot::move(void)
 {
-	bool speed;
+	auto localView = createLocalView(20*m_snake->getSegmentRadius());
+	bool boost;
 	float new_heading;
-	if (m_lua_bot->step(m_heading, new_heading, speed))
+	if (m_lua_bot->step(*this, new_heading, boost))
 	{
 		new_heading = fmod(new_heading, 360);
 		if (new_heading<0)
@@ -37,19 +38,11 @@ std::size_t Bot::move(void)
 
 std::shared_ptr<Bot> Bot::checkCollision(void) const
 {
-	const GlobalView &globalView = m_field->getGlobalView();
-
 	float_t maxCollisionDistance =
 		m_snake->getSegmentRadius() + m_field->getMaxSegmentRadius();
 
-	Vector headPos = m_snake->getHeadPosition();
-
-	// create a LocalView for this bot which contains only the snake segments
-	// close to the bot’s head
-	std::shared_ptr<LocalView> localView = globalView.extractLocalView(
-			headPos,
-			maxCollisionDistance);
-
+	auto localView = createLocalView(maxCollisionDistance);
+	auto headPos = m_snake->getHeadPosition();
 	for(auto &fi: localView->getSnakeSegments()) {
 		if(fi.bot->getGUID() == this->getGUID()) {
 			// prevent self-collision
@@ -82,3 +75,14 @@ const std::string& Bot::getName(void) const
 {
 	return m_name;
 }
+
+std::unique_ptr<LocalView> Bot::createLocalView(float_t radius) const
+{
+	return getGlobalView().extractLocalView(m_snake->getHeadPosition(), radius);
+}
+
+const GlobalView &Bot::getGlobalView() const
+{
+	return m_field->getGlobalView();
+}
+

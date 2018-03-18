@@ -2,6 +2,7 @@
 
 #include <memory>
 #include <vector>
+#include <functional>
 
 #include "Snake.h"
 
@@ -33,6 +34,7 @@ class GlobalView
 
 		typedef std::vector<SnakeSegmentInfo> SnakeSegmentInfoList;
 		typedef std::vector<FoodInfo> FoodInfoList;
+		typedef std::function<void(const Vector& relative_pos, const FoodInfo& food)> FoodCallback;
 
 	private:
 		std::vector<SnakeSegmentInfoList> m_segmentInfoHashMap;
@@ -66,5 +68,6 @@ class GlobalView
 		 * \param radius    Radius of the LocalView.
 		 * \returns         A shared pointer to the new LocalView object.
 		 */
-		std::shared_ptr<LocalView> extractLocalView(const Vector &center, float_t radius) const;
+		std::unique_ptr<LocalView> extractLocalView(const Vector &center, float_t radius) const;
+		void findFood(const Vector& center, float_t radius, FoodCallback callback) const;
 };

@@ -9,6 +9,8 @@
 
 class Field;
 class LuaBot;
+class LocalView;
+class GlobalView;
 
 /*!
  * A bot playing this game.
@@ -52,4 +54,14 @@ class Bot : public IdentifyableObject
 		std::shared_ptr<Snake> getSnake(void) const;
 
 		const std::string &getName(void) const;
+
+
+		/*!
+		 * create a LocalView for this bot which contains only the snake segments
+		 * close to the bot’s head
+		 */
+		std::unique_ptr<LocalView> createLocalView(float_t radius) const;
+
+		float_t getHeading() { return m_heading; }
+		const GlobalView& getGlobalView() const;
 };

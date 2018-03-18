@@ -1,4 +1,7 @@
 #include "LuaBot.h"
+#include "Food.h"
+#include "Bot.h"
+#include "Food.h"
 
 bool LuaBot::init()
 {
@@ -19,8 +22,10 @@ bool LuaBot::init()
 	}
 }
 
-bool LuaBot::step(float last_heading, float &next_heading, bool &speed)
+bool LuaBot::step(Bot &bot, float &next_heading, bool &speed)
 {
+	float_t last_heading = bot.getHeading();
+	float_t heading_rad = 2*M_PI * (last_heading / 360.0);
 	next_heading = last_heading;
 	speed = false;
 
@@ -29,10 +34,32 @@ bool LuaBot::step(float last_heading, float &next_heading, bool &speed)
 		return false;
 	}
 
+
+	auto food = m_lua_state.create_table();
+	bot.getGlobalView().findFood(
+		bot.getSnake()->getHeadPosition(),
+		100*bot.getSnake()->getSegmentRadius(),
+		[this, &food, heading_rad](const Vector& pos, const GlobalView::FoodInfo& foodinfo) {
+			float_t direction = atan2(pos.y(), pos.x()) - heading_rad;
+			while (direction<0) { direction += 2*M_PI; }
+			food.add(
+				m_lua_state.create_table_with(
+					"x", pos.x(),
+					"y", pos.y(),
+					"v", foodinfo.food->getValue(),
+					"d", direction,
+					"dist", pos.abs()
+				)
+			);
+		}
+	);
+
 	try
 	{
 		setQuota(1000000, 0.1);
-		next_heading = m_lua_safe_env["step"](last_heading);
+		next_heading = m_lua_safe_env["step"](food);
+		next_heading *= (360.0/2*M_PI);
+		next_heading += last_heading;
 		return true;
 	}
 	catch (const sol::error& e)
@@ -50,6 +77,8 @@ void LuaBot::setQuota(uint32_t num_instructions, double seconds)
 sol::environment LuaBot::createEnvironment()
 {
 	auto env = sol::environment(m_lua_state, sol::create);
+	env["log"] = [](std::string v) { printf("%s\n", v.c_str()); };
+	env["ipairs"] = m_lua_state["ipairs"];
 	env["math"] = createFunctionTable(
 		"math", std::vector<std::string> {
 			"abs", "acos", "asin", "atan", "atan2",
@@ -63,6 +92,11 @@ sol::environment LuaBot::createEnvironment()
 	env["os"] = createFunctionTable(
 		"os", std::vector<std::string> {
 			"clock", "difftime", "time"
+		}
+	);
+	env["string"] = createFunctionTable(
+		"string", std::vector<std::string> {
+			"format", "sub", "upper", "lower"
 		}
 	);
 	return env;
