@@ -32,7 +32,7 @@ bool LuaBot::step(float last_heading, float &next_heading, bool &speed)
 	try
 	{
 		setQuota(1000000, 0.1);
-		next_heading = m_lua_safe_env["run"](last_heading);
+		next_heading = m_lua_safe_env["step"](last_heading);
 		return true;
 	}
 	catch (const sol::error& e)
