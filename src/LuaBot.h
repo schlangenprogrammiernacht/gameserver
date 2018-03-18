@@ -14,5 +14,6 @@ class LuaBot
 
 		void setQuota(uint32_t num_instructions, double seconds);
 		sol::environment createEnvironment();
+		sol::table createFunctionTable(const std::string& obj, const std::vector<std::string>& items);
 
 };

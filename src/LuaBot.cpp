@@ -50,9 +50,25 @@ void LuaBot::setQuota(uint32_t num_instructions, double seconds)
 sol::environment LuaBot::createEnvironment()
 {
 	auto env = sol::environment(m_lua_state, sol::create);
-	env["math"] = m_lua_state.create_table_with(
-		"random", m_lua_state["math"]["random"],
-		"sin", m_lua_state["math"]["sin"]
+	env["math"] = createFunctionTable(
+		"math", std::vector<std::string> {
+			"abs", "acos", "asin", "atan", "atan2",
+			"ceil", "cos", "cosh", "deg", "exp",
+			"floor", "fmod", "frexp", "huge",
+			"ldexp", "log", "log10", "max", "min", "modf",
+			"pi", "pow", "rad", "random",
+			"sin", "sinh", "sqrt", "tan", "tanh"
+		}
 	);
 	return env;
+}
+
+sol::table LuaBot::createFunctionTable(const std::string &obj, const std::vector<std::string> &items)
+{
+	auto table = m_lua_state.create_table();
+	for (auto item: items)
+	{
+		table.set(item, m_lua_state[obj][item]);
+	}
+	return table;
 }
