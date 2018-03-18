@@ -21,8 +21,7 @@ Bot::Bot(Field *field, const std::string &name, const Vector &startPos, float_t 
 
 std::size_t Bot::move(void)
 {
-	m_lua_state.script("set_time_quota(0.1)");
-	m_lua_state.script("set_instruction_quota(1000000)");
+	m_lua_state["set_quota"](1000000, 0.1);
 
 	float_t lua_heading = m_heading;
 	try
