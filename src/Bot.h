@@ -2,11 +2,10 @@
 
 #include <memory>
 #include <string>
+#include <sol.hpp>
 
 #include "IdentifyableObject.h"
-
 #include "Snake.h"
-
 #include "types.h"
 
 class Field;
@@ -24,6 +23,9 @@ class Bot : public IdentifyableObject
 		float_t                 m_heading;
 
 		size_t m_moveCounter;
+
+		sol::state m_lua_state;
+		sol::environment m_lua_safe_env;
 
 	public:
 		/*!

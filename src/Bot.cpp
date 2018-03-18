@@ -11,12 +11,30 @@ Bot::Bot(Field *field, const std::string &name, const Vector &startPos, float_t 
 	m_snake = std::make_shared<Snake>(field, startPos, 5, startHeading);
 
 	m_heading = rand() * 360.0 / RAND_MAX;
+	// TODO: move lua setup out of constructor
+	m_lua_state.open_libraries();
+	m_lua_state.script_file("lua/quota.lua");
+	m_lua_safe_env = sol::environment(m_lua_state, sol::create);
+	m_lua_safe_env["math"] = m_lua_state["math"];
+	m_lua_state.safe_script_file("lua/demobot.lua", m_lua_safe_env);
 }
 
 std::size_t Bot::move(void)
 {
-	if((++m_moveCounter % 200) == 0) {
-		m_heading = rand() * 360.0 / RAND_MAX;
+	m_lua_state.script("set_time_quota(0.1)");
+	m_lua_state.script("set_instruction_quota(1000000)");
+
+	float_t lua_heading = m_heading;
+	try
+	{
+		lua_heading = m_lua_safe_env["run"](m_heading);
+		if (lua_heading<0) { lua_heading += 360; }
+		if (lua_heading>=360) { lua_heading -= 360; }
+		m_heading = lua_heading;
+	}
+	catch (const sol::error& e)
+	{
+		printf("script aborted: %s\n", e.what());
 	}
 
 	return m_snake->move(m_heading); // direction in degrees

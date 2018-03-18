@@ -56,3 +56,6 @@ target_link_libraries(
 	tcpserver
 	lua5.3
 )
+
+configure_file("lua/demobot.lua" "lua/demobot.lua" COPYONLY)
+configure_file("lua/quota.lua" "lua/quota.lua" COPYONLY)
