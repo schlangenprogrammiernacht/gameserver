@@ -60,6 +60,11 @@ sol::environment LuaBot::createEnvironment()
 			"sin", "sinh", "sqrt", "tan", "tanh"
 		}
 	);
+	env["os"] = createFunctionTable(
+		"os", std::vector<std::string> {
+			"clock", "difftime", "time"
+		}
+	);
 	return env;
 }
 
