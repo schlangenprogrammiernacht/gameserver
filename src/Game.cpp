@@ -85,7 +85,7 @@ bool Game::OnTimerInterval()
 	// do all the game logic here and send updates to clients
 
 	static uint32_t frameNumber = 0;
-	std::cout << "Frame number #" << frameNumber++ << std::endl;
+	//std::cout << "Frame number #" << frameNumber++ << std::endl;
 
 	m_field->updateFood();
 	m_field->consumeFood();

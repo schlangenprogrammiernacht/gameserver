@@ -34,14 +34,17 @@ bool LuaBot::step(Bot &bot, float &next_heading, bool &speed)
 		return false;
 	}
 
-
 	auto food = m_lua_state.create_table();
+	auto pos = bot.getSnake()->getHeadPosition();
+	auto radius = 20.0*bot.getSnake()->getSegmentRadius();
+
 	bot.getGlobalView().findFood(
-		bot.getSnake()->getHeadPosition(),
-		100*bot.getSnake()->getSegmentRadius(),
+		pos,
+		radius,
 		[this, &food, heading_rad](const Vector& pos, const GlobalView::FoodInfo& foodinfo) {
 			float_t direction = atan2(pos.y(), pos.x()) - heading_rad;
 			while (direction<0) { direction += 2*M_PI; }
+			while (direction>2*M_PI) { direction -= 2*M_PI; }
 			food.add(
 				m_lua_state.create_table_with(
 					"x", pos.x(),
@@ -58,7 +61,7 @@ bool LuaBot::step(Bot &bot, float &next_heading, bool &speed)
 	{
 		setQuota(1000000, 0.1);
 		next_heading = m_lua_safe_env["step"](food);
-		next_heading *= (360.0/2*M_PI);
+		next_heading = 180 * (next_heading / M_PI);
 		next_heading += last_heading;
 		return true;
 	}
@@ -78,7 +81,14 @@ sol::environment LuaBot::createEnvironment()
 {
 	auto env = sol::environment(m_lua_state, sol::create);
 	env["log"] = [](std::string v) { printf("%s\n", v.c_str()); };
-	env["ipairs"] = m_lua_state["ipairs"];
+
+	for (auto& func: std::vector<std::string>{
+		"assert", "print", "ipairs", "error", "next", "pairs", "pcall", "select",
+		"tonumber", "tostring", "type", "unpack", "_VERSION", "xpcall"
+	})
+	{
+		env[func] = m_lua_state[func];
+	}
 	env["math"] = createFunctionTable(
 		"math", std::vector<std::string> {
 			"abs", "acos", "asin", "atan", "atan2",
