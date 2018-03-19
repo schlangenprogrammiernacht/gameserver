@@ -9,7 +9,7 @@
 
 // Private methods
 
-std::size_t GlobalView::hashMapEntryFromVector(const Vector &vec)
+std::size_t GlobalView::hashMapEntryFromVector2D(const Vector2D &vec)
 {
 	return m_hashMapSizeX * static_cast<std::size_t>(vec.y() / config::GLOBALVIEW_GRID_UNIT) +
 			static_cast<std::size_t>(vec.x() / config::GLOBALVIEW_GRID_UNIT);
@@ -51,7 +51,7 @@ void GlobalView::rebuild(const Field *field)
 	m_segmentInfoHashMap.resize(elements);
 
 	for(auto &f : field->getStaticFood()) {
-		std::size_t hashMapEntry = hashMapEntryFromVector(f->getPosition());
+		std::size_t hashMapEntry = hashMapEntryFromVector2D(f->getPosition());
 
 		auto elem = m_foodInfoHashMap[hashMapEntry].emplace(
 				m_foodInfoHashMap[hashMapEntry].end());
@@ -60,7 +60,7 @@ void GlobalView::rebuild(const Field *field)
 	}
 
 	for(auto &f : field->getDynamicFood()) {
-		std::size_t hashMapEntry = hashMapEntryFromVector(f->getPosition());
+		std::size_t hashMapEntry = hashMapEntryFromVector2D(f->getPosition());
 
 		auto elem = m_foodInfoHashMap[hashMapEntry].emplace(
 				m_foodInfoHashMap[hashMapEntry].end());
@@ -70,7 +70,7 @@ void GlobalView::rebuild(const Field *field)
 
 	for(auto &b : field->getBots()) {
 		for(auto &s : b->getSnake()->getSegments()) {
-			std::size_t hashMapEntry = hashMapEntryFromVector(s->pos);
+			std::size_t hashMapEntry = hashMapEntryFromVector2D(s->pos);
 
 			auto elem = m_segmentInfoHashMap[hashMapEntry].emplace(
 					m_segmentInfoHashMap[hashMapEntry].end());
@@ -81,7 +81,7 @@ void GlobalView::rebuild(const Field *field)
 	}
 }
 
-std::shared_ptr<LocalView> GlobalView::extractLocalView(const Vector &center, float_t radius) const
+std::shared_ptr<LocalView> GlobalView::extractLocalView(const Vector2D &center, float_t radius) const
 {
 	if(!m_field) {
 		return NULL;

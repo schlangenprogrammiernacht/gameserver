@@ -26,7 +26,7 @@ void Field::createStaticFood(std::size_t count)
 		float_t y     = (*m_positionYDistribution)(*m_rndGen);
 
 		std::shared_ptr<Food> newFood =
-			std::make_shared<Food>(this, Vector(x, y), value);
+			std::make_shared<Food>(this, Vector2D(x, y), value);
 
 		m_updateTracker->foodSpawned(newFood);
 		m_staticFood.insert( newFood );
@@ -79,7 +79,7 @@ void Field::newBot(const std::string &name)
 	float_t y = (*m_positionYDistribution)(*m_rndGen);
 	float_t heading = (*m_angleDegreesDistribution)(*m_rndGen);
 
-	std::shared_ptr<Bot> bot = std::make_shared<Bot>(this, name, Vector(x,y), heading);
+	std::shared_ptr<Bot> bot = std::make_shared<Bot>(this, name, Vector2D(x,y), heading);
 
 	std::cerr << "Created Bot with ID " << bot->getGUID() << std::endl;
 
@@ -208,7 +208,7 @@ const Field::FoodSet& Field::getDynamicFood(void) const
 	return m_dynamicFood;
 }
 
-void Field::createDynamicFood(float_t totalValue, const Vector &center, float_t radius)
+void Field::createDynamicFood(float_t totalValue, const Vector2D &center, float_t radius)
 {
 	// create at least 1 food item
 	std::size_t count = 1 + totalValue / config::FOOD_SIZE_MEAN;
@@ -218,10 +218,11 @@ void Field::createDynamicFood(float_t totalValue, const Vector &center, float_t 
 		float_t x     = (*m_positionXDistribution)(*m_rndGen);
 		float_t y     = (*m_positionYDistribution)(*m_rndGen);
 
-		Vector offset(radius * (*m_simple0To1Distribution)(*m_rndGen), 0);
-		offset.rotate((*m_angleRadDistribution)(*m_rndGen));
+		float_t rndRadius = radius * (*m_simple0To1Distribution)(*m_rndGen);
+		float_t rndAngle = (*m_angleRadDistribution)(*m_rndGen);
+		Vector2D offset(cos(rndRadius), sin(rndRadius));
 
-		Vector pos = wrapCoords(center + offset);
+		Vector2D pos = wrapCoords(center + offset);
 
 		std::shared_ptr<Food> newFood =
 			std::make_shared<Food>(this, pos, value);
@@ -231,50 +232,52 @@ void Field::createDynamicFood(float_t totalValue, const Vector &center, float_t 
 	}
 }
 
-Vector Field::wrapCoords(const Vector &v) const
+Vector2D Field::wrapCoords(const Vector2D &v) const
 {
-	Vector result(v);
+	float_t x = v.x();
+	float_t y = v.y();
 
-	while(result.x() < 0) {
-		result.set_x(result.x() + m_width);
+	while(x < 0) {
+		x += m_width;
 	}
 
-	while(result.x() > m_width) {
-		result.set_x(result.x() - m_width);
+	while(x > m_width) {
+		x -= m_width;
 	}
 
-	while(result.y() < 0) {
-		result.set_y(result.y() + m_height);
+	while(y < 0) {
+		y += m_height;
 	}
 
-	while(result.y() > m_height) {
-		result.set_y(result.y() - m_height);
+	while(y > m_height) {
+		y -= m_height;
 	}
 
-	return result;
+	return {x, y};
 }
 
-Vector Field::unwrapCoords(const Vector &v, const Vector &ref) const
+Vector2D Field::unwrapCoords(const Vector2D &v, const Vector2D &ref) const
 {
-	Vector result(v);
+	float_t x = v.x();
+	float_t y = v.y();
 
-	while((result.x() - ref.x()) < -m_width/2) {
-		result.set_x(result.x() + m_width);
+	while((x - ref.x()) < -m_width/2) {
+		x += m_width;
 	}
 
-	while((result.x() - ref.x()) > m_width/2) {
-		result.set_x(result.x() - m_width);
+	while((x - ref.x()) > m_width/2) {
+		x -= m_width;
 	}
 
-	while((result.y() - ref.y()) < -m_height/2) {
-		result.set_y(result.y() + m_height);
+	while((y - ref.y()) < -m_height/2) {
+		y += m_height;
 	}
 
-	while((result.y() - ref.y()) > m_height/2) {
-		result.set_y(result.y() - m_height);
+	while((y - ref.y()) > m_height/2) {
+		y -= m_height;
 	}
 
-	return result;
+	return {x, y};
 }
 
 void Field::debugVisualization(void)
@@ -289,7 +292,7 @@ void Field::debugVisualization(void)
 
 	// draw food
 	for(auto &f: m_staticFood) {
-		const Vector &pos = f->getPosition();
+		const Vector2D &pos = f->getPosition();
 
 		char c;
 
@@ -334,9 +337,9 @@ void Field::debugVisualization(void)
 	std::cout << std::endl;
 }
 
-Vector Field::getSize(void) const
+Vector2D Field::getSize(void) const
 {
-	return Vector(m_width, m_height);
+	return Vector2D(m_width, m_height);
 }
 
 const GlobalView& Field::getGlobalView(void) const

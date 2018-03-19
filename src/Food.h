@@ -17,18 +17,18 @@ class Food : public IdentifyableObject
 {
 	private:
 		Field   *m_field;
-		Vector   m_pos;
+		Vector2D   m_pos;
 		float_t  m_value;
 
 	public:
 		/*!
 		 * Creates a new food pice at the given position and of the given value.
 		 */
-		Food(Field *field, const Vector &pos, float_t value);
+		Food(Field *field, const Vector2D &pos, float_t value);
 
 		void decay(void);
 		bool hasDecayed(void);
 
-		const Vector& getPosition() const { return m_pos; }
+		const Vector2D& getPosition() const { return m_pos; }
 		float_t       getValue() const { return m_value; }
 };

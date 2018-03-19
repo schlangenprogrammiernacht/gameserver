@@ -30,7 +30,7 @@ class Bot : public IdentifyableObject
 		 * Creates a new bot identified by the given name on the given playing
 		 * field.
 		 */
-		Bot(Field *field, const std::string &name, const Vector &startPos, float_t startHeading);
+		Bot(Field *field, const std::string &name, const Vector2D &startPos, float_t startHeading);
 
 		/*!
 		 * Run the bot's movement code and update the Snake’s position.
