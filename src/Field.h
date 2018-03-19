@@ -28,7 +28,7 @@ class Field
 		float_t m_width;
 		float_t m_height;
 
-		float_t m_maxSegmentRadius;
+		float_t m_maxSegmentRadius = 0;
 
 		BotSet  m_bots;
 		FoodSet m_staticFood; //!< Food placed randomly in the field.

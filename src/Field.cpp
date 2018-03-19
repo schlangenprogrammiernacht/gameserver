@@ -10,8 +10,7 @@
 
 Field::Field(float_t w, float_t h, std::size_t food_parts,
 				const std::shared_ptr<UpdateTracker> &update_tracker)
-	: m_width(w), m_height(h), m_updateTracker(update_tracker),
-	  m_maxSegmentRadius(0)
+	: m_width(w), m_height(h), m_updateTracker(update_tracker)
 {
 	setupRandomness();
 
@@ -215,12 +214,12 @@ void Field::createDynamicFood(float_t totalValue, const Vector2D &center, float_
 
 	for(std::size_t i = 0; i < count; i++) {
 		float_t value = (*m_foodSizeDistribution)(*m_rndGen);
-		float_t x     = (*m_positionXDistribution)(*m_rndGen);
-		float_t y     = (*m_positionYDistribution)(*m_rndGen);
 
 		float_t rndRadius = radius * (*m_simple0To1Distribution)(*m_rndGen);
 		float_t rndAngle = (*m_angleRadDistribution)(*m_rndGen);
-		Vector2D offset(cos(rndRadius), sin(rndRadius));
+
+		Vector2D offset(cos(rndAngle), sin(rndAngle));
+		offset *= rndRadius;
 
 		Vector2D pos = wrapCoords(center + offset);
 

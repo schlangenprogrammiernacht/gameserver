@@ -190,26 +190,11 @@ bool Snake::canConsume(const std::shared_ptr<Food> &food)
 	const Vector2D &headPos = m_segments[0]->pos;
 	const Vector2D &foodPos = food->getPosition();
 
-	float_t hx = headPos.x();
-	float_t hy = headPos.y();
-
 	Vector2D unwrappedFoodPos = m_field->unwrapCoords(foodPos, headPos);
-	float_t fx = unwrappedFoodPos.x();
-	float_t fy = unwrappedFoodPos.y();
 
 	float_t maxRange = m_segmentRadius * config::SNAKE_CONSUME_RANGE;
 
-	// quick range check
-#if 0 // no longer used because of LocalView
-	if(fx > (hx + maxRange) ||
-			fx < (hx - maxRange) ||
-			fy > (hy + maxRange) ||
-			fy < (hy - maxRange)) {
-		return false;
-	}
-#endif
-
-	// thorough range check
+	// range check
 	return (headPos - unwrappedFoodPos).squaredNorm() < (maxRange*maxRange);
 }
 

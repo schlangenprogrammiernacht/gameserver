@@ -45,7 +45,7 @@ class GlobalView
 
 		std::size_t hashMapEntryFromVector2D(const Vector2D &vec);
 
-		void normalizeHashMapCoord(long *coord, std::size_t range) const;
+		void normalizeHashMapCoord(long *coord, long range) const;
 
 	public:
 		/*!

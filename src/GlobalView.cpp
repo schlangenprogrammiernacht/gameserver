@@ -15,7 +15,7 @@ std::size_t GlobalView::hashMapEntryFromVector2D(const Vector2D &vec)
 			static_cast<std::size_t>(vec.x() / config::GLOBALVIEW_GRID_UNIT);
 }
 
-void GlobalView::normalizeHashMapCoord(long *coord, std::size_t range) const
+void GlobalView::normalizeHashMapCoord(long *coord, long range) const
 {
 	while(*coord < 0) {
 		*coord += range;
@@ -99,10 +99,10 @@ std::shared_ptr<LocalView> GlobalView::extractLocalView(const Vector2D &center, 
 	long hashMapEndX   = hashMapCenterX + hashMapDist + 1;
 	long hashMapEndY   = hashMapCenterY + hashMapDist + 1;
 
-	normalizeHashMapCoord(&hashMapStartX, m_hashMapSizeX);
-	normalizeHashMapCoord(&hashMapStartY, m_hashMapSizeY);
-	normalizeHashMapCoord(&hashMapEndX, m_hashMapSizeX);
-	normalizeHashMapCoord(&hashMapEndY, m_hashMapSizeY);
+	normalizeHashMapCoord(&hashMapStartX, static_cast<long>(m_hashMapSizeX));
+	normalizeHashMapCoord(&hashMapStartY, static_cast<long>(m_hashMapSizeY));
+	normalizeHashMapCoord(&hashMapEndX, static_cast<long>(m_hashMapSizeX));
+	normalizeHashMapCoord(&hashMapEndY, static_cast<long>(m_hashMapSizeY));
 
 	long x = hashMapStartX;
 	while(x != hashMapEndX) {
@@ -114,13 +114,13 @@ std::shared_ptr<LocalView> GlobalView::extractLocalView(const Vector2D &center, 
 			localView->appendSegments(m_segmentInfoHashMap[hashMapEntry]);
 
 			y++;
-			if(y >= m_hashMapSizeY) {
+			if(y >= static_cast<long>(m_hashMapSizeY)) {
 				y = 0;
 			}
 		}
 
 		x++;
-		if(x >= m_hashMapSizeX) {
+		if(x >= static_cast<long>(m_hashMapSizeX)) {
 			x = 0;
 		}
 	}

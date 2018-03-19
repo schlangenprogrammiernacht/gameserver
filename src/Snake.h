@@ -28,16 +28,16 @@ class Snake
 		 */
 		SegmentList m_segments;
 
-		float_t m_heading; //!< Heading of the snake in degrees (-180°..180°) from x axis
+		Field *m_field;
 
 		float_t m_mass; //!< Mass (length) of the snake
+
+		float_t m_heading; //!< Heading of the snake in degrees (-180°..180°) from x axis
 
 		float_t m_segmentRadius; //!< Segment radius (calculated from m_mass; cached)
 		float_t m_targetSegmentDistance; //!< Distance between the segments
 
 		float_t m_movedSinceLastSpawn = 0; //!< Distance the head has moved since the last spawned segment
-
-		Field *m_field;
 
 		float_t maxRotationPerStep(void);
 
