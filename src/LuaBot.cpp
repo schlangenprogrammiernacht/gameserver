@@ -34,18 +34,20 @@ bool LuaBot::step(Bot &bot, float &next_heading, bool &speed)
 		return false;
 	}
 
-	auto food = m_lua_state.create_table();
 	auto pos = bot.getSnake()->getHeadPosition();
 	auto radius = 50+15.0*bot.getSnake()->getSegmentRadius();
+
+	std::vector<sol::table> foodVector;
+	foodVector.reserve(1000);
 
 	bot.getGlobalView().findFood(
 		pos,
 		radius,
-		[this, &food, heading_rad](const Vector& pos, const GlobalView::FoodInfo& foodinfo) {
+		[this, &foodVector, heading_rad](const Vector& pos, const GlobalView::FoodInfo& foodinfo) {
 			float_t direction = atan2(pos.y(), pos.x()) - heading_rad;
 			while (direction<0) { direction += 2*M_PI; }
 			while (direction>2*M_PI) { direction -= 2*M_PI; }
-			food.add(
+			foodVector.push_back(
 				m_lua_state.create_table_with(
 					"x", pos.x(),
 					"y", pos.y(),
@@ -60,7 +62,7 @@ bool LuaBot::step(Bot &bot, float &next_heading, bool &speed)
 	try
 	{
 		setQuota(1000000, 0.1);
-		next_heading = m_lua_safe_env["step"](food);
+		next_heading = m_lua_safe_env["step"](foodVector);
 		next_heading = 180 * (next_heading / M_PI);
 		next_heading += last_heading;
 		return true;
