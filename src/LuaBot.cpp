@@ -36,7 +36,7 @@ bool LuaBot::step(Bot &bot, float &next_heading, bool &speed)
 
 	auto food = m_lua_state.create_table();
 	auto pos = bot.getSnake()->getHeadPosition();
-	auto radius = 20.0*bot.getSnake()->getSegmentRadius();
+	auto radius = 50+15.0*bot.getSnake()->getSegmentRadius();
 
 	bot.getGlobalView().findFood(
 		pos,

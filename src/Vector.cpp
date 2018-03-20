@@ -27,6 +27,11 @@ float_t Vector::abs(void) const
 	return sqrt(m_x*m_x + m_y*m_y);
 }
 
+float_t Vector::squaredAbs() const
+{
+	return m_x*m_x + m_y*m_y;
+}
+
 void Vector::rotate(float_t phi)
 {
 	float_t cosphi = cos(phi);

@@ -17,6 +17,7 @@ class Vector
 		Vector(const Vector &v);
 
 		float_t abs(void) const;
+		float_t squaredAbs(void) const;
 		float_t distanceTo(const Vector &other) const;
 		float_t squareDistanceTo(const Vector &other) const;
 
