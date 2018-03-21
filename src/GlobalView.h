@@ -25,10 +25,15 @@ class GlobalView
 		struct SnakeSegmentInfo {
 			std::shared_ptr<Snake::Segment> segment; //!< Pointer to the segment
 			std::shared_ptr<Bot> bot; //!< The bot this segment belongs to
+
+			SnakeSegmentInfo(const std::shared_ptr<Snake::Segment> &s, const std::shared_ptr<Bot> &b)
+				: segment(s), bot(b) {}
 		};
 
 		struct FoodInfo {
 			std::shared_ptr<Food> food;
+
+			FoodInfo(const std::shared_ptr<Food> &f) : food(f) {}
 		};
 
 		typedef std::vector<SnakeSegmentInfo> SnakeSegmentInfoList;
