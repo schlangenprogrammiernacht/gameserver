@@ -4,7 +4,7 @@
 
 #include "Bot.h"
 
-Bot::Bot(Field *field, const std::string &name, const Vector &startPos, float_t startHeading)
+Bot::Bot(Field *field, const std::string &name, const Vector2D &startPos, float_t startHeading)
 	: m_name(name), m_field(field), m_moveCounter(0)
 {
 	// TODO: random start coordinates
@@ -29,7 +29,7 @@ std::shared_ptr<Bot> Bot::checkCollision(void) const
 	float_t maxCollisionDistance =
 		m_snake->getSegmentRadius() + m_field->getMaxSegmentRadius();
 
-	Vector headPos = m_snake->getHeadPosition();
+	Vector2D headPos = m_snake->getHeadPosition();
 
 	// create a LocalView for this bot which contains only the snake segments
 	// close to the bot’s head
@@ -44,7 +44,7 @@ std::shared_ptr<Bot> Bot::checkCollision(void) const
 		}
 
 		// get actual distance to segment
-		float_t dist = headPos.squareDistanceTo(fi.pos);
+		float_t dist = (headPos - fi.pos).squaredNorm();
 
 		// get maximum distance for collision detection
 		float_t collisionDist =

@@ -3,8 +3,6 @@
 #include <deque>
 #include <memory>
 
-#include "Vector.h"
-
 #include "types.h"
 
 // forward declaration
@@ -18,7 +16,7 @@ class Snake
 {
 	public:
 		struct Segment {
-			Vector pos;
+			Vector2D pos;
 			// more stuff like color?
 		};
 
@@ -54,7 +52,7 @@ class Snake
 		 */
 		Snake(Field *field);
 
-		Snake(Field *field, const Vector &start_pos, float_t start_mass,
+		Snake(Field *field, const Vector2D &start_pos, float_t start_mass,
 				float_t start_heading);
 
 		/*!
@@ -80,7 +78,7 @@ class Snake
 		 * Get the Snake's head position. This is a shortcut for getting the
 		 * position of the first segment.
 		 */
-		const Vector& getHeadPosition(void) const;
+		const Vector2D& getHeadPosition(void) const;
 
 		/*!
 		 * Get the current segment radius.
