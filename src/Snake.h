@@ -3,8 +3,6 @@
 #include <deque>
 #include <memory>
 
-#include "Vector.h"
-
 #include "types.h"
 
 // forward declaration
@@ -18,7 +16,7 @@ class Snake
 {
 	public:
 		struct Segment {
-			Vector pos;
+			Vector2D pos;
 			// more stuff like color?
 		};
 
@@ -30,16 +28,16 @@ class Snake
 		 */
 		SegmentList m_segments;
 
-		float_t m_heading; //!< Heading of the snake in degrees (-180°..180°) from x axis
+		Field *m_field;
 
 		float_t m_mass; //!< Mass (length) of the snake
+
+		float_t m_heading; //!< Heading of the snake in degrees (-180°..180°) from x axis
 
 		float_t m_segmentRadius; //!< Segment radius (calculated from m_mass; cached)
 		float_t m_targetSegmentDistance; //!< Distance between the segments
 
 		float_t m_movedSinceLastSpawn = 0; //!< Distance the head has moved since the last spawned segment
-
-		Field *m_field;
 
 		float_t maxRotationPerStep(void);
 
@@ -54,7 +52,7 @@ class Snake
 		 */
 		Snake(Field *field);
 
-		Snake(Field *field, const Vector &start_pos, float_t start_mass,
+		Snake(Field *field, const Vector2D &start_pos, float_t start_mass,
 				float_t start_heading);
 
 		/*!
@@ -80,7 +78,7 @@ class Snake
 		 * Get the Snake's head position. This is a shortcut for getting the
 		 * position of the first segment.
 		 */
-		const Vector& getHeadPosition(void) const;
+		const Vector2D& getHeadPosition(void) const;
 
 		/*!
 		 * Get the current segment radius.

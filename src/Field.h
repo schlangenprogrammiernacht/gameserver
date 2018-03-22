@@ -7,7 +7,7 @@
 #include "UpdateTracker.h"
 #include "GlobalView.h"
 
-#include "Vector.h"
+#include "types.h"
 #include "Food.h"
 #include "Bot.h"
 
@@ -28,7 +28,7 @@ class Field
 		float_t m_width;
 		float_t m_height;
 
-		float_t m_maxSegmentRadius;
+		float_t m_maxSegmentRadius = 0;
 
 		BotSet  m_bots;
 		FoodSet m_staticFood; //!< Food placed randomly in the field.
@@ -106,7 +106,7 @@ class Field
 		 * \param center       Center of the distribution circle.
 		 * \param radius       Radius of the distribution circle.
 		 */
-		void createDynamicFood(float_t totalValue, const Vector &center, float_t radius);
+		void createDynamicFood(float_t totalValue, const Vector2D &center, float_t radius);
 
 		/*!
 		 * Wrap the coordinates of the given vector into the Fields unique area.
@@ -114,7 +114,7 @@ class Field
 		 * \param v    The vector to wrap.
 		 * \returns    A new vector containing the wrapped coordinates.
 		 */
-		Vector wrapCoords(const Vector &v) const;
+		Vector2D wrapCoords(const Vector2D &v) const;
 
 		/*!
 		 * Unwrap the coordinates of the given vector with respect to a reference
@@ -129,7 +129,7 @@ class Field
 		 * \param ref  The reference vector.
 		 * \returns    A new vector containing the unwrapped coordinates.
 		 */
-		Vector unwrapCoords(const Vector &v, const Vector &ref) const;
+		Vector2D unwrapCoords(const Vector2D &v, const Vector2D &ref) const;
 
 		/*!
 		 * Print a text representation of the field for debugging to stdout.
@@ -139,7 +139,7 @@ class Field
 		/*!
 		 * Get the size of the field.
 		 */
-		Vector getSize(void) const;
+		Vector2D getSize(void) const;
 
 		/*!
 		 * Get the global view of the field for fast collision checking.

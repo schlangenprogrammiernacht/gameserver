@@ -43,7 +43,7 @@ bool LuaBot::step(Bot &bot, float &next_heading, bool &speed)
 	bot.getGlobalView().findFood(
 		pos,
 		radius,
-		[this, &foodVector, heading_rad](const Vector& pos, const GlobalView::FoodInfo& foodinfo) {
+		[this, &foodVector, heading_rad](const Vector2D& pos, const GlobalView::FoodInfo& foodinfo) {
 			float_t direction = atan2(pos.y(), pos.x()) - heading_rad;
 			while (direction<0) { direction += 2*M_PI; }
 			while (direction>2*M_PI) { direction -= 2*M_PI; }
@@ -53,7 +53,7 @@ bool LuaBot::step(Bot &bot, float &next_heading, bool &speed)
 					"y", pos.y(),
 					"v", foodinfo.food->getValue(),
 					"d", direction,
-					"dist", pos.abs()
+					"dist", pos.norm()
 				)
 			);
 		}

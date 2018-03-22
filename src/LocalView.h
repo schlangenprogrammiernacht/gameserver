@@ -5,7 +5,7 @@
 
 #include "GlobalView.h"
 
-#include "Vector.h"
+#include "types.h"
 
 // forward declaration
 class Field;
@@ -23,12 +23,12 @@ class LocalView
 {
 	public:
 		struct SnakeSegmentInfo {
-			Vector pos; //!< Unwrapped coordinates
+			Vector2D pos; //!< Unwrapped coordinates
 			std::shared_ptr<Bot> bot; //!< The bot this segment belongs to
 		};
 
 		struct FoodInfo {
-			Vector pos; //!< Unwrapped coordinates
+			Vector2D pos; //!< Unwrapped coordinates
 			std::shared_ptr<Food> food;
 		};
 
@@ -40,7 +40,7 @@ class LocalView
 		FoodInfoList m_foodInfo;
 
 		const Field *m_field;
-		Vector   m_center;
+		Vector2D   m_center;
 		float_t  m_radius;
 
 	public:
@@ -51,7 +51,7 @@ class LocalView
 		 * \param center  The center point of the local view.
 		 * \param radius  The radius of the local view.
 		 */
-		LocalView(const Field *field, const Vector &center, float_t radius);
+		LocalView(const Field *field, const Vector2D &center, float_t radius);
 
 		/*!
 		 * Append food extracted from a GlobalView.

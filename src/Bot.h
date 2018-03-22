@@ -27,12 +27,18 @@ class Bot : public IdentifyableObject
 
 		size_t m_moveCounter;
 
+		/*!
+		 * create a LocalView for this bot which contains only the snake segments
+		 * close to the bot’s head
+		 */
+		std::shared_ptr<LocalView> createLocalView(float_t radius) const;
+
 	public:
 		/*!
 		 * Creates a new bot identified by the given name on the given playing
 		 * field.
 		 */
-		Bot(Field *field, const std::string &name, const Vector &startPos, float_t startHeading);
+		Bot(Field *field, const std::string &name, const Vector2D &startPos, float_t startHeading);
 		~Bot();
 
 		/*!
@@ -55,13 +61,7 @@ class Bot : public IdentifyableObject
 
 		const std::string &getName(void) const;
 
-
-		/*!
-		 * create a LocalView for this bot which contains only the snake segments
-		 * close to the bot’s head
-		 */
-		std::unique_ptr<LocalView> createLocalView(float_t radius) const;
-
 		float_t getHeading() { return m_heading; }
-		const GlobalView& getGlobalView() const;
+
+		const GlobalView &getGlobalView() const;
 };

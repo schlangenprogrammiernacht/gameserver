@@ -26,15 +26,20 @@ class GlobalView
 		struct SnakeSegmentInfo {
 			std::shared_ptr<Snake::Segment> segment; //!< Pointer to the segment
 			std::shared_ptr<Bot> bot; //!< The bot this segment belongs to
+
+			SnakeSegmentInfo(const std::shared_ptr<Snake::Segment> &s, const std::shared_ptr<Bot> &b)
+				: segment(s), bot(b) {}
 		};
 
 		struct FoodInfo {
 			std::shared_ptr<Food> food;
+
+			FoodInfo(const std::shared_ptr<Food> &f) : food(f) {}
 		};
 
 		typedef std::vector<SnakeSegmentInfo> SnakeSegmentInfoList;
 		typedef std::vector<FoodInfo> FoodInfoList;
-		typedef std::function<void(const Vector& relative_pos, const FoodInfo& food)> FoodCallback;
+		typedef std::function<void(const Vector2D& relative_pos, const FoodInfo& food)> FoodCallback;
 
 	private:
 		std::vector<SnakeSegmentInfoList> m_segmentInfoHashMap;
@@ -45,10 +50,10 @@ class GlobalView
 
 		const Field *m_field;
 
-		std::size_t hashMapEntryFromVector(const Vector &vec);
+		std::size_t hashMapEntryFromVector2D(const Vector2D &vec);
 
-		void normalizeHashMapCoord(long *coord, std::size_t range) const;
 		static size_t normalize(int v, size_t max);
+		void normalizeHashMapCoord(long *coord, long range) const;
 
 	public:
 		/*!
@@ -69,6 +74,7 @@ class GlobalView
 		 * \param radius    Radius of the LocalView.
 		 * \returns         A shared pointer to the new LocalView object.
 		 */
-		std::unique_ptr<LocalView> extractLocalView(const Vector &center, float_t radius) const;
-		void findFood(const Vector& center, float_t radius, FoodCallback callback) const;
+		std::shared_ptr<LocalView> extractLocalView(const Vector2D &center, float_t radius) const;
+
+		void findFood(const Vector2D& center, float_t radius, FoodCallback callback) const;
 };
