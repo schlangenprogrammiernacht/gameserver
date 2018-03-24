@@ -259,8 +259,8 @@ namespace msgpack {
 				template <typename Stream> msgpack::packer<Stream>& operator()(msgpack::packer<Stream>& o, Snake::Segment const& v) const
 				{
 					o.pack_array(2);
-					o.pack(v.pos.x());
-					o.pack(v.pos.y());
+					o.pack(v.pos().x());
+					o.pack(v.pos().y());
 
 					return o;
 				}
@@ -285,8 +285,8 @@ namespace msgpack {
 				{
 					o.pack_array(4);
 					o.pack(v.getGUID());
-					o.pack(v.pos.x());
-					o.pack(v.pos.y());
+					o.pack(v.pos().x());
+					o.pack(v.pos().y());
 					o.pack(v.getValue());
 					return o;
 				}

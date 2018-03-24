@@ -4,8 +4,13 @@
 class PositionObject
 {
 	public:
-		Vector2D pos;
 
 		PositionObject(const Vector2D& position)
-			: pos(position) {}
+			: m_pos(position) {}
+
+		const Vector2D& pos() const { return m_pos; }
+		void setPos(const Vector2D& pos) { m_pos = pos; }
+
+	private:
+		Vector2D m_pos;
 };

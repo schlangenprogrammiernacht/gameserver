@@ -20,7 +20,7 @@ class Snake
 		{
 			public:
 				Segment(const Vector2D &position) : PositionObject(position) {}
-				Segment(const Segment &other) : PositionObject(other.pos) {}
+				Segment(const Segment &other) : PositionObject(other.pos()) {}
 				// more stuff like color?
 		};
 

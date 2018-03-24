@@ -13,7 +13,7 @@ void LocalView::appendFood(const GlobalView::FoodInfoList &foodInfo)
 		// create new element at the end of the list
 		auto elem = m_foodInfo.emplace(m_foodInfo.end());
 
-		elem->pos = m_field->unwrapCoords(f.food->pos, m_center);
+		elem->pos = m_field->unwrapCoords(f.food->pos(), m_center);
 		elem->food = f.food;
 	}
 }
@@ -24,7 +24,7 @@ void LocalView::appendSegments(const GlobalView::SnakeSegmentInfoList &segmentIn
 		// create new element at the end of the list
 		auto elem = m_segmentInfo.emplace(m_segmentInfo.end());
 
-		elem->pos = m_field->unwrapCoords(s.segment->pos, m_center);
+		elem->pos = m_field->unwrapCoords(s.segment->pos(), m_center);
 		elem->bot = s.bot;
 	}
 }

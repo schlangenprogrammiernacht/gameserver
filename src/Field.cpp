@@ -291,7 +291,7 @@ void Field::debugVisualization(void)
 
 	// draw food
 	for(auto &f: m_staticFood) {
-		const Vector2D &pos = f->pos;
+		const Vector2D &pos = f->pos();
 
 		char c;
 
@@ -313,8 +313,8 @@ void Field::debugVisualization(void)
 
 		bool first = true;
 		for(auto &seg: snake->getSegments()) {
-			size_t x = static_cast<size_t>(seg->pos.x());
-			size_t y = static_cast<size_t>(seg->pos.y());
+			size_t x = static_cast<size_t>(seg->pos().x());
+			size_t y = static_cast<size_t>(seg->pos().y());
 
 			if(first) {
 				rep[y*intW + x] = '#';
