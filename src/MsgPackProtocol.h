@@ -285,13 +285,9 @@ namespace msgpack {
 				{
 					o.pack_array(4);
 					o.pack(v.getGUID());
-
-					const Vector2D &pos = v.getPosition();
-					o.pack(pos.x());
-					o.pack(pos.y());
-
+					o.pack(v.pos.x());
+					o.pack(v.pos.y());
 					o.pack(v.getValue());
-
 					return o;
 				}
 			};

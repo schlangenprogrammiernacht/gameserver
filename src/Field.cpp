@@ -291,7 +291,7 @@ void Field::debugVisualization(void)
 
 	// draw food
 	for(auto &f: m_staticFood) {
-		const Vector2D &pos = f->getPosition();
+		const Vector2D &pos = f->pos;
 
 		char c;
 

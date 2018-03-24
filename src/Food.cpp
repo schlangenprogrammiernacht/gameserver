@@ -3,7 +3,9 @@
 #include "Food.h"
 
 Food::Food(Field *field, const Vector2D &pos, float_t value)
-	: m_field(field), m_pos(pos), m_value(value)
+	: PositionObject(pos)
+	, m_field(field)
+	, m_value(value)
 {
 }
 

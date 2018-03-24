@@ -188,10 +188,9 @@ float_t Snake::getSegmentRadius(void) const
 bool Snake::canConsume(const std::shared_ptr<Food> &food)
 {
 	const Vector2D &headPos = m_segments[0]->pos;
-	const Vector2D &foodPos = food->getPosition();
+	const Vector2D &foodPos = food->pos;
 
 	Vector2D unwrappedFoodPos = m_field->unwrapCoords(foodPos, headPos);
-
 	float_t maxRange = m_segmentRadius * config::SNAKE_CONSUME_RANGE;
 
 	// range check

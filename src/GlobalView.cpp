@@ -52,14 +52,12 @@ void GlobalView::rebuild(const Field *field)
 	}
 
 	for(auto &f : field->getStaticFood()) {
-		std::size_t hashMapEntry = hashMapEntryFromVector2D(f->getPosition());
-
+		std::size_t hashMapEntry = hashMapEntryFromVector2D(f->pos);
 		m_foodInfoHashMap[hashMapEntry].emplace_back(f);
 	}
 
 	for(auto &f : field->getDynamicFood()) {
-		std::size_t hashMapEntry = hashMapEntryFromVector2D(f->getPosition());
-
+		std::size_t hashMapEntry = hashMapEntryFromVector2D(f->pos);
 		m_foodInfoHashMap[hashMapEntry].emplace_back(f);
 	}
 

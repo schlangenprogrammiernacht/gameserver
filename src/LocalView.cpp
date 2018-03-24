@@ -13,7 +13,7 @@ void LocalView::appendFood(const GlobalView::FoodInfoList &foodInfo)
 		// create new element at the end of the list
 		auto elem = m_foodInfo.emplace(m_foodInfo.end());
 
-		elem->pos = m_field->unwrapCoords(f.food->getPosition(), m_center);
+		elem->pos = m_field->unwrapCoords(f.food->pos, m_center);
 		elem->food = f.food;
 	}
 }

@@ -7,17 +7,17 @@
 #include "Snake.h"
 
 #include "types.h"
+#include "PositionObject.h"
 
 class Field;
 
 /*!
  * A piece of food that can be eaten by snakes.
  */
-class Food : public IdentifyableObject
+class Food : public IdentifyableObject, public PositionObject
 {
 	private:
 		Field   *m_field;
-		Vector2D   m_pos;
 		float_t  m_value;
 
 	public:
@@ -28,7 +28,5 @@ class Food : public IdentifyableObject
 
 		void decay(void);
 		bool hasDecayed(void);
-
-		const Vector2D& getPosition() const { return m_pos; }
-		float_t       getValue() const { return m_value; }
+		float_t getValue() const { return m_value; }
 };
