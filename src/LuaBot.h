@@ -19,4 +19,7 @@ class LuaBot
 		sol::environment createEnvironment();
 		sol::table createFunctionTable(const std::string& obj, const std::vector<std::string>& items);
 
+		void findFood(Bot &bot, std::vector<sol::table> &foodVector);
+		void findSnakeSegments(Bot &bot, std::vector<sol::table> &snakeSegmentVector);
+
 };

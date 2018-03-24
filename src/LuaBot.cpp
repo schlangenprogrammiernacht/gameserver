@@ -25,7 +25,6 @@ bool LuaBot::init()
 bool LuaBot::step(Bot &bot, float &next_heading, bool &speed)
 {
 	float_t last_heading = bot.getHeading();
-	float_t heading_rad = 2*M_PI * (last_heading / 360.0);
 	next_heading = last_heading;
 	speed = false;
 
@@ -34,35 +33,18 @@ bool LuaBot::step(Bot &bot, float &next_heading, bool &speed)
 		return false;
 	}
 
-	auto pos = bot.getSnake()->getHeadPosition();
-	auto radius = 50+15.0*bot.getSnake()->getSegmentRadius();
-
-	std::vector<sol::table> foodVector;
-	foodVector.reserve(1000);
-
-	bot.getGlobalView().findFood(
-		pos,
-		radius,
-		[this, &foodVector, heading_rad](const Vector2D& pos, const GlobalView::FoodInfo& foodinfo) {
-			float_t direction = atan2(pos.y(), pos.x()) - heading_rad;
-			while (direction<0) { direction += 2*M_PI; }
-			while (direction>2*M_PI) { direction -= 2*M_PI; }
-			foodVector.push_back(
-				m_lua_state.create_table_with(
-					"x", pos.x(),
-					"y", pos.y(),
-					"v", foodinfo.food->getValue(),
-					"d", direction,
-					"dist", pos.norm()
-				)
-			);
-		}
+	m_lua_safe_env["self"] = m_lua_state.create_table_with(
+		"id", bot.getGUID(),
+		"r",  bot.getSnake()->getSegmentRadius()
 	);
 
+	std::vector<sol::table> foodVector, snakeSegmentVector;
+	findFood(bot, foodVector);
+	findSnakeSegments(bot, snakeSegmentVector);
 	try
 	{
 		setQuota(1000000, 0.1);
-		next_heading = m_lua_safe_env["step"](foodVector);
+		next_heading = m_lua_safe_env["step"](foodVector, snakeSegmentVector);
 		next_heading = 180 * (next_heading / M_PI);
 		next_heading += last_heading;
 		return true;
@@ -122,4 +104,61 @@ sol::table LuaBot::createFunctionTable(const std::string &obj, const std::vector
 		table.set(item, m_lua_state[obj][item]);
 	}
 	return table;
+}
+
+void LuaBot::findFood(Bot &bot, std::vector<sol::table> &foodVector)
+{
+	auto pos = bot.getSnake()->getHeadPosition();
+	auto radius = 50+15.0*bot.getSnake()->getSegmentRadius();
+	foodVector.reserve(1000);
+
+	float_t last_heading = bot.getHeading();
+	float_t heading_rad = 2*M_PI * (last_heading / 360.0);
+	bot.getGlobalView().findFood(
+		pos,
+		radius,
+		[this, &foodVector, heading_rad](const Vector2D& pos, const GlobalView::FoodInfo& foodinfo) {
+			float_t direction = atan2(pos.y(), pos.x()) - heading_rad;
+			while (direction<0) { direction += 2*M_PI; }
+			while (direction>2*M_PI) { direction -= 2*M_PI; }
+			foodVector.push_back(
+				m_lua_state.create_table_with(
+					"x", pos.x(),
+					"y", pos.y(),
+					"v", foodinfo.food->getValue(),
+					"d", direction,
+					"dist", pos.norm()
+				)
+			);
+		}
+	);
+}
+
+void LuaBot::findSnakeSegments(Bot &bot, std::vector<sol::table> &snakeSegmentVector)
+{
+	auto pos = bot.getSnake()->getHeadPosition();
+	auto radius = 50+15.0*bot.getSnake()->getSegmentRadius();
+	snakeSegmentVector.reserve(1000);
+
+	float_t last_heading = bot.getHeading();
+	float_t heading_rad = 2*M_PI * (last_heading / 360.0);
+	bot.getGlobalView().findSnakeSegments(
+		pos,
+		radius,
+		[this, &snakeSegmentVector, heading_rad](const Vector2D& pos, const GlobalView::SnakeSegmentInfo& segmentInfo) {
+			float_t direction = atan2(pos.y(), pos.x()) - heading_rad;
+			while (direction<0) { direction += 2*M_PI; }
+			while (direction>2*M_PI) { direction -= 2*M_PI; }
+			snakeSegmentVector.push_back(
+				m_lua_state.create_table_with(
+					"x", pos.x(),
+					"y", pos.y(),
+					"r", segmentInfo.bot->getSnake()->getSegmentRadius(),
+					"d", direction,
+					"dist", pos.norm(),
+					"bot", segmentInfo.bot->getGUID()
+				)
+			);
+		}
+	);
 }

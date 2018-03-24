@@ -40,6 +40,7 @@ class GlobalView
 		typedef std::vector<SnakeSegmentInfo> SnakeSegmentInfoList;
 		typedef std::vector<FoodInfo> FoodInfoList;
 		typedef std::function<void(const Vector2D& relative_pos, const FoodInfo& food)> FoodCallback;
+		typedef std::function<void(const Vector2D& relative_pos, const SnakeSegmentInfo& segment)> SnakeSegmentCallback;
 
 	private:
 		std::vector<SnakeSegmentInfoList> m_segmentInfoHashMap;
@@ -77,4 +78,5 @@ class GlobalView
 		std::shared_ptr<LocalView> extractLocalView(const Vector2D &center, float_t radius) const;
 
 		void findFood(const Vector2D& center, float_t radius, FoodCallback callback) const;
+		void findSnakeSegments(const Vector2D& center, float_t radius, SnakeSegmentCallback callback) const;
 };

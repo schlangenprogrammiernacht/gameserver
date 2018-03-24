@@ -20,7 +20,7 @@ namespace config {
 	static const float_t     FIELD_SIZE_Y            = 1080;
 
 	// Items of static food on field
-	static const std::size_t FIELD_STATIC_FOOD       = 2000;
+	static const std::size_t FIELD_STATIC_FOOD       = 1000;
 
 	// Steps that a snake moves while boosting (normal speed = 1 step)
 	static const std::size_t SNAKE_BOOST_STEPS       = 3;

@@ -158,3 +158,37 @@ void GlobalView::findFood(const Vector2D &center, float_t radius, GlobalView::Fo
 		}
 	}
 }
+
+void GlobalView::findSnakeSegments(const Vector2D &center, float_t radius, SnakeSegmentCallback callback) const
+{
+	const int x1 = static_cast<int>(floor((center.x()-radius) / config::GLOBALVIEW_GRID_UNIT));
+	const int x2 = static_cast<int>(ceil((center.x()+radius) / config::GLOBALVIEW_GRID_UNIT));
+	const int y1 = static_cast<int>(floor((center.y()-radius) / config::GLOBALVIEW_GRID_UNIT));
+	const int y2 = static_cast<int>(ceil((center.y()+radius) / config::GLOBALVIEW_GRID_UNIT));
+	const int x_start = std::min(x1, x2);
+	const int x_end = std::max(x1, x2);
+	const int y_start = std::min(y1, y2);
+	const int y_end = std::max(y1, y2);
+
+	const float squaredRadius = radius*radius;
+
+	for (int y=y_start; y<=y_end; y++)
+	{
+		for (int x=x_start; x<x_end; x++)
+		{
+			size_t key = m_hashMapSizeX * normalize(y, m_hashMapSizeY) + normalize(x, m_hashMapSizeX);
+			for (auto& item: m_segmentInfoHashMap[key])
+			{
+				Vector2D pos = item.segment->pos-center;
+				Vector2D wrappedPos {
+					fmodf(pos.x() + config::FIELD_SIZE_X/2, config::FIELD_SIZE_X) - config::FIELD_SIZE_X/2,
+					fmodf(pos.y() + config::FIELD_SIZE_Y/2, config::FIELD_SIZE_Y) - config::FIELD_SIZE_Y/2,
+				};
+				if (wrappedPos.squaredNorm() <= squaredRadius)
+				{
+					callback(pos, item);
+				}
+			}
+		}
+	}
+}
