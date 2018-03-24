@@ -28,18 +28,17 @@ void GlobalView::normalizeHashMapCoord(long *coord, long range) const
 
 // Public methods
 
-GlobalView::GlobalView()
-	: m_field(NULL)
+GlobalView::GlobalView(const Field *field)
+	: m_foodMap(static_cast<size_t>(field->getSize().x()), static_cast<size_t>(field->getSize().y()))
+	, m_field(field)
 {
 }
 
-void GlobalView::rebuild(const Field *field)
+void GlobalView::rebuild()
 {
-	m_field = field;
-
 	// update the hash map sizes for the given field
-	m_hashMapSizeX = static_cast<std::size_t>(field->getSize().x() / config::GLOBALVIEW_GRID_UNIT + 1);
-	m_hashMapSizeY = static_cast<std::size_t>(field->getSize().y() / config::GLOBALVIEW_GRID_UNIT + 1);
+	m_hashMapSizeX = static_cast<std::size_t>(m_field->getSize().x() / config::GLOBALVIEW_GRID_UNIT + 1);
+	m_hashMapSizeY = static_cast<std::size_t>(m_field->getSize().y() / config::GLOBALVIEW_GRID_UNIT + 1);
 
 	std::size_t elements = m_hashMapSizeX * m_hashMapSizeY;
 
@@ -51,17 +50,17 @@ void GlobalView::rebuild(const Field *field)
 		m_segmentInfoHashMap[i].clear();
 	}
 
-	for(auto &f : field->getStaticFood()) {
+	for(auto &f : m_field->getStaticFood()) {
 		std::size_t hashMapEntry = hashMapEntryFromVector2D(f->pos());
 		m_foodInfoHashMap[hashMapEntry].emplace_back(f);
 	}
 
-	for(auto &f : field->getDynamicFood()) {
+	for(auto &f : m_field->getDynamicFood()) {
 		std::size_t hashMapEntry = hashMapEntryFromVector2D(f->pos());
 		m_foodInfoHashMap[hashMapEntry].emplace_back(f);
 	}
 
-	for(auto &b : field->getBots()) {
+	for(auto &b : m_field->getBots()) {
 		for(auto &s : b->getSnake()->getSegments()) {
 			std::size_t hashMapEntry = hashMapEntryFromVector2D(s->pos());
 

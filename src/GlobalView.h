@@ -4,6 +4,7 @@
 #include <vector>
 
 #include "Snake.h"
+#include "SpatialMap.h"
 
 // forward declaration
 class Field;
@@ -28,11 +29,12 @@ class GlobalView
 
 			SnakeSegmentInfo(const std::shared_ptr<Snake::Segment> &s, const std::shared_ptr<Bot> &b)
 				: segment(s), bot(b) {}
+
+			const Vector2D& pos() { return segment->pos(); }
 		};
 
 		struct FoodInfo {
 			std::shared_ptr<Food> food;
-
 			FoodInfo(const std::shared_ptr<Food> &f) : food(f) {}
 		};
 
@@ -40,6 +42,9 @@ class GlobalView
 		typedef std::vector<FoodInfo> FoodInfoList;
 
 	private:
+		SpatialMap<Food, 128, 128> m_foodMap;
+		SpatialMap<SnakeSegmentInfo, 128, 128> m_segmentInfoMap;
+
 		std::vector<SnakeSegmentInfoList> m_segmentInfoHashMap;
 		std::vector<FoodInfoList>         m_foodInfoHashMap;
 
@@ -56,12 +61,12 @@ class GlobalView
 		/*!
 		 * Initialize a new GlobalView object.
 		 */
-		GlobalView();
+		GlobalView(const Field *field);
 
 		/*!
 		 * Rebuild the GlobalView from the given Field.
 		 */
-		void rebuild(const Field *field);
+		void rebuild();
 
 		/*!
 		 * Create a LocalView object around the given coordinates from this

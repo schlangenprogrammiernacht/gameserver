@@ -30,6 +30,8 @@ set(sources
 	src/PositionObject.h
 	src/LocalView.cpp
 	src/LocalView.h
+	src/SpatialMap.cpp
+	src/SpatialMap.h
 	src/main.cpp
 	src/MsgPackProtocol.h
 	src/MsgPackUpdateTracker.cpp

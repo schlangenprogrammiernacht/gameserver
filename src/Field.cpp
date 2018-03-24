@@ -8,9 +8,8 @@
 
 #include "Field.h"
 
-Field::Field(float_t w, float_t h, std::size_t food_parts,
-				const std::shared_ptr<UpdateTracker> &update_tracker)
-	: m_width(w), m_height(h), m_updateTracker(update_tracker)
+Field::Field(float_t w, float_t h, std::size_t food_parts, const std::shared_ptr<UpdateTracker> &update_tracker)
+	: m_width(w), m_height(h), m_updateTracker(update_tracker), m_globalView(this)
 {
 	setupRandomness();
 
@@ -56,7 +55,7 @@ void Field::setupRandomness(void)
 
 void Field::updateGlobalView(void)
 {
-	m_globalView.rebuild(this);
+	m_globalView.rebuild();
 }
 
 void Field::updateMaxSegmentRadius(void)
