@@ -28,9 +28,6 @@ set(sources
 	src/IdentifyableObject.cpp
 	src/IdentifyableObject.h
 	src/PositionObject.h
-	src/LocalView.cpp
-	src/LocalView.h
-	src/SpatialMap.cpp
 	src/SpatialMap.h
 	src/main.cpp
 	src/MsgPackProtocol.h

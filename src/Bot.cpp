@@ -1,8 +1,5 @@
-#include "LocalView.h"
-
-#include "Field.h"
-
 #include "Bot.h"
+#include "Field.h"
 
 Bot::Bot(Field *field, const std::string &name, const Vector2D &startPos, float_t startHeading)
 	: m_name(name), m_field(field), m_moveCounter(0)
@@ -31,33 +28,37 @@ std::shared_ptr<Bot> Bot::checkCollision(void) const
 
 	Vector2D headPos = m_snake->getHeadPosition();
 
-	// create a LocalView for this bot which contains only the snake segments
-	// close to the bot’s head
-	std::shared_ptr<LocalView> localView = globalView.extractLocalView(
-			headPos,
-			maxCollisionDistance);
+	std::shared_ptr<Bot> retval = nullptr;
+	globalView.getSegmentInfoMap().findElements(
+		headPos,
+		maxCollisionDistance,
+		[this, &headPos, &retval](const GlobalView::SnakeSegmentInfo &fi)
+		{
+			if(fi.bot->getGUID() == this->getGUID())
+			{
+				// prevent self-collision
+				return true;
+			}
 
-	for(auto &fi: localView->getSnakeSegments()) {
-		if(fi.bot->getGUID() == this->getGUID()) {
-			// prevent self-collision
-			continue;
+			// get actual distance to segment
+			float_t dist = (headPos - fi.pos()).squaredNorm();
+
+			// get maximum distance for collision detection
+			float_t collisionDist =
+				m_snake->getSegmentRadius() + fi.bot->getSnake()->getSegmentRadius();
+			collisionDist *= collisionDist; // square it
+
+			if(dist < collisionDist) {
+				// collision detected!
+				retval = fi.bot;
+				return false;
+			}
+
+			return true;
 		}
+	);
 
-		// get actual distance to segment
-		float_t dist = (headPos - fi.pos).squaredNorm();
-
-		// get maximum distance for collision detection
-		float_t collisionDist =
-			m_snake->getSegmentRadius() + fi.bot->getSnake()->getSegmentRadius();
-		collisionDist *= collisionDist; // square it
-
-		if(dist < collisionDist) {
-			// collision detected!
-			return fi.bot;
-		}
-	}
-
-	return NULL;
+	return retval;
 }
 
 std::shared_ptr<Snake> Bot::getSnake(void) const

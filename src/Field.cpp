@@ -2,14 +2,11 @@
 #include <vector>
 #include <algorithm>
 
-#include "LocalView.h"
-
 #include "config.h"
-
 #include "Field.h"
 
 Field::Field(float_t w, float_t h, std::size_t food_parts, const std::shared_ptr<UpdateTracker> &update_tracker)
-	: m_width(w), m_height(h), m_updateTracker(update_tracker), m_globalView(this)
+	: m_width(w), m_height(h), m_updateTracker(update_tracker), m_globalView(*this)
 {
 	setupRandomness();
 
@@ -125,37 +122,34 @@ void Field::consumeFood(void)
 	// update the global view for faster processing
 	updateGlobalView();
 
-	for(auto &b: m_bots) {
+	for (auto &b: m_bots) {
 		std::size_t foodToGenerate = 0;
 
-		// create a LocalView for this bot which contains only the food close to
-		// the bot’s head
-		std::shared_ptr<LocalView> localView = m_globalView.extractLocalView(
-				b->getSnake()->getHeadPosition(),
-				b->getSnake()->getSegmentRadius() * config::SNAKE_CONSUME_RANGE);
+		m_globalView.getFoodInfoMap().findElements(
+			b->getSnake()->getHeadPosition(),
+			b->getSnake()->getSegmentRadius() * config::SNAKE_CONSUME_RANGE,
+			[this, &b, &foodToGenerate](const GlobalView::FoodInfo& fi)
+			{
+				if (!b->getSnake()->canConsume(fi.food)) { return true; }
 
-		const LocalView::FoodInfoList &foodList = localView->getFood();
+				b->getSnake()->consume(fi.food);
+				m_updateTracker->foodConsumed(fi.food, b);
 
-		// iterate over all food items, check if they can be consumed and if so,
-		// consume it and regenerate it if it was a static food item
-		auto fi = foodList.begin();
-		while(fi != foodList.end()) {
-			if(b->getSnake()->canConsume(fi->food)) {
-				b->getSnake()->consume(fi->food);
-				m_updateTracker->foodConsumed(fi->food, b);
-
-				if(m_staticFood.count(fi->food) > 0) {
-					m_staticFood.erase(fi->food);
+				if (m_staticFood.count(fi.food) > 0)
+				{
+					m_staticFood.erase(fi.food);
 					foodToGenerate++;
-				} else if(m_dynamicFood.count(fi->food) > 0) {
-					m_dynamicFood.erase(fi->food);
 				}
+				else if (m_dynamicFood.count(fi.food) > 0)
+				{
+					m_dynamicFood.erase(fi.food);
+				}
+
+				return true;
 			}
+		);
 
-			fi++;
-		}
-
-		createStaticFood(foodToGenerate);
+		createStaticFood(foodToGenerate); // TODO should this be done outside the bot loop?
 	}
 
 	updateMaxSegmentRadius();
