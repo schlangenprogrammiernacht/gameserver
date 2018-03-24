@@ -4,6 +4,7 @@
 #include <memory>
 
 #include "types.h"
+#include "PositionObject.h"
 
 // forward declaration
 class Field;
@@ -15,9 +16,12 @@ class Food;
 class Snake
 {
 	public:
-		struct Segment {
-			Vector2D pos;
-			// more stuff like color?
+		class Segment : public PositionObject
+		{
+			public:
+				Segment(const Vector2D &position) : PositionObject(position) {}
+				Segment(const Segment &other) : PositionObject(other.pos) {}
+				// more stuff like color?
 		};
 
 		typedef std::deque< std::shared_ptr<Segment> > SegmentList;

@@ -27,6 +27,7 @@ set(sources
 	src/GUIDGenerator.h
 	src/IdentifyableObject.cpp
 	src/IdentifyableObject.h
+	src/PositionObject.h
 	src/LocalView.cpp
 	src/LocalView.h
 	src/main.cpp

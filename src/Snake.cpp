@@ -7,7 +7,7 @@
 Snake::Snake(Field *field)
 	: m_field(field), m_mass(1.0f), m_heading(0.0f)
 {
-	std::shared_ptr<Segment> segment = std::make_shared<Segment>();
+	std::shared_ptr<Segment> segment = std::make_shared<Segment>(Vector2D {0,0});
 	m_segments.push_back(segment);
 
 	ensureSizeMatchesMass();
@@ -18,9 +18,7 @@ Snake::Snake(Field *field, const Vector2D &startPos, float_t start_mass,
 	: m_field(field), m_mass(start_mass), m_heading(start_heading)
 {
 	// create the first segment manually
-	std::shared_ptr<Segment> segment = std::make_shared<Segment>();
-	segment->pos = startPos;
-
+	std::shared_ptr<Segment> segment = std::make_shared<Segment>(startPos);
 	m_segments.push_back(segment);
 
 	// create the other segments
@@ -49,10 +47,7 @@ void Snake::ensureSizeMatchesMass(void)
 		// repeat the last segment until the new target length is reached
 		const std::shared_ptr<Segment> refSegment = m_segments[curLen-1];
 		for(std::size_t i = 0; i < (targetLen - curLen); i++) {
-			std::shared_ptr<Segment> segment = std::make_shared<Segment>();
-			*segment = *refSegment;
-
-			m_segments.push_back(segment);
+			m_segments.push_back(std::make_shared<Segment>(*refSegment));
 		}
 	} else if(curLen > targetLen) {
 		// segments must be removed
@@ -135,9 +130,7 @@ std::size_t Snake::move(float_t targetAngle, bool boost)
 			m_movedSinceLastSpawn -= m_targetSegmentDistance;
 
 			// create new segment
-			std::shared_ptr<Segment> segment = std::make_shared<Segment>();
-			segment->pos = m_segments[0]->pos + newSegmentOffset;
-
+			std::shared_ptr<Segment> segment = std::make_shared<Segment>(m_segments[0]->pos + newSegmentOffset);
 			m_segments.push_front(segment);
 		}
 	}
