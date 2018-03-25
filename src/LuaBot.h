@@ -1,6 +1,5 @@
 #pragma once
 #include <sol.hpp>
-#include "LocalView.h"
 
 class Bot;
 

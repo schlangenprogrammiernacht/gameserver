@@ -2,6 +2,7 @@
 #include "Food.h"
 #include "Bot.h"
 #include "Food.h"
+#include "GlobalView.h"
 
 bool LuaBot::init()
 {
@@ -108,28 +109,31 @@ sol::table LuaBot::createFunctionTable(const std::string &obj, const std::vector
 
 void LuaBot::findFood(Bot &bot, std::vector<sol::table> &foodVector)
 {
-	auto pos = bot.getSnake()->getHeadPosition();
+	auto head_pos = bot.getSnake()->getHeadPosition();
 	auto radius = 50+15.0*bot.getSnake()->getSegmentRadius();
 	foodVector.reserve(1000);
 
 	float_t last_heading = bot.getHeading();
 	float_t heading_rad = 2*M_PI * (last_heading / 360.0);
-	bot.getGlobalView().findFood(
-		pos,
+	auto &infoMap = bot.getGlobalView().getFoodInfoMap();
+	infoMap.findElements(
+		head_pos,
 		radius,
-		[this, &foodVector, heading_rad](const Vector2D& pos, const GlobalView::FoodInfo& foodinfo) {
-			float_t direction = atan2(pos.y(), pos.x()) - heading_rad;
+		[this, &foodVector, &infoMap, head_pos, heading_rad](const GlobalView::FoodInfo& foodinfo) {
+			Vector2D relPos = infoMap.unwrapRelativePos(foodinfo.pos() - head_pos);
+			float_t direction = static_cast<float_t>(atan2(relPos.y(), relPos.x())) - heading_rad;
 			while (direction<0) { direction += 2*M_PI; }
 			while (direction>2*M_PI) { direction -= 2*M_PI; }
 			foodVector.push_back(
 				m_lua_state.create_table_with(
-					"x", pos.x(),
-					"y", pos.y(),
+					"x", relPos.x(),
+					"y", relPos.y(),
 					"v", foodinfo.food->getValue(),
 					"d", direction,
-					"dist", pos.norm()
+					"dist", relPos.norm()
 				)
 			);
+			return true;
 		}
 	);
 }
@@ -142,23 +146,28 @@ void LuaBot::findSnakeSegments(Bot &bot, std::vector<sol::table> &snakeSegmentVe
 
 	float_t last_heading = bot.getHeading();
 	float_t heading_rad = 2*M_PI * (last_heading / 360.0);
-	bot.getGlobalView().findSnakeSegments(
+
+	auto &segmentMap = bot.getGlobalView().getSegmentInfoMap();
+	segmentMap.findElements(
 		pos,
 		radius,
-		[this, &snakeSegmentVector, heading_rad](const Vector2D& pos, const GlobalView::SnakeSegmentInfo& segmentInfo) {
-			float_t direction = atan2(pos.y(), pos.x()) - heading_rad;
+		[this, &snakeSegmentVector, &segmentMap, pos, heading_rad](const GlobalView::SnakeSegmentInfo& segmentInfo)
+		{
+			Vector2D relPos = segmentMap.unwrapRelativePos(segmentInfo.pos() - pos);
+			float_t direction = atan2(relPos.y(), relPos.x()) - heading_rad;
 			while (direction<0) { direction += 2*M_PI; }
 			while (direction>2*M_PI) { direction -= 2*M_PI; }
 			snakeSegmentVector.push_back(
 				m_lua_state.create_table_with(
-					"x", pos.x(),
-					"y", pos.y(),
+					"x", relPos.x(),
+					"y", relPos.y(),
 					"r", segmentInfo.bot->getSnake()->getSegmentRadius(),
 					"d", direction,
-					"dist", pos.norm(),
+					"dist", relPos.norm(),
 					"bot", segmentInfo.bot->getGUID()
 				)
 			);
+			return true;
 		}
 	);
 }

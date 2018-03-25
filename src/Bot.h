@@ -9,7 +9,6 @@
 
 class Field;
 class LuaBot;
-class LocalView;
 class GlobalView;
 
 /*!
@@ -26,12 +25,6 @@ class Bot : public IdentifyableObject
 		float_t                 m_heading;
 
 		size_t m_moveCounter;
-
-		/*!
-		 * create a LocalView for this bot which contains only the snake segments
-		 * close to the bot’s head
-		 */
-		std::shared_ptr<LocalView> createLocalView(float_t radius) const;
 
 	public:
 		/*!

@@ -2,16 +2,14 @@
 
 #include <memory>
 #include <vector>
-#include <functional>
 
 #include "Snake.h"
+#include "Food.h"
+#include "SpatialMap.h"
 
 // forward declaration
 class Field;
-class Food;
 class Bot;
-
-class LocalView;
 
 /*!
  * Global, simplified view of the field.
@@ -29,54 +27,34 @@ class GlobalView
 
 			SnakeSegmentInfo(const std::shared_ptr<Snake::Segment> &s, const std::shared_ptr<Bot> &b)
 				: segment(s), bot(b) {}
+
+			const Vector2D& pos() const { return segment->pos(); }
 		};
+		typedef SpatialMap<SnakeSegmentInfo, 128, 128> SegmentInfoMap;
 
 		struct FoodInfo {
 			std::shared_ptr<Food> food;
-
 			FoodInfo(const std::shared_ptr<Food> &f) : food(f) {}
+			const Vector2D& pos() const { return food->pos(); }
 		};
-
-		typedef std::vector<SnakeSegmentInfo> SnakeSegmentInfoList;
-		typedef std::vector<FoodInfo> FoodInfoList;
-		typedef std::function<void(const Vector2D& relative_pos, const FoodInfo& food)> FoodCallback;
-		typedef std::function<void(const Vector2D& relative_pos, const SnakeSegmentInfo& segment)> SnakeSegmentCallback;
+		typedef SpatialMap<FoodInfo, 128, 128> FoodInfoMap;
 
 	private:
-		std::vector<SnakeSegmentInfoList> m_segmentInfoHashMap;
-		std::vector<FoodInfoList>         m_foodInfoHashMap;
-
-		std::size_t m_hashMapSizeX;
-		std::size_t m_hashMapSizeY;
-
-		const Field *m_field;
-
-		std::size_t hashMapEntryFromVector2D(const Vector2D &vec);
-
-		static size_t normalize(int v, size_t max);
-		void normalizeHashMapCoord(long *coord, long range) const;
+		const Field& m_field;
+		FoodInfoMap m_foodMap;
+		SegmentInfoMap m_segmentInfoMap;
 
 	public:
 		/*!
 		 * Initialize a new GlobalView object.
 		 */
-		GlobalView();
+		GlobalView(const Field &field);
 
 		/*!
-		 * Rebuild the GlobalView from the given Field.
+		 * Rebuild the GlobalView
 		 */
-		void rebuild(const Field *field);
+		void rebuild();
 
-		/*!
-		 * Create a LocalView object around the given coordinates from this
-		 * GlobalView.
-		 *
-		 * \param center    Center of the LocalView.
-		 * \param radius    Radius of the LocalView.
-		 * \returns         A shared pointer to the new LocalView object.
-		 */
-		std::shared_ptr<LocalView> extractLocalView(const Vector2D &center, float_t radius) const;
-
-		void findFood(const Vector2D& center, float_t radius, FoodCallback callback) const;
-		void findSnakeSegments(const Vector2D& center, float_t radius, SnakeSegmentCallback callback) const;
+		const FoodInfoMap& getFoodInfoMap() const { return m_foodMap; }
+		const SegmentInfoMap& getSegmentInfoMap() const { return m_segmentInfoMap; }
 };
