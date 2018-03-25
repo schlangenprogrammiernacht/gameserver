@@ -1,0 +1,17 @@
+image: buildpack-deps:xenial
+
+before_script:
+- apt update
+- apt install -y liblua5.3-dev libeigen3-dev cmake
+
+variables:
+    GIT_SUBMODULE_STRATEGY: "normal"
+
+build:
+    script: "./make.sh 2>&1 | tee build.log"
+    artifacts:
+        when: always
+        expire_in: 1 week
+        paths:
+        - build.log
+        - build/
