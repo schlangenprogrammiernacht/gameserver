@@ -50,9 +50,9 @@ class Bot : public IdentifyableObject
 		 */
 		std::shared_ptr<Bot> checkCollision(void) const;
 
-		std::shared_ptr<Snake> getSnake(void) const;
+		std::shared_ptr<Snake> getSnake(void) const { return m_snake; }
 
-		const std::string &getName(void) const;
+		const std::string &getName(void) const { return m_name; }
 
 		float_t getHeading() { return m_heading; }
 

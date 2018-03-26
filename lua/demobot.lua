@@ -3,7 +3,7 @@ max_distance = 150
 local sectors = 8
 local q = {}
 
-function step(food, segments)
+function step()
 	for i = 1, sectors do
 		q[i] = {}
 		q[i].sum = 0
@@ -13,28 +13,22 @@ function step(food, segments)
 		q[i].dist_to_collition = math.huge
 	end
 
-	local items_processed = 0
-	local items_in_dist = 0
+	local food = findFood(max_distance, 0.8)
 	for i, item in ipairs(food) do
-		items_processed = items_processed + 1
-		if item.dist < max_distance then
-			items_in_dist = items_in_dist + 1
-			local qi = 1 + math.floor((sectors/2) * item.d / math.pi)
-			q[qi].sum = q[qi].sum + sector_factor[qi] * item.v
-			if item.dist < q[qi].nearest_dist then
-				q[qi].nearest_dist = item.dist
-				q[qi].nearest_dir = item.d
-			end
+		local qi = get_sector(item.d)
+		q[qi].sum = q[qi].sum + sector_factor[qi] * item.v
+		if item.dist < q[qi].nearest_dist then
+			q[qi].nearest_dist = item.dist
+			q[qi].nearest_dir = item.d
 		end
 	end
 
+	local segments = findSegments(50.0, false)
 	for i, item in ipairs(segments) do
-		if item.bot ~= self.id then
-			local qi = 1 + math.floor((sectors/2) * item.d / math.pi)
-			local dist_to_collition = item.dist - item.r - self.r
-			if dist_to_collition < q[qi].dist_to_collition then
-				q[qi].dist_to_collition = dist_to_collition
-			end
+		local qi = get_sector(item.d)
+		local dist_to_collition = item.dist - item.r - self.r
+		if dist_to_collition < q[qi].dist_to_collition then
+			q[qi].dist_to_collition = dist_to_collition
 		end
 	end
 
@@ -67,6 +61,10 @@ function step(food, segments)
 	end
 
 	return q[target_q].nearest_dir
+end
+
+function get_sector(direction_rad)
+	return 1 + math.floor((sectors/2) * direction_rad / math.pi)
 end
 
 function is_dangerous(x)

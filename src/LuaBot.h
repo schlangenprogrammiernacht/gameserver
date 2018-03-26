@@ -6,10 +6,12 @@ class Bot;
 class LuaBot
 {
 	public:
+		LuaBot(Bot& bot);
 		bool init();
-		bool step(Bot& bot, float &next_heading, bool &speed);
+		bool step(float &next_heading, bool &boost);
 
 	private:
+		Bot& m_bot;
 		bool m_initialized = false;
 		sol::state m_lua_state;
 		sol::environment m_lua_safe_env;
@@ -18,7 +20,9 @@ class LuaBot
 		sol::environment createEnvironment();
 		sol::table createFunctionTable(const std::string& obj, const std::vector<std::string>& items);
 
-		void findFood(Bot &bot, std::vector<sol::table> &foodVector);
-		void findSnakeSegments(Bot &bot, std::vector<sol::table> &snakeSegmentVector);
+		std::vector<sol::table> apiFindFood(float_t radius, float_t min_size);
+		std::vector<sol::table> apiFindSegments(float_t radius, bool include_self);
+
+		float_t getMaxSightRadius() const;
 
 };

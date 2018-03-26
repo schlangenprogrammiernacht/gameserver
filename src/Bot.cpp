@@ -10,7 +10,7 @@ Bot::Bot(Field *field, const std::string &name, const Vector2D &startPos, float_
 	m_snake = std::make_shared<Snake>(field, startPos, 5, startHeading);
 
 	m_heading = rand() * 360.0f / RAND_MAX;
-	m_lua_bot = std::make_unique<LuaBot>();
+	m_lua_bot = std::make_unique<LuaBot>(*this);
 }
 
 Bot::~Bot()
@@ -21,7 +21,7 @@ std::size_t Bot::move(void)
 {
 	bool boost;
 	float new_heading;
-	if (m_lua_bot->step(*this, new_heading, boost))
+	if (m_lua_bot->step(new_heading, boost))
 	{
 		new_heading = fmod(new_heading, 360);
 		if (new_heading<0)
@@ -72,14 +72,4 @@ std::shared_ptr<Bot> Bot::checkCollision(void) const
 	);
 
 	return retval;
-}
-
-std::shared_ptr<Snake> Bot::getSnake(void) const
-{
-	return m_snake;
-}
-
-const std::string& Bot::getName(void) const
-{
-	return m_name;
 }
