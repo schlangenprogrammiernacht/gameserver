@@ -2,14 +2,16 @@
 #include <vector>
 #include <algorithm>
 
-#include "config.h"
 #include "Field.h"
 
 Field::Field(float_t w, float_t h, std::size_t food_parts, const std::shared_ptr<UpdateTracker> &update_tracker)
-	: m_width(w), m_height(h), m_updateTracker(update_tracker), m_globalView(*this)
+	: m_width(w)
+	, m_height(h)
+	, m_updateTracker(update_tracker)
+	, m_foodMap(static_cast<size_t>(w), static_cast<size_t>(h), config::SPATIAL_MAP_RESERVE_COUNT)
+	, m_segmentInfoMap(static_cast<size_t>(w), static_cast<size_t>(h), config::SPATIAL_MAP_RESERVE_COUNT)
 {
 	setupRandomness();
-
 	createStaticFood(food_parts);
 }
 
@@ -50,9 +52,29 @@ void Field::setupRandomness(void)
 		std::make_unique< std::uniform_real_distribution<float_t> >(0, 1);
 }
 
-void Field::updateGlobalView(void)
+void Field::updateFoodMap()
 {
-	m_globalView.rebuild();
+	m_foodMap.clear();
+	for (auto &f : m_staticFood)
+	{
+		m_foodMap.addElement(f);
+	}
+	for (auto &f : m_dynamicFood)
+	{
+		m_foodMap.addElement(f);
+	}
+}
+
+void Field::updateSnakeSegmentMap()
+{
+	m_segmentInfoMap.clear();
+	for (auto &b : m_bots)
+	{
+		for(auto &s : b->getSnake()->getSegments())
+		{
+			m_segmentInfoMap.addElement({s, b});
+		}
+	}
 }
 
 void Field::updateMaxSegmentRadius(void)
@@ -115,20 +137,20 @@ void Field::updateFood(void)
 			dfi++;
 		}
 	}
+
+	// step 3: refresh food spatial map for faster access
+	updateFoodMap();
 }
 
 void Field::consumeFood(void)
 {
-	// update the global view for faster processing
-	updateGlobalView();
-
 	for (auto &b: m_bots) {
 		std::size_t foodToGenerate = 0;
 
-		m_globalView.getFoodInfoMap().findElements(
+		m_foodMap.processElements(
 			b->getSnake()->getHeadPosition(),
 			b->getSnake()->getSegmentRadius() * config::SNAKE_CONSUME_RANGE,
-			[this, &b, &foodToGenerate](const GlobalView::FoodInfo& fi)
+			[this, &b, &foodToGenerate](const FoodInfo& fi)
 			{
 				if (!b->getSnake()->canConsume(fi.food)) { return true; }
 
@@ -183,6 +205,8 @@ void Field::moveAllBots(void)
 			bi++;
 		}
 	}
+
+	updateSnakeSegmentMap();
 }
 
 const Field::BotSet& Field::getBots(void) const
@@ -332,11 +356,6 @@ void Field::debugVisualization(void)
 Vector2D Field::getSize(void) const
 {
 	return Vector2D(m_width, m_height);
-}
-
-const GlobalView& Field::getGlobalView(void) const
-{
-	return m_globalView;
 }
 
 float_t Field::getMaxSegmentRadius(void) const

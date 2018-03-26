@@ -12,12 +12,14 @@
 
 namespace config {
 
-	// GlobalView grid unit
-	static const float_t     GLOBALVIEW_GRID_UNIT    = 10.0;
-
 	// Field size
 	static const float_t     FIELD_SIZE_X            = 1024;
 	static const float_t     FIELD_SIZE_Y            = 1024;
+
+	// Spatial Map size
+	static constexpr const size_t SPATIAL_MAP_TILES_X = 128;
+	static constexpr const size_t SPATIAL_MAP_TILES_Y = 128;
+	static constexpr const size_t SPATIAL_MAP_RESERVE_COUNT = 10;
 
 	// Items of static food on field
 	static const std::size_t FIELD_STATIC_FOOD       = 1000;

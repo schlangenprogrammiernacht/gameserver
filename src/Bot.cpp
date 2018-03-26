@@ -21,18 +21,16 @@ std::size_t Bot::move(void)
 
 std::shared_ptr<Bot> Bot::checkCollision(void) const
 {
-	const GlobalView &globalView = m_field->getGlobalView();
-
 	float_t maxCollisionDistance =
 		m_snake->getSegmentRadius() + m_field->getMaxSegmentRadius();
 
 	Vector2D headPos = m_snake->getHeadPosition();
 
 	std::shared_ptr<Bot> retval = nullptr;
-	globalView.getSegmentInfoMap().findElements(
+	m_field->getSegmentInfoMap().processElements(
 		headPos,
 		maxCollisionDistance,
-		[this, &headPos, &retval](const GlobalView::SnakeSegmentInfo &fi)
+		[this, &headPos, &retval](const Field::SnakeSegmentInfo &fi)
 		{
 			if(fi.bot->getGUID() == this->getGUID())
 			{

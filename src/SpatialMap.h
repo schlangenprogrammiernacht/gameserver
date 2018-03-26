@@ -33,8 +33,8 @@ template <class T, size_t TILES_X, size_t TILES_Y> class SpatialMap
 			getTileVectorForPosition(element.pos()).push_back(element);
 		}
 
-		typedef std::function<bool (const T&)> FindCallback;
-		void findElements(const Vector2D& center, float_t radius, FindCallback callback) const
+		typedef std::function<bool (const T&)> ProcessCallback;
+		void processElements(const Vector2D& center, float_t radius, ProcessCallback callback) const
 		{
 			const Vector2D topLeft = center - Vector2D { radius, radius };
 			const Vector2D bottomRight = center + Vector2D { radius, radius };
