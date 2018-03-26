@@ -44,8 +44,8 @@ class Field
 		typedef SpatialMap<FoodInfo, config::SPATIAL_MAP_TILES_X, config::SPATIAL_MAP_TILES_Y> FoodInfoMap;
 
 	private:
-		float_t m_width;
-		float_t m_height;
+		const float_t m_width;
+		const float_t m_height;
 
 		float_t m_maxSegmentRadius = 0;
 
@@ -151,6 +151,8 @@ class Field
 		 * \returns    A new vector containing the unwrapped coordinates.
 		 */
 		Vector2D unwrapCoords(const Vector2D &v, const Vector2D &ref) const;
+
+		Vector2D unwrapRelativeCoords(const Vector2D& relativeCoords) const;
 
 		/*!
 		 * Print a text representation of the field for debugging to stdout.

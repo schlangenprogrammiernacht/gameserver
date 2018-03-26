@@ -33,17 +33,6 @@ template <class T, size_t TILES_X, size_t TILES_Y> class SpatialMap
 			getTileVectorForPosition(element.pos()).push_back(element);
 		}
 
-		Vector2D unwrapRelativePos(const Vector2D& relativePos) const
-		{
-			float_t x = fmod(relativePos.x(), m_fieldSizeX);
-			float_t y = fmod(relativePos.y(), m_fieldSizeY);
-			if (x > m_fieldSizeX/2) { x -= m_fieldSizeX; }
-			if (x < (-(int)m_fieldSizeX/2)) { x += m_fieldSizeX; }
-			if (y > m_fieldSizeY/2) { y -= m_fieldSizeY; }
-			if (y < (-(int)m_fieldSizeY/2)) { y += m_fieldSizeY; }
-			return Vector2D { x, y };
-		}
-
 		typedef std::function<bool (const T&)> ProcessCallback;
 		void processElements(const Vector2D& center, float_t radius, ProcessCallback callback) const
 		{

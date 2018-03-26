@@ -121,15 +121,15 @@ std::vector<sol::table> LuaBot::apiFindFood(float_t radius, float_t min_size)
 
 	radius = std::min(radius, getMaxSightRadius());
 
-	auto &infoMap = m_bot.getField()->getFoodInfoMap();
-	infoMap.processElements(
+	auto field = m_bot.getField();
+	field->getFoodInfoMap().processElements(
 		head_pos,
 		radius,
-		[this, &foodVector, &infoMap, head_pos, heading_rad, min_size](const Field::FoodInfo& foodinfo)
+		[this, &foodVector, field, head_pos, heading_rad, min_size](const Field::FoodInfo& foodinfo)
 		{
 			if (foodinfo.food->getValue()>=min_size)
 			{
-				Vector2D relPos = infoMap.unwrapRelativePos(foodinfo.pos() - head_pos);
+				Vector2D relPos = field->unwrapRelativeCoords(foodinfo.pos() - head_pos);
 				float_t direction = static_cast<float_t>(atan2(relPos.y(), relPos.x())) - heading_rad;
 				while (direction<0) { direction += 2*M_PI; }
 				while (direction>2*M_PI) { direction -= 2*M_PI; }
@@ -160,15 +160,15 @@ std::vector<sol::table> LuaBot::apiFindSegments(float_t radius, bool include_sel
 	radius = std::min(radius, getMaxSightRadius());
 
 	auto self_id = m_bot.getGUID();
-	auto &segmentMap = m_bot.getField()->getSegmentInfoMap();
-	segmentMap.processElements(
+	auto field = m_bot.getField();
+	field->getSegmentInfoMap().processElements(
 		pos,
 		radius,
-		[this, &snakeSegmentVector, &segmentMap, pos, heading_rad, self_id, include_self](const Field::SnakeSegmentInfo& segmentInfo)
+		[this, &snakeSegmentVector, field, pos, heading_rad, self_id, include_self](const Field::SnakeSegmentInfo& segmentInfo)
 		{
 			if (!include_self && (segmentInfo.bot->getGUID() == self_id)) { return true; }
 
-			Vector2D relPos = segmentMap.unwrapRelativePos(segmentInfo.pos() - pos);
+			Vector2D relPos = field->unwrapRelativeCoords(segmentInfo.pos() - pos);
 			float_t direction = atan2(relPos.y(), relPos.x()) - heading_rad;
 			while (direction<0) { direction += 2*M_PI; }
 			while (direction>2*M_PI) { direction -= 2*M_PI; }
