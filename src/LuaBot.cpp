@@ -2,7 +2,7 @@
 #include "Food.h"
 #include "Bot.h"
 #include "Food.h"
-#include "GlobalView.h"
+#include "Field.h"
 
 bool LuaBot::init()
 {
@@ -115,11 +115,11 @@ void LuaBot::findFood(Bot &bot, std::vector<sol::table> &foodVector)
 
 	float_t last_heading = bot.getHeading();
 	float_t heading_rad = 2*M_PI * (last_heading / 360.0);
-	auto &infoMap = bot.getGlobalView().getFoodInfoMap();
-	infoMap.findElements(
+	auto &infoMap = bot.getField()->getFoodInfoMap();
+	infoMap.processElements(
 		head_pos,
 		radius,
-		[this, &foodVector, &infoMap, head_pos, heading_rad](const GlobalView::FoodInfo& foodinfo) {
+		[this, &foodVector, &infoMap, head_pos, heading_rad](const Field::FoodInfo& foodinfo) {
 			Vector2D relPos = infoMap.unwrapRelativePos(foodinfo.pos() - head_pos);
 			float_t direction = static_cast<float_t>(atan2(relPos.y(), relPos.x())) - heading_rad;
 			while (direction<0) { direction += 2*M_PI; }
@@ -147,11 +147,11 @@ void LuaBot::findSnakeSegments(Bot &bot, std::vector<sol::table> &snakeSegmentVe
 	float_t last_heading = bot.getHeading();
 	float_t heading_rad = 2*M_PI * (last_heading / 360.0);
 
-	auto &segmentMap = bot.getGlobalView().getSegmentInfoMap();
-	segmentMap.findElements(
+	auto &segmentMap = bot.getField()->getSegmentInfoMap();
+	segmentMap.processElements(
 		pos,
 		radius,
-		[this, &snakeSegmentVector, &segmentMap, pos, heading_rad](const GlobalView::SnakeSegmentInfo& segmentInfo)
+		[this, &snakeSegmentVector, &segmentMap, pos, heading_rad](const Field::SnakeSegmentInfo& segmentInfo)
 		{
 			Vector2D relPos = segmentMap.unwrapRelativePos(segmentInfo.pos() - pos);
 			float_t direction = atan2(relPos.y(), relPos.x()) - heading_rad;

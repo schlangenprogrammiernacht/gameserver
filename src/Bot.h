@@ -56,5 +56,5 @@ class Bot : public IdentifyableObject
 
 		float_t getHeading() { return m_heading; }
 
-		const GlobalView &getGlobalView() const;
+		Field* getField() { return m_field; }
 };

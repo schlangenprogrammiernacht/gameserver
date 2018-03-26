@@ -4,12 +4,12 @@
 #include <memory>
 #include <random>
 
-#include "UpdateTracker.h"
-#include "GlobalView.h"
-
 #include "types.h"
+#include "config.h"
 #include "Food.h"
 #include "Bot.h"
+#include "UpdateTracker.h"
+#include "SpatialMap.h"
 
 /*!
  * Representation of the playing field.
@@ -23,6 +23,25 @@ class Field
 	public:
 		typedef std::set< std::shared_ptr<Bot> > BotSet;
 		typedef std::set< std::shared_ptr<Food> > FoodSet;
+
+	public:
+		struct SnakeSegmentInfo {
+			std::shared_ptr<Snake::Segment> segment; //!< Pointer to the segment
+			std::shared_ptr<Bot> bot; //!< The bot this segment belongs to
+
+			SnakeSegmentInfo(const std::shared_ptr<Snake::Segment> &s, const std::shared_ptr<Bot> &b)
+				: segment(s), bot(b) {}
+
+			const Vector2D& pos() const { return segment->pos(); }
+		};
+		typedef SpatialMap<SnakeSegmentInfo, config::SPATIAL_MAP_TILES_X, config::SPATIAL_MAP_TILES_Y> SegmentInfoMap;
+
+		struct FoodInfo {
+			std::shared_ptr<Food> food;
+			FoodInfo(const std::shared_ptr<Food> &f) : food(f) {}
+			const Vector2D& pos() const { return food->pos(); }
+		};
+		typedef SpatialMap<FoodInfo, config::SPATIAL_MAP_TILES_X, config::SPATIAL_MAP_TILES_Y> FoodInfoMap;
 
 	private:
 		float_t m_width;
@@ -45,12 +64,14 @@ class Field
 
 		std::shared_ptr<UpdateTracker> m_updateTracker;
 
-		GlobalView m_globalView;
+		FoodInfoMap m_foodMap;
+		SegmentInfoMap m_segmentInfoMap;
 
 		void setupRandomness(void);
 		void createStaticFood(std::size_t count);
 
-		void updateGlobalView(void);
+		void updateFoodMap(void);
+		void updateSnakeSegmentMap(void);
 		void updateMaxSegmentRadius(void);
 
 	public:
@@ -142,14 +163,10 @@ class Field
 		Vector2D getSize(void) const;
 
 		/*!
-		 * Get the global view of the field for fast collision checking.
-		 *
-		 * \returns   A constant reference to the internal GlobalView instance.
-		 */
-		const GlobalView& getGlobalView(void) const;
-
-		/*!
 		 * Get the maximum segment radius of any Snake on the Field.
 		 */
 		float_t getMaxSegmentRadius(void) const;
+
+		const FoodInfoMap& getFoodInfoMap() const { return m_foodMap; }
+		const SegmentInfoMap& getSegmentInfoMap() const { return m_segmentInfoMap; }
 };
