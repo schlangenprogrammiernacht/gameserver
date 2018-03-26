@@ -2,18 +2,16 @@
 #include <vector>
 #include <algorithm>
 
-#include "LocalView.h"
-
-#include "config.h"
-
 #include "Field.h"
 
-Field::Field(float_t w, float_t h, std::size_t food_parts,
-				const std::shared_ptr<UpdateTracker> &update_tracker)
-	: m_width(w), m_height(h), m_updateTracker(update_tracker)
+Field::Field(float_t w, float_t h, std::size_t food_parts, const std::shared_ptr<UpdateTracker> &update_tracker)
+	: m_width(w)
+	, m_height(h)
+	, m_updateTracker(update_tracker)
+	, m_foodMap(static_cast<size_t>(w), static_cast<size_t>(h), config::SPATIAL_MAP_RESERVE_COUNT)
+	, m_segmentInfoMap(static_cast<size_t>(w), static_cast<size_t>(h), config::SPATIAL_MAP_RESERVE_COUNT)
 {
 	setupRandomness();
-
 	createStaticFood(food_parts);
 }
 
@@ -54,9 +52,29 @@ void Field::setupRandomness(void)
 		std::make_unique< std::uniform_real_distribution<float_t> >(0, 1);
 }
 
-void Field::updateGlobalView(void)
+void Field::updateFoodMap()
 {
-	m_globalView.rebuild(this);
+	m_foodMap.clear();
+	for (auto &f : m_staticFood)
+	{
+		m_foodMap.addElement(f);
+	}
+	for (auto &f : m_dynamicFood)
+	{
+		m_foodMap.addElement(f);
+	}
+}
+
+void Field::updateSnakeSegmentMap()
+{
+	m_segmentInfoMap.clear();
+	for (auto &b : m_bots)
+	{
+		for(auto &s : b->getSnake()->getSegments())
+		{
+			m_segmentInfoMap.addElement({s, b});
+		}
+	}
 }
 
 void Field::updateMaxSegmentRadius(void)
@@ -119,44 +137,41 @@ void Field::updateFood(void)
 			dfi++;
 		}
 	}
+
+	// step 3: refresh food spatial map for faster access
+	updateFoodMap();
 }
 
 void Field::consumeFood(void)
 {
-	// update the global view for faster processing
-	updateGlobalView();
-
-	for(auto &b: m_bots) {
+	for (auto &b: m_bots) {
 		std::size_t foodToGenerate = 0;
 
-		// create a LocalView for this bot which contains only the food close to
-		// the bot’s head
-		std::shared_ptr<LocalView> localView = m_globalView.extractLocalView(
-				b->getSnake()->getHeadPosition(),
-				b->getSnake()->getSegmentRadius() * config::SNAKE_CONSUME_RANGE);
+		m_foodMap.processElements(
+			b->getSnake()->getHeadPosition(),
+			b->getSnake()->getSegmentRadius() * config::SNAKE_CONSUME_RANGE,
+			[this, &b, &foodToGenerate](const FoodInfo& fi)
+			{
+				if (!b->getSnake()->canConsume(fi.food)) { return true; }
 
-		const LocalView::FoodInfoList &foodList = localView->getFood();
+				b->getSnake()->consume(fi.food);
+				m_updateTracker->foodConsumed(fi.food, b);
 
-		// iterate over all food items, check if they can be consumed and if so,
-		// consume it and regenerate it if it was a static food item
-		auto fi = foodList.begin();
-		while(fi != foodList.end()) {
-			if(b->getSnake()->canConsume(fi->food)) {
-				b->getSnake()->consume(fi->food);
-				m_updateTracker->foodConsumed(fi->food, b);
-
-				if(m_staticFood.count(fi->food) > 0) {
-					m_staticFood.erase(fi->food);
+				if (m_staticFood.count(fi.food) > 0)
+				{
+					m_staticFood.erase(fi.food);
 					foodToGenerate++;
-				} else if(m_dynamicFood.count(fi->food) > 0) {
-					m_dynamicFood.erase(fi->food);
 				}
+				else if (m_dynamicFood.count(fi.food) > 0)
+				{
+					m_dynamicFood.erase(fi.food);
+				}
+
+				return true;
 			}
+		);
 
-			fi++;
-		}
-
-		createStaticFood(foodToGenerate);
+		createStaticFood(foodToGenerate); // TODO should this be done outside the bot loop?
 	}
 
 	updateMaxSegmentRadius();
@@ -190,6 +205,8 @@ void Field::moveAllBots(void)
 			bi++;
 		}
 	}
+
+	updateSnakeSegmentMap();
 }
 
 const Field::BotSet& Field::getBots(void) const
@@ -291,7 +308,7 @@ void Field::debugVisualization(void)
 
 	// draw food
 	for(auto &f: m_staticFood) {
-		const Vector2D &pos = f->getPosition();
+		const Vector2D &pos = f->pos();
 
 		char c;
 
@@ -313,8 +330,8 @@ void Field::debugVisualization(void)
 
 		bool first = true;
 		for(auto &seg: snake->getSegments()) {
-			size_t x = static_cast<size_t>(seg->pos.x());
-			size_t y = static_cast<size_t>(seg->pos.y());
+			size_t x = static_cast<size_t>(seg->pos().x());
+			size_t y = static_cast<size_t>(seg->pos().y());
 
 			if(first) {
 				rep[y*intW + x] = '#';
@@ -339,11 +356,6 @@ void Field::debugVisualization(void)
 Vector2D Field::getSize(void) const
 {
 	return Vector2D(m_width, m_height);
-}
-
-const GlobalView& Field::getGlobalView(void) const
-{
-	return m_globalView;
 }
 
 float_t Field::getMaxSegmentRadius(void) const

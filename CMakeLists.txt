@@ -21,14 +21,12 @@ set(sources
 	src/Food.h
 	src/Game.cpp
 	src/Game.h
-	src/GlobalView.cpp
-	src/GlobalView.h
 	src/GUIDGenerator.cpp
 	src/GUIDGenerator.h
 	src/IdentifyableObject.cpp
 	src/IdentifyableObject.h
-	src/LocalView.cpp
-	src/LocalView.h
+	src/PositionObject.h
+	src/SpatialMap.h
 	src/main.cpp
 	src/MsgPackProtocol.h
 	src/MsgPackUpdateTracker.cpp
