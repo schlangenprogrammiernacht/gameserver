@@ -15,6 +15,7 @@ class LuaBot
 		bool m_initialized = false;
 		sol::state m_lua_state;
 		sol::environment m_lua_safe_env;
+		std::vector<sol::table> m_api_tableVector;
 
 		void setQuota(uint32_t num_instructions, double seconds);
 		sol::environment createEnvironment();

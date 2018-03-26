@@ -7,6 +7,7 @@
 LuaBot::LuaBot(Bot &bot)
 	: m_bot(bot)
 {
+	m_api_tableVector.reserve(5000);
 }
 
 bool LuaBot::init()
@@ -113,19 +114,17 @@ sol::table LuaBot::createFunctionTable(const std::string &obj, const std::vector
 
 std::vector<sol::table> LuaBot::apiFindFood(float_t radius, float_t min_size)
 {
-	std::vector<sol::table> foodVector;
-	foodVector.reserve(1000);
-
 	auto head_pos = m_bot.getSnake()->getHeadPosition();
 	float_t heading_rad = static_cast<float_t>(2.0 * M_PI * (m_bot.getHeading() / 360.0));
 
 	radius = std::min(radius, getMaxSightRadius());
 
+	m_api_tableVector.clear();
 	auto field = m_bot.getField();
 	field->getFoodInfoMap().processElements(
 		head_pos,
 		radius,
-		[this, &foodVector, field, head_pos, heading_rad, min_size](const Field::FoodInfo& foodinfo)
+		[this, field, head_pos, heading_rad, min_size](const Field::FoodInfo& foodinfo)
 		{
 			if (foodinfo.food->getValue()>=min_size)
 			{
@@ -133,7 +132,7 @@ std::vector<sol::table> LuaBot::apiFindFood(float_t radius, float_t min_size)
 				float_t direction = static_cast<float_t>(atan2(relPos.y(), relPos.x())) - heading_rad;
 				while (direction<0) { direction += 2*M_PI; }
 				while (direction>2*M_PI) { direction -= 2*M_PI; }
-				foodVector.push_back(
+				m_api_tableVector.push_back(
 					m_lua_state.create_table_with(
 						"x", relPos.x(),
 						"y", relPos.y(),
@@ -147,24 +146,22 @@ std::vector<sol::table> LuaBot::apiFindFood(float_t radius, float_t min_size)
 		}
 	);
 
-	return foodVector;
+	return m_api_tableVector;
 }
 
 std::vector<sol::table> LuaBot::apiFindSegments(float_t radius, bool include_self)
 {
-	std::vector<sol::table> snakeSegmentVector;
-	snakeSegmentVector.reserve(1000);
-
 	auto pos = m_bot.getSnake()->getHeadPosition();
 	float_t heading_rad = 2*M_PI * (m_bot.getHeading() / 360.0);
 	radius = std::min(radius, getMaxSightRadius());
-
 	auto self_id = m_bot.getGUID();
+
+	m_api_tableVector.clear();
 	auto field = m_bot.getField();
 	field->getSegmentInfoMap().processElements(
 		pos,
 		radius,
-		[this, &snakeSegmentVector, field, pos, heading_rad, self_id, include_self](const Field::SnakeSegmentInfo& segmentInfo)
+		[this, field, pos, heading_rad, self_id, include_self](const Field::SnakeSegmentInfo& segmentInfo)
 		{
 			if (!include_self && (segmentInfo.bot->getGUID() == self_id)) { return true; }
 
@@ -172,7 +169,7 @@ std::vector<sol::table> LuaBot::apiFindSegments(float_t radius, bool include_sel
 			float_t direction = atan2(relPos.y(), relPos.x()) - heading_rad;
 			while (direction<0) { direction += 2*M_PI; }
 			while (direction>2*M_PI) { direction -= 2*M_PI; }
-			snakeSegmentVector.push_back(
+			m_api_tableVector.push_back(
 				m_lua_state.create_table_with(
 					"x", relPos.x(),
 					"y", relPos.y(),
@@ -186,7 +183,7 @@ std::vector<sol::table> LuaBot::apiFindSegments(float_t radius, bool include_sel
 		}
 	);
 
-	return snakeSegmentVector;
+	return m_api_tableVector;
 }
 
 float_t LuaBot::getMaxSightRadius() const
