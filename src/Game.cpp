@@ -15,7 +15,7 @@ Game::Game()
 			config::FIELD_STATIC_FOOD,
 			m_updateTracker);
 
-	for(int i = 0; i < 10; i++) {
+	for(int i = 0; i < 20; i++) {
 		m_field->newBot("testBot");
 	}
 
@@ -85,7 +85,7 @@ bool Game::OnTimerInterval()
 	// do all the game logic here and send updates to clients
 
 	static uint32_t frameNumber = 0;
-	std::cout << "Frame number #" << frameNumber++ << std::endl;
+	//std::cout << "Frame number #" << frameNumber++ << std::endl;
 
 	m_field->updateFood();
 	m_field->consumeFood();
@@ -109,8 +109,8 @@ int Game::Main()
 		return -1;
 	}
 
-	//server.AddIntervalTimer(16666); // 60 fps
-	server.AddIntervalTimer(50000); // 20 fps
+	server.AddIntervalTimer(16666); // 60 fps
+	//server.AddIntervalTimer(50000); // 20 fps
 	//server.AddIntervalTimer(1000000); // 1 fps
 
 	while(true) {

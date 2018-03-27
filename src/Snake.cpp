@@ -33,7 +33,7 @@ void Snake::ensureSizeMatchesMass(void)
 
 	std::size_t curLen = m_segments.size();
 	std::size_t targetLen = static_cast<std::size_t>(
-			m_mass / m_targetSegmentDistance);
+			m_mass / m_targetSegmentDistance / 5);
 			//pow(m_mass, config::SNAKE_NSEGMENTS_EXPONENT));
 
 

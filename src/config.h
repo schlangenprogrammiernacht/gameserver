@@ -13,8 +13,8 @@
 namespace config {
 
 	// Field size
-	static const float_t     FIELD_SIZE_X            = 1024;
-	static const float_t     FIELD_SIZE_Y            = 1024;
+	static const float_t     FIELD_SIZE_X            = 1920;
+	static const float_t     FIELD_SIZE_Y            = 1080;
 
 	// Spatial Map size
 	static constexpr const size_t SPATIAL_MAP_TILES_X = 128;

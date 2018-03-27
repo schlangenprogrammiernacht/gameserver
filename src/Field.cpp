@@ -296,6 +296,17 @@ Vector2D Field::unwrapCoords(const Vector2D &v, const Vector2D &ref) const
 	return {x, y};
 }
 
+Vector2D Field::unwrapRelativeCoords(const Vector2D& relativeCoords) const
+{
+	float_t x = fmod(relativeCoords.x(), m_width);
+	float_t y = fmod(relativeCoords.y(), m_height);
+	if (x > m_width/2) { x -= m_width; }
+	if (x < (-(int)m_width/2)) { x += m_width; }
+	if (y > m_height/2) { y -= m_height; }
+	if (y < (-(int)m_height/2)) { y += m_height; }
+	return Vector2D { x, y };
+}
+
 void Field::debugVisualization(void)
 {
 	size_t intW = static_cast<size_t>(m_width);
