@@ -14,7 +14,7 @@ function step()
 	end
 
 	local food = findFood(max_distance, 0.8)
-	for i, item in ipairs(food) do
+	for i, item in food:pairs() do
 		local qi = get_sector(item.d)
 		q[qi].sum = q[qi].sum + sector_factor[qi] * item.v
 		if item.dist < q[qi].nearest_dist then
@@ -24,7 +24,7 @@ function step()
 	end
 
 	local segments = findSegments(50.0, false)
-	for i, item in ipairs(segments) do
+	for i, item in segments:pairs() do
 		local qi = get_sector(item.d)
 		local dist_to_collition = item.dist - item.r - self.r
 		if dist_to_collition < q[qi].dist_to_collition then

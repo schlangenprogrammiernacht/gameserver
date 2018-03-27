@@ -3,8 +3,13 @@ project (GameServer VERSION 0.1 LANGUAGES CXX)
 
 add_subdirectory(lib/TcpServer/TcpServer)
 
-set (CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_FLAGS "-Wall -pedantic")
+
+#set(LUA_INCLUDE_DIR "/usr/include/luajit-2.0")
+#set(LUA_LIB "luajit-5.1")
+set(LUA_INCLUDE_DIR "/usr/include/lua5.3")
+set(LUA_LIB "lua5.3")
 
 find_package(Eigen3 REQUIRED)
 include_directories(${EIGEN3_INCLUDE_DIR})
@@ -44,7 +49,7 @@ include_directories(
 	lib/msgpack-c/include/
 	lib/TcpServer/TcpServer/include/
 	lib/sol2
-	/usr/include/lua5.3
+	${LUA_INCLUDE_DIR}
 )
 
 add_executable(
@@ -55,7 +60,7 @@ add_executable(
 target_link_libraries(
 	${CMAKE_PROJECT_NAME}
 	tcpserver
-	lua5.3
+	${LUA_LIB}
 )
 
 configure_file("lua/demobot.lua" "lua/demobot.lua" COPYONLY)
