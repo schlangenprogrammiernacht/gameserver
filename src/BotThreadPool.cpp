@@ -2,62 +2,88 @@
 
 #include "Bot.h"
 
+#include "config.h"
+
 #include "BotThreadPool.h"
 
 BotThreadPool::BotThreadPool(std::size_t num_threads)
 	: m_threads(num_threads)
 {
-}
-
-void BotThreadPool::addJob(std::unique_ptr<Job> job)
-{
-	m_inputJobs.push(std::move(job));
-}
-
-void BotThreadPool::run(void)
-{
-	// prevent threads from running before pool is fully initialized
-	m_inputQueueMutex.lock();
-
+	// create all the threads
 	for(auto &thread : m_threads) {
 		std::thread newThread(
 					[this] ()
 					{
-						m_inputQueueMutex.lock();
+						while(!m_shutdown) {
+							std::unique_ptr<Job> currentJob;
 
-						while(!m_inputJobs.empty()) {
+							{
+								std::lock_guard<std::mutex> inputQueueGuard(m_inputQueueMutex);
 
-							std::unique_ptr<Job> currentJob(std::move(m_inputJobs.front()));
-							m_inputJobs.pop();
+								if(!m_inputJobs.empty()) {
+									currentJob = std::move(m_inputJobs.front());
+									m_inputJobs.pop();
 
-							m_inputQueueMutex.unlock();
+									std::lock_guard<std::mutex> activeThreadsGuard(m_activeThreadsMutex);
+									m_activeThreads++;
+								} else {
+									currentJob = NULL;
+								}
+							}
 
-							currentJob->steps = currentJob->bot->move();
+							if(currentJob) {
+								currentJob->steps = currentJob->bot->move();
 
-							m_processedQueueMutex.lock();
-							m_processedJobs.push(std::move(currentJob));
-							m_processedQueueMutex.unlock();
+								std::lock_guard<std::mutex> processedQueueGuard(m_processedQueueMutex);
+								m_processedJobs.push(std::move(currentJob));
 
-							m_inputQueueMutex.lock();
+								std::lock_guard<std::mutex> activeThreadsGuard(m_activeThreadsMutex);
+								m_activeThreads--;
+							} else {
+								std::this_thread::sleep_for(config::THREAD_POOL_IDLE_SLEEP_TIME);
+							}
 						}
-
-						m_inputQueueMutex.unlock();
 					});
 
 		thread.swap(newThread);
 	}
+}
 
-	// run it all
-	m_inputQueueMutex.unlock();
+BotThreadPool::~BotThreadPool()
+{
+	// request thread shutdown
+	m_shutdown = true;
 
-	// wait for completion
+	// wait for all threads to finish
 	for(auto &thread : m_threads) {
 		thread.join();
 	}
 }
 
+void BotThreadPool::addJob(std::unique_ptr<Job> job)
+{
+	std::lock_guard<std::mutex> guard(m_inputQueueMutex);
+	m_inputJobs.push(std::move(job));
+}
+
+void BotThreadPool::run(void)
+{
+	// run until the input queue is empty
+	bool still_working;
+
+	do {
+		std::this_thread::sleep_for(config::THREAD_POOL_IDLE_SLEEP_TIME);
+
+		std::lock_guard<std::mutex> inputQueueGuard(m_inputQueueMutex);
+		std::lock_guard<std::mutex> activeThreadsGuard(m_activeThreadsMutex);
+		still_working = !m_inputJobs.empty() || (m_activeThreads > 0);
+	} while(still_working);
+}
+
 std::unique_ptr<BotThreadPool::Job> BotThreadPool::getProcessedJob()
 {
+	std::lock_guard<std::mutex> guard(m_processedQueueMutex);
+
 	if(!m_processedJobs.empty()) {
 		std::unique_ptr<Job> job(std::move(m_processedJobs.front()));
 		m_processedJobs.pop();

@@ -26,10 +26,17 @@ class BotThreadPool
 		std::queue< std::unique_ptr<Job> > m_processedJobs;
 
 		std::mutex m_inputQueueMutex;
+		std::mutex m_activeThreadsMutex;
 		std::mutex m_processedQueueMutex;
+
+		bool m_shutdown = false;
+
+		std::size_t m_activeThreads = 0;
 
 	public:
 		BotThreadPool(std::size_t num_threads);
+
+		~BotThreadPool();
 
 		/*!
 		 * \brief Add a job to be processed in parallel
