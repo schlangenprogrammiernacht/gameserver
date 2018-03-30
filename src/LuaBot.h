@@ -1,8 +1,53 @@
 #pragma once
 #include <sol.hpp>
+#include "types.h"
+
+struct LuaSegmentInfo
+{
+	float_t x, y, r, d, dist;
+	guid_t bot;
+
+	LuaSegmentInfo(float_t aX,float_t aY, float_t aR, float_t aD, float_t aDist, guid_t aBot)
+		: x(aX), y(aY), r(aR), d(aD), dist(aDist), bot(aBot)
+	{
+	}
+
+	static void Register(sol::state& lua)
+	{
+		lua.new_usertype<LuaSegmentInfo>(
+			"SegmentInfo",
+			"x", sol::readonly(&LuaSegmentInfo::x),
+			"y", sol::readonly(&LuaSegmentInfo::y),
+			"r", sol::readonly(&LuaSegmentInfo::r),
+			"d", sol::readonly(&LuaSegmentInfo::d),
+			"dist", sol::readonly(&LuaSegmentInfo::dist),
+			"bot", sol::readonly(&LuaSegmentInfo::bot)
+		);
+	}
+};
+
+struct LuaFoodInfo
+{
+	float_t x, y, v, d, dist;
+	LuaFoodInfo(float_t aX, float_t aY, float_t aV, float_t aD, float_t aDist)
+		: x(aX), y(aY), v(aV), d(aD), dist(aDist)
+	{
+	}
+
+	static void Register(sol::state& lua)
+	{
+		lua.new_usertype<LuaFoodInfo>(
+			"FoodInfo",
+			"x", sol::readonly(&LuaFoodInfo::x),
+			"y", sol::readonly(&LuaFoodInfo::y),
+			"v", sol::readonly(&LuaFoodInfo::v),
+			"d", sol::readonly(&LuaFoodInfo::d),
+			"dist", sol::readonly(&LuaFoodInfo::dist)
+		);
+	}
+};
 
 class Bot;
-
 class LuaBot
 {
 	public:
@@ -15,14 +60,15 @@ class LuaBot
 		bool m_initialized = false;
 		sol::state m_lua_state;
 		sol::environment m_lua_safe_env;
-		std::vector<sol::table> m_api_tableVector;
+		std::vector<LuaFoodInfo> m_luaFoodInfoTable;
+		std::vector<LuaSegmentInfo> m_luaSegmentInfoTable;
 
 		void setQuota(uint32_t num_instructions, double seconds);
 		sol::environment createEnvironment();
 		sol::table createFunctionTable(const std::string& obj, const std::vector<std::string>& items);
 
-		std::vector<sol::table> apiFindFood(float_t radius, float_t min_size);
-		std::vector<sol::table> apiFindSegments(float_t radius, bool include_self);
+		std::vector<LuaFoodInfo>& apiFindFood(float_t radius, float_t min_size);
+		std::vector<LuaSegmentInfo>& apiFindSegments(float_t radius, bool include_self);
 
 		float_t getMaxSightRadius() const;
 
