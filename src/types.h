@@ -7,7 +7,7 @@
 #include <Eigen/Geometry>
 #pragma GCC diagnostic pop
 
-typedef float         float_t;
+typedef float real_t;
 typedef std::uint64_t guid_t;
 
-typedef Eigen::Matrix<float_t, 2, 1> Vector2D;
+typedef Eigen::Matrix<real_t, 2, 1> Vector2D;

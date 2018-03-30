@@ -34,16 +34,16 @@ class Snake
 
 		Field *m_field;
 
-		float_t m_mass; //!< Mass (length) of the snake
+		real_t m_mass; //!< Mass (length) of the snake
 
-		float_t m_heading; //!< Heading of the snake in degrees (-180°..180°) from x axis
+		real_t m_heading; //!< Heading of the snake in degrees (-180°..180°) from x axis
 
-		float_t m_segmentRadius; //!< Segment radius (calculated from m_mass; cached)
-		float_t m_targetSegmentDistance; //!< Distance between the segments
+		real_t m_segmentRadius; //!< Segment radius (calculated from m_mass; cached)
+		real_t m_targetSegmentDistance; //!< Distance between the segments
 
-		float_t m_movedSinceLastSpawn = 0; //!< Distance the head has moved since the last spawned segment
+		real_t m_movedSinceLastSpawn = 0; //!< Distance the head has moved since the last spawned segment
 
-		float_t maxRotationPerStep(void);
+		real_t maxRotationPerStep(void);
 
 		/*!
 		 * Updates the length of m_segments and calculates the current m_segmentRadius
@@ -56,8 +56,8 @@ class Snake
 		 */
 		Snake(Field *field);
 
-		Snake(Field *field, const Vector2D &start_pos, float_t start_mass,
-				float_t start_heading);
+		Snake(Field *field, const Vector2D &start_pos, real_t start_mass,
+				real_t start_heading);
 
 		/*!
 		 * Consume the given food piece.
@@ -71,7 +71,7 @@ class Snake
 		 * \param boost          Whether to apply boost
 		 * \returns              The number of segments created during the operation.
 		 */
-		std::size_t move(float targetAngle, bool boost = false);
+		std::size_t move(real_t targetAngle, bool boost = false);
 
 		/*!
 		 * Get the list of segments.
@@ -87,7 +87,7 @@ class Snake
 		/*!
 		 * Get the current segment radius.
 		 */
-		float_t getSegmentRadius(void) const;
+		real_t getSegmentRadius(void) const;
 
 		/*!
 		 * Check if this Snake can consume the given Food.

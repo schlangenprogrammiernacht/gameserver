@@ -22,7 +22,7 @@ class Bot : public IdentifyableObject
 		std::shared_ptr<Snake>  m_snake;
 		std::unique_ptr<LuaBot> m_lua_bot;
 
-		float_t                 m_heading;
+		real_t                 m_heading;
 
 		size_t m_moveCounter;
 
@@ -31,7 +31,7 @@ class Bot : public IdentifyableObject
 		 * Creates a new bot identified by the given name on the given playing
 		 * field.
 		 */
-		Bot(Field *field, const std::string &name, const Vector2D &startPos, float_t startHeading);
+		Bot(Field *field, const std::string &name, const Vector2D &startPos, real_t startHeading);
 		~Bot();
 
 		/*!
@@ -54,7 +54,7 @@ class Bot : public IdentifyableObject
 
 		const std::string &getName(void) const { return m_name; }
 
-		float_t getHeading() { return m_heading; }
+		real_t getHeading() { return m_heading; }
 
 		Field* getField() { return m_field; }
 };

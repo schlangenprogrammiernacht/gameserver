@@ -4,10 +4,10 @@
 
 struct LuaSegmentInfo
 {
-	float_t x, y, r, d, dist;
+	real_t x, y, r, d, dist;
 	guid_t bot;
 
-	LuaSegmentInfo(float_t aX,float_t aY, float_t aR, float_t aD, float_t aDist, guid_t aBot)
+	LuaSegmentInfo(real_t aX,real_t aY, real_t aR, real_t aD, real_t aDist, guid_t aBot)
 		: x(aX), y(aY), r(aR), d(aD), dist(aDist), bot(aBot)
 	{
 	}
@@ -28,8 +28,8 @@ struct LuaSegmentInfo
 
 struct LuaFoodInfo
 {
-	float_t x, y, v, d, dist;
-	LuaFoodInfo(float_t aX, float_t aY, float_t aV, float_t aD, float_t aDist)
+	real_t x, y, v, d, dist;
+	LuaFoodInfo(real_t aX, real_t aY, real_t aV, real_t aD, real_t aDist)
 		: x(aX), y(aY), v(aV), d(aD), dist(aDist)
 	{
 	}
@@ -67,9 +67,9 @@ class LuaBot
 		sol::environment createEnvironment();
 		sol::table createFunctionTable(const std::string& obj, const std::vector<std::string>& items);
 
-		std::vector<LuaFoodInfo>& apiFindFood(float_t radius, float_t min_size);
-		std::vector<LuaSegmentInfo>& apiFindSegments(float_t radius, bool include_self);
+		std::vector<LuaFoodInfo>& apiFindFood(real_t radius, real_t min_size);
+		std::vector<LuaSegmentInfo>& apiFindSegments(real_t radius, bool include_self);
 
-		float_t getMaxSightRadius() const;
+		real_t getMaxSightRadius() const;
 
 };

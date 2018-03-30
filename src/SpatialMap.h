@@ -34,7 +34,7 @@ template <class T, size_t TILES_X, size_t TILES_Y> class SpatialMap
 		}
 
 		typedef std::function<bool (const T&)> ProcessCallback;
-		void processElements(const Vector2D& center, float_t radius, ProcessCallback callback) const
+		void processElements(const Vector2D& center, real_t radius, ProcessCallback callback) const
 		{
 			const Vector2D topLeft = center - Vector2D { radius, radius };
 			const Vector2D bottomRight = center + Vector2D { radius, radius };
@@ -61,7 +61,7 @@ template <class T, size_t TILES_X, size_t TILES_Y> class SpatialMap
 
 	private:
 		size_t m_fieldSizeX, m_fieldSizeY;
-		float_t m_tileSizeX, m_tileSizeY;
+		real_t m_tileSizeX, m_tileSizeY;
 		typedef std::vector<T> TileVector;
 		std::array<TileVector, TILES_X*TILES_Y> m_tiles;
 

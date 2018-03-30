@@ -44,10 +44,10 @@ class Field
 		typedef SpatialMap<FoodInfo, config::SPATIAL_MAP_TILES_X, config::SPATIAL_MAP_TILES_Y> FoodInfoMap;
 
 	private:
-		const float_t m_width;
-		const float_t m_height;
+		const real_t m_width;
+		const real_t m_height;
 
-		float_t m_maxSegmentRadius = 0;
+		real_t m_maxSegmentRadius = 0;
 
 		BotSet  m_bots;
 		FoodSet m_staticFood; //!< Food placed randomly in the field.
@@ -55,12 +55,12 @@ class Field
 
 		std::unique_ptr<std::mt19937> m_rndGen;
 
-		std::unique_ptr< std::normal_distribution<float_t> >       m_foodSizeDistribution;
-		std::unique_ptr< std::uniform_real_distribution<float_t> > m_positionXDistribution;
-		std::unique_ptr< std::uniform_real_distribution<float_t> > m_positionYDistribution;
-		std::unique_ptr< std::uniform_real_distribution<float_t> > m_angleDegreesDistribution;
-		std::unique_ptr< std::uniform_real_distribution<float_t> > m_angleRadDistribution;
-		std::unique_ptr< std::uniform_real_distribution<float_t> > m_simple0To1Distribution;
+		std::unique_ptr< std::normal_distribution<real_t> >       m_foodSizeDistribution;
+		std::unique_ptr< std::uniform_real_distribution<real_t> > m_positionXDistribution;
+		std::unique_ptr< std::uniform_real_distribution<real_t> > m_positionYDistribution;
+		std::unique_ptr< std::uniform_real_distribution<real_t> > m_angleDegreesDistribution;
+		std::unique_ptr< std::uniform_real_distribution<real_t> > m_angleRadDistribution;
+		std::unique_ptr< std::uniform_real_distribution<real_t> > m_simple0To1Distribution;
 
 		std::shared_ptr<UpdateTracker> m_updateTracker;
 
@@ -75,7 +75,7 @@ class Field
 		void updateMaxSegmentRadius(void);
 
 	public:
-		Field(float_t w, float_t h, std::size_t food_parts,
+		Field(real_t w, real_t h, std::size_t food_parts,
 				const std::shared_ptr<UpdateTracker> &update_tracker);
 
 		/*!
@@ -127,7 +127,7 @@ class Field
 		 * \param center       Center of the distribution circle.
 		 * \param radius       Radius of the distribution circle.
 		 */
-		void createDynamicFood(float_t totalValue, const Vector2D &center, float_t radius);
+		void createDynamicFood(real_t totalValue, const Vector2D &center, real_t radius);
 
 		/*!
 		 * Wrap the coordinates of the given vector into the Fields unique area.
@@ -167,7 +167,7 @@ class Field
 		/*!
 		 * Get the maximum segment radius of any Snake on the Field.
 		 */
-		float_t getMaxSegmentRadius(void) const;
+		real_t getMaxSegmentRadius(void) const;
 
 		const FoodInfoMap& getFoodInfoMap() const { return m_foodMap; }
 		const SegmentInfoMap& getSegmentInfoMap() const { return m_segmentInfoMap; }

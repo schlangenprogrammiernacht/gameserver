@@ -35,7 +35,7 @@ bool LuaBot::init()
 
 bool LuaBot::step(float &next_heading, bool &boost)
 {
-	float_t last_heading = m_bot.getHeading();
+	real_t last_heading = m_bot.getHeading();
 	next_heading = last_heading;
 	boost = false;
 
@@ -73,8 +73,8 @@ sol::environment LuaBot::createEnvironment()
 {
 	auto env = sol::environment(m_lua_state, sol::create);
 	env["log"] = [](std::string v) { printf("%s\n", v.c_str()); };
-	env["findFood"] = [this](float_t radius, float_t min_size) { return apiFindFood(radius, min_size); };
-	env["findSegments"] = [this](float_t radius, bool include_self) { return apiFindSegments(radius, include_self); };
+	env["findFood"] = [this](real_t radius, real_t min_size) { return apiFindFood(radius, min_size); };
+	env["findSegments"] = [this](real_t radius, bool include_self) { return apiFindSegments(radius, include_self); };
 
 	for (auto& func: std::vector<std::string>{
 		"assert", "print", "ipairs", "error", "next", "pairs", "pcall", "select",
@@ -116,10 +116,10 @@ sol::table LuaBot::createFunctionTable(const std::string &obj, const std::vector
 	return table;
 }
 
-std::vector<LuaFoodInfo>& LuaBot::apiFindFood(float_t radius, float_t min_size)
+std::vector<LuaFoodInfo>& LuaBot::apiFindFood(real_t radius, real_t min_size)
 {
 	auto head_pos = m_bot.getSnake()->getHeadPosition();
-	float_t heading_rad = static_cast<float_t>(2.0 * M_PI * (m_bot.getHeading() / 360.0));
+	real_t heading_rad = static_cast<real_t>(2.0 * M_PI * (m_bot.getHeading() / 360.0));
 
 	radius = std::min(radius, getMaxSightRadius());
 
@@ -133,7 +133,7 @@ std::vector<LuaFoodInfo>& LuaBot::apiFindFood(float_t radius, float_t min_size)
 			if (foodinfo.food->getValue()>=min_size)
 			{
 				Vector2D relPos = field->unwrapRelativeCoords(foodinfo.pos() - head_pos);
-				float_t direction = static_cast<float_t>(atan2(relPos.y(), relPos.x())) - heading_rad;
+				real_t direction = static_cast<real_t>(atan2(relPos.y(), relPos.x())) - heading_rad;
 				while (direction<0) { direction += 2*M_PI; }
 				while (direction>2*M_PI) { direction -= 2*M_PI; }
 				m_luaFoodInfoTable.emplace_back(
@@ -151,10 +151,10 @@ std::vector<LuaFoodInfo>& LuaBot::apiFindFood(float_t radius, float_t min_size)
 	return m_luaFoodInfoTable;
 }
 
-std::vector<LuaSegmentInfo>& LuaBot::apiFindSegments(float_t radius, bool include_self)
+std::vector<LuaSegmentInfo>& LuaBot::apiFindSegments(real_t radius, bool include_self)
 {
 	auto pos = m_bot.getSnake()->getHeadPosition();
-	float_t heading_rad = 2*M_PI * (m_bot.getHeading() / 360.0);
+	real_t heading_rad = 2*M_PI * (m_bot.getHeading() / 360.0);
 	radius = std::min(radius, getMaxSightRadius());
 	auto self_id = m_bot.getGUID();
 
@@ -168,7 +168,7 @@ std::vector<LuaSegmentInfo>& LuaBot::apiFindSegments(float_t radius, bool includ
 			if (!include_self && (segmentInfo.bot->getGUID() == self_id)) { return true; }
 
 			Vector2D relPos = field->unwrapRelativeCoords(segmentInfo.pos() - pos);
-			float_t direction = atan2(relPos.y(), relPos.x()) - heading_rad;
+			real_t direction = atan2(relPos.y(), relPos.x()) - heading_rad;
 			while (direction<0) { direction += 2*M_PI; }
 			while (direction>2*M_PI) { direction -= 2*M_PI; }
 			m_luaSegmentInfoTable.emplace_back(
@@ -186,7 +186,7 @@ std::vector<LuaSegmentInfo>& LuaBot::apiFindSegments(float_t radius, bool includ
 	return m_luaSegmentInfoTable;
 }
 
-float_t LuaBot::getMaxSightRadius() const
+real_t LuaBot::getMaxSightRadius() const
 {
 	return 50.0f + 15.0f * m_bot.getSnake()->getSegmentRadius();
 }

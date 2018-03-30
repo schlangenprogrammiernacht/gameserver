@@ -4,7 +4,7 @@
 
 #include "Field.h"
 
-Field::Field(float_t w, float_t h, std::size_t food_parts, const std::shared_ptr<UpdateTracker> &update_tracker)
+Field::Field(real_t w, real_t h, std::size_t food_parts, const std::shared_ptr<UpdateTracker> &update_tracker)
 	: m_width(w)
 	, m_height(h)
 	, m_updateTracker(update_tracker)
@@ -18,9 +18,9 @@ Field::Field(float_t w, float_t h, std::size_t food_parts, const std::shared_ptr
 void Field::createStaticFood(std::size_t count)
 {
 	for(std::size_t i = 0; i < count; i++) {
-		float_t value = (*m_foodSizeDistribution)(*m_rndGen);
-		float_t x     = (*m_positionXDistribution)(*m_rndGen);
-		float_t y     = (*m_positionYDistribution)(*m_rndGen);
+		real_t value = (*m_foodSizeDistribution)(*m_rndGen);
+		real_t x     = (*m_positionXDistribution)(*m_rndGen);
+		real_t y     = (*m_positionYDistribution)(*m_rndGen);
 
 		std::shared_ptr<Food> newFood =
 			std::make_shared<Food>(this, Vector2D(x, y), value);
@@ -35,21 +35,21 @@ void Field::setupRandomness(void)
 	std::random_device rd;
 	m_rndGen = std::make_unique<std::mt19937>(rd());
 
-	m_foodSizeDistribution = std::make_unique< std::normal_distribution<float_t> >(
+	m_foodSizeDistribution = std::make_unique< std::normal_distribution<real_t> >(
 			config::FOOD_SIZE_MEAN, config::FOOD_SIZE_STDDEV);
 
 	m_positionXDistribution =
-		std::make_unique< std::uniform_real_distribution<float_t> >(0, m_width);
+		std::make_unique< std::uniform_real_distribution<real_t> >(0, m_width);
 	m_positionYDistribution =
-		std::make_unique< std::uniform_real_distribution<float_t> >(0, m_height);
+		std::make_unique< std::uniform_real_distribution<real_t> >(0, m_height);
 
 	m_angleDegreesDistribution =
-		std::make_unique< std::uniform_real_distribution<float_t> >(-180, 180);
+		std::make_unique< std::uniform_real_distribution<real_t> >(-180, 180);
 	m_angleRadDistribution =
-		std::make_unique< std::uniform_real_distribution<float_t> >(-M_PI, M_PI);
+		std::make_unique< std::uniform_real_distribution<real_t> >(-M_PI, M_PI);
 
 	m_simple0To1Distribution =
-		std::make_unique< std::uniform_real_distribution<float_t> >(0, 1);
+		std::make_unique< std::uniform_real_distribution<real_t> >(0, 1);
 }
 
 void Field::updateFoodMap()
@@ -82,7 +82,7 @@ void Field::updateMaxSegmentRadius(void)
 	m_maxSegmentRadius = 0;
 
 	for(auto &b: m_bots) {
-		float_t segmentRadius = b->getSnake()->getSegmentRadius();
+		real_t segmentRadius = b->getSnake()->getSegmentRadius();
 
 		if(segmentRadius > m_maxSegmentRadius) {
 			m_maxSegmentRadius = segmentRadius;
@@ -92,9 +92,9 @@ void Field::updateMaxSegmentRadius(void)
 
 void Field::newBot(const std::string &name)
 {
-	float_t x = (*m_positionXDistribution)(*m_rndGen);
-	float_t y = (*m_positionYDistribution)(*m_rndGen);
-	float_t heading = (*m_angleDegreesDistribution)(*m_rndGen);
+	real_t x = (*m_positionXDistribution)(*m_rndGen);
+	real_t y = (*m_positionYDistribution)(*m_rndGen);
+	real_t heading = (*m_angleDegreesDistribution)(*m_rndGen);
 
 	std::shared_ptr<Bot> bot = std::make_shared<Bot>(this, name, Vector2D(x,y), heading);
 
@@ -224,16 +224,16 @@ const Field::FoodSet& Field::getDynamicFood(void) const
 	return m_dynamicFood;
 }
 
-void Field::createDynamicFood(float_t totalValue, const Vector2D &center, float_t radius)
+void Field::createDynamicFood(real_t totalValue, const Vector2D &center, real_t radius)
 {
 	// create at least 1 food item
 	std::size_t count = 1 + totalValue / config::FOOD_SIZE_MEAN;
 
 	for(std::size_t i = 0; i < count; i++) {
-		float_t value = (*m_foodSizeDistribution)(*m_rndGen);
+		real_t value = (*m_foodSizeDistribution)(*m_rndGen);
 
-		float_t rndRadius = radius * (*m_simple0To1Distribution)(*m_rndGen);
-		float_t rndAngle = (*m_angleRadDistribution)(*m_rndGen);
+		real_t rndRadius = radius * (*m_simple0To1Distribution)(*m_rndGen);
+		real_t rndAngle = (*m_angleRadDistribution)(*m_rndGen);
 
 		Vector2D offset(cos(rndAngle), sin(rndAngle));
 		offset *= rndRadius;
@@ -250,8 +250,8 @@ void Field::createDynamicFood(float_t totalValue, const Vector2D &center, float_
 
 Vector2D Field::wrapCoords(const Vector2D &v) const
 {
-	float_t x = v.x();
-	float_t y = v.y();
+	real_t x = v.x();
+	real_t y = v.y();
 
 	while(x < 0) {
 		x += m_width;
@@ -274,8 +274,8 @@ Vector2D Field::wrapCoords(const Vector2D &v) const
 
 Vector2D Field::unwrapCoords(const Vector2D &v, const Vector2D &ref) const
 {
-	float_t x = v.x();
-	float_t y = v.y();
+	real_t x = v.x();
+	real_t y = v.y();
 
 	while((x - ref.x()) < -m_width/2) {
 		x += m_width;
@@ -298,8 +298,8 @@ Vector2D Field::unwrapCoords(const Vector2D &v, const Vector2D &ref) const
 
 Vector2D Field::unwrapRelativeCoords(const Vector2D& relativeCoords) const
 {
-	float_t x = fmod(relativeCoords.x(), m_width);
-	float_t y = fmod(relativeCoords.y(), m_height);
+	real_t x = fmod(relativeCoords.x(), m_width);
+	real_t y = fmod(relativeCoords.y(), m_height);
 	if (x > m_width/2) { x -= m_width; }
 	if (x < (-(int)m_width/2)) { x += m_width; }
 	if (y > m_height/2) { y -= m_height; }
@@ -369,7 +369,7 @@ Vector2D Field::getSize(void) const
 	return Vector2D(m_width, m_height);
 }
 
-float_t Field::getMaxSegmentRadius(void) const
+real_t Field::getMaxSegmentRadius(void) const
 {
 	return m_maxSegmentRadius;
 }

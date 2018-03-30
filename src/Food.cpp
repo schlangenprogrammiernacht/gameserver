@@ -2,7 +2,7 @@
 
 #include "Food.h"
 
-Food::Food(Field *field, const Vector2D &pos, float_t value)
+Food::Food(Field *field, const Vector2D &pos, real_t value)
 	: PositionObject(pos)
 	, m_field(field)
 	, m_value(value)

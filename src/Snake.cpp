@@ -13,8 +13,8 @@ Snake::Snake(Field *field)
 	ensureSizeMatchesMass();
 }
 
-Snake::Snake(Field *field, const Vector2D &startPos, float_t start_mass,
-		float_t start_heading)
+Snake::Snake(Field *field, const Vector2D &startPos, real_t start_mass,
+		real_t start_heading)
 	: m_field(field), m_mass(start_mass), m_heading(start_heading)
 {
 	// create the first segment manually
@@ -58,7 +58,7 @@ void Snake::ensureSizeMatchesMass(void)
 	m_segmentRadius = std::sqrt(m_mass) / 2;
 }
 
-float_t Snake::maxRotationPerStep(void)
+real_t Snake::maxRotationPerStep(void)
 {
 	// TODO: make this better?
 	return 10.0 / (m_segmentRadius/10.0 + 1);
@@ -70,10 +70,10 @@ void Snake::consume(const std::shared_ptr<Food>& food)
 	ensureSizeMatchesMass();
 }
 
-std::size_t Snake::move(float_t targetAngle, bool boost)
+std::size_t Snake::move(real_t targetAngle, bool boost)
 {
 	// calculate delta angle
-	float_t deltaAngle = targetAngle - m_heading;
+	real_t deltaAngle = targetAngle - m_heading;
 
 	// normalize delta angle
 	if(deltaAngle > 180) {
@@ -83,7 +83,7 @@ std::size_t Snake::move(float_t targetAngle, bool boost)
 	}
 
 	// limit rotation rate
-	float_t maxDelta = maxRotationPerStep();
+	real_t maxDelta = maxRotationPerStep();
 	if(deltaAngle > maxDelta) {
 		deltaAngle = maxDelta;
 	} else if(deltaAngle < -maxDelta) {
@@ -113,7 +113,7 @@ std::size_t Snake::move(float_t targetAngle, bool boost)
 		// calculate new segment offset
 		m_heading += deltaAngle;
 
-		float_t headingRad = m_heading * M_PI / 180;
+		real_t headingRad = m_heading * M_PI / 180;
 		Vector2D movementVector2D(cos(headingRad), sin(headingRad));
 		movementVector2D *= config::SNAKE_DISTANCE_PER_STEP;
 
@@ -174,7 +174,7 @@ const Vector2D& Snake::getHeadPosition(void) const
 	return m_segments[0]->pos();
 }
 
-float_t Snake::getSegmentRadius(void) const
+real_t Snake::getSegmentRadius(void) const
 {
 	return m_segmentRadius;
 }
@@ -185,7 +185,7 @@ bool Snake::canConsume(const std::shared_ptr<Food> &food)
 	const Vector2D &foodPos = food->pos();
 
 	Vector2D unwrappedFoodPos = m_field->unwrapCoords(foodPos, headPos);
-	float_t maxRange = m_segmentRadius * config::SNAKE_CONSUME_RANGE;
+	real_t maxRange = m_segmentRadius * config::SNAKE_CONSUME_RANGE;
 
 	// range check
 	return (headPos - unwrappedFoodPos).squaredNorm() < (maxRange*maxRange);
@@ -193,7 +193,7 @@ bool Snake::canConsume(const std::shared_ptr<Food> &food)
 
 void Snake::convertToFood(void) const
 {
-	float_t foodPerSegment = m_mass / m_segments.size() * config::SNAKE_CONVERSION_FACTOR;
+	real_t foodPerSegment = m_mass / m_segments.size() * config::SNAKE_CONVERSION_FACTOR;
 
 	for(auto &s: m_segments) {
 		m_field->createDynamicFood(foodPerSegment, s->pos(), m_segmentRadius);

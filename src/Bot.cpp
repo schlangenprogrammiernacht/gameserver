@@ -3,7 +3,7 @@
 #include "Field.h"
 #include "LuaBot.h"
 
-Bot::Bot(Field *field, const std::string &name, const Vector2D &startPos, float_t startHeading)
+Bot::Bot(Field *field, const std::string &name, const Vector2D &startPos, real_t startHeading)
 	: m_name(name), m_field(field), m_moveCounter(0)
 {
 	// TODO: random start coordinates
@@ -36,7 +36,7 @@ std::size_t Bot::move(void)
 
 std::shared_ptr<Bot> Bot::checkCollision(void) const
 {
-	float_t maxCollisionDistance =
+	real_t maxCollisionDistance =
 		m_snake->getSegmentRadius() + m_field->getMaxSegmentRadius();
 
 	Vector2D headPos = m_snake->getHeadPosition();
@@ -54,10 +54,10 @@ std::shared_ptr<Bot> Bot::checkCollision(void) const
 			}
 
 			// get actual distance to segment
-			float_t dist = (headPos - fi.pos()).squaredNorm();
+			real_t dist = (headPos - fi.pos()).squaredNorm();
 
 			// get maximum distance for collision detection
-			float_t collisionDist =
+			real_t collisionDist =
 				m_snake->getSegmentRadius() + fi.bot->getSnake()->getSegmentRadius();
 			collisionDist *= collisionDist; // square it
 
