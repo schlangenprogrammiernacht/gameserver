@@ -278,8 +278,8 @@ void Field::debugVisualization(void)
 
 		bool first = true;
 		for(auto &seg: snake->getSegments()) {
-			size_t x = static_cast<size_t>(seg->pos().x());
-			size_t y = static_cast<size_t>(seg->pos().y());
+			size_t x = static_cast<size_t>(seg.pos().x());
+			size_t y = static_cast<size_t>(seg.pos().y());
 
 			if(first) {
 				rep[y*intW + x] = '#';

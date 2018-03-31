@@ -25,13 +25,13 @@ class Field
 
 	public:
 		struct SnakeSegmentInfo {
-			std::shared_ptr<Snake::Segment> segment; //!< Pointer to the segment
+			const Snake::Segment &segment; //!< Pointer to the segment
 			std::shared_ptr<Bot> bot; //!< The bot this segment belongs to
 
-			SnakeSegmentInfo(const std::shared_ptr<Snake::Segment> &s, const std::shared_ptr<Bot> &b)
+			SnakeSegmentInfo(const Snake::Segment &s, const std::shared_ptr<Bot> &b)
 				: segment(s), bot(b) {}
 
-			const Vector2D& pos() const { return segment->pos(); }
+			const Vector2D& pos() const { return segment.pos(); }
 		};
 		typedef SpatialMap<SnakeSegmentInfo, config::SPATIAL_MAP_TILES_X, config::SPATIAL_MAP_TILES_Y> SegmentInfoMap;
 

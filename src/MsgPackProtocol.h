@@ -63,7 +63,7 @@ namespace MsgPackProtocol
 	struct BotMoveItem
 	{
 		guid_t bot_id;
-		std::vector< std::shared_ptr<Snake::Segment> > new_segments;
+		std::vector< Snake::Segment > new_segments;
 		uint32_t current_length;
 		uint32_t current_segment_radius;
 	};

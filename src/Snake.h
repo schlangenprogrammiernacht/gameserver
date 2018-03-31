@@ -19,12 +19,14 @@ class Snake
 		class Segment : public PositionObject
 		{
 			public:
+				Segment() : PositionObject(Vector2D {0,0}) {}
 				Segment(const Vector2D &position) : PositionObject(position) {}
 				Segment(const Segment &other) : PositionObject(other.pos()) {}
+				const Segment& operator = (const Segment &other) { setPos(other.pos()); return *this; }
 				// more stuff like color?
 		};
 
-		typedef std::deque< std::shared_ptr<Segment> > SegmentList;
+		typedef std::deque< Segment > SegmentList;
 
 	private:
 		/*!
