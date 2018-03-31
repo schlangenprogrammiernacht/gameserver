@@ -22,11 +22,9 @@ void Field::createStaticFood(std::size_t count)
 		real_t x     = (*m_positionXDistribution)(*m_rndGen);
 		real_t y     = (*m_positionYDistribution)(*m_rndGen);
 
-		std::shared_ptr<Food> newFood =
-			std::make_shared<Food>(this, Vector2D(x, y), value, false); // not dynamic
-
-		m_updateTracker->foodSpawned(newFood);
-		m_food.insert( newFood );
+		Food food {true, Vector2D(x,y), value};
+		m_updateTracker->foodSpawned(food);
+		m_foodMap.addElement(food);
 	}
 }
 
@@ -50,15 +48,6 @@ void Field::setupRandomness(void)
 
 	m_simple0To1Distribution =
 		std::make_unique< std::uniform_real_distribution<real_t> >(0, 1);
-}
-
-void Field::updateFoodMap()
-{
-	m_foodMap.clear();
-	for (auto &f : m_food)
-	{
-		m_foodMap.addElement(f);
-	}
 }
 
 void Field::updateSnakeSegmentMap()
@@ -101,64 +90,57 @@ void Field::newBot(const std::string &name)
 	m_bots.insert(bot);
 }
 
-void Field::updateFood(void)
+void Field::decayFood(void)
 {
-	std::size_t foodToGenerate = 0;
-
-	auto fi = m_food.begin();
-	while(fi != m_food.end()) {
-		(*fi)->decay();
-
-		if((*fi)->hasDecayed()) {
-			m_updateTracker->foodDecayed(*fi);
-
-			// static food is regenerated when it has decayed
-			if(!(*fi)->isDynamic()) {
-				foodToGenerate++;
+	m_foodMap.processAllElements([this](Food& item)
+	{
+		if (item.decay()) {
+			m_updateTracker->foodDecayed(item);
+			if (item.shallRegenerate())
+			{
+				createStaticFood(1);
 			}
-
-			fi = m_food.erase(fi);
-		} else {
-			fi++;
 		}
+		return true;
+	});
+}
+
+void Field::removeFood()
+{
+	for (auto& tile: m_foodMap.getTiles())
+	{
+		tile.erase(
+			std::remove_if(tile.begin(), tile.end(), [](const Food& item) {
+				return item.shallBeRemoved();
+			}),
+			tile.end()
+		);
 	}
-
-	createStaticFood(foodToGenerate);
-
-	// refresh food spatial map for faster access
-	updateFoodMap();
 }
 
 void Field::consumeFood(void)
 {
-	std::size_t foodToGenerate = 0;
-
+	size_t newStaticFood = 0;
 	for (auto &b: m_bots) {
-
 		m_foodMap.processElements(
 			b->getSnake()->getHeadPosition(),
 			b->getSnake()->getSegmentRadius() * config::SNAKE_CONSUME_RANGE,
-			[this, &b, &foodToGenerate](const FoodInfo& fi)
+			[this, &b, &newStaticFood](Food& fi)
 			{
-				if (!b->getSnake()->canConsume(fi.food)) { return true; }
-
-				b->getSnake()->consume(fi.food);
-				m_updateTracker->foodConsumed(fi.food, b);
-
-				// regenerate static food
-				if(!fi.food->isDynamic()) {
-					foodToGenerate++;
+				if (b->getSnake()->tryConsume(fi))
+				{
+					m_updateTracker->foodConsumed(fi, b);
+					fi.markForRemove();
+					if (fi.shallRegenerate())
+					{
+						newStaticFood++;
+					}
 				}
-
-				m_food.erase(fi.food);
-
 				return true;
 			}
 		);
 	}
-
-	createStaticFood(foodToGenerate);
-
+	createStaticFood(newStaticFood);
 	updateMaxSegmentRadius();
 }
 
@@ -199,11 +181,6 @@ const Field::BotSet& Field::getBots(void) const
 	return m_bots;
 }
 
-const Field::FoodSet& Field::getFood(void) const
-{
-	return m_food;
-}
-
 void Field::createDynamicFood(real_t totalValue, const Vector2D &center, real_t radius)
 {
 	// create at least 1 food item
@@ -220,11 +197,9 @@ void Field::createDynamicFood(real_t totalValue, const Vector2D &center, real_t 
 
 		Vector2D pos = wrapCoords(center + offset);
 
-		std::shared_ptr<Food> newFood =
-			std::make_shared<Food>(this, pos, value, true); // dynamic
-
-		m_updateTracker->foodSpawned(newFood);
-		m_food.insert( newFood );
+		Food food {false, pos, value};
+		m_updateTracker->foodSpawned(food);
+		m_foodMap.addElement(food);
 	}
 }
 
@@ -296,24 +271,6 @@ void Field::debugVisualization(void)
 
 	// empty cells are dots
 	std::fill(rep.begin(), rep.end(), '.');
-
-	// draw food
-	for(auto &f: m_food) {
-		const Vector2D &pos = f->pos();
-
-		char c;
-
-		if(f->getValue() > 10) {
-			c = 'X';
-		} else {
-			c = '0' + static_cast<int>(f->getValue());
-		}
-
-		size_t x = static_cast<size_t>(pos.x());
-		size_t y = static_cast<size_t>(pos.y());
-
-		rep[y * intW + x] = c;
-	}
 
 	// draw snakes (head = #, rest = +)
 	for(auto &b: m_bots) {

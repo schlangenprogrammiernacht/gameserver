@@ -2,20 +2,22 @@
 
 #include "Food.h"
 
-Food::Food(Field *field, const Vector2D &pos, real_t value, bool isDynamic)
+Food::Food(bool shallRegenerate, const Vector2D &pos, real_t value)
 	: PositionObject(pos)
-	, m_field(field)
 	, m_value(value)
-	, m_isDynamic(isDynamic)
+	, m_shallRegenerate(shallRegenerate)
+	, m_shallBeRemoved(false)
 {
 }
 
-void Food::decay(void)
+bool Food::decay(void)
 {
 	m_value -= config::FOOD_DECAY_STEP;
+	m_shallBeRemoved |= m_value <= 0;
+	return m_shallBeRemoved;
 }
 
-bool Food::hasDecayed(void)
+bool Food::hasDecayed(void) const
 {
 	return m_value <= 0;
 }

@@ -8,6 +8,8 @@
 template <class T, size_t TILES_X, size_t TILES_Y> class SpatialMap
 {
 	public:
+		typedef std::vector<T> TileVector;
+
 		SpatialMap(size_t fieldSizeX, size_t fieldSizeY, size_t reserveCount)
 			: m_fieldSizeX(fieldSizeX)
 			, m_fieldSizeY(fieldSizeY)
@@ -48,6 +50,32 @@ template <class T, size_t TILES_X, size_t TILES_Y> class SpatialMap
 			{
 				for (int x=x1; x<=x2; x++)
 				{
+					for (auto& item: getConstTileVector(x, y))
+					{
+						if (!callback(item))
+						{
+							return;
+						}
+					}
+				}
+			}
+		}
+
+		typedef std::function<bool (T&)> NonConstProcessCallback;
+		void processElements(const Vector2D& center, real_t radius, NonConstProcessCallback callback)
+		{
+			const Vector2D topLeft = center - Vector2D { radius, radius };
+			const Vector2D bottomRight = center + Vector2D { radius, radius };
+
+			int x1 = static_cast<int>(topLeft.x() / m_tileSizeX);
+			int y1 = static_cast<int>(topLeft.y() / m_tileSizeY);
+			int x2 = static_cast<int>(bottomRight.x() / m_tileSizeX);
+			int y2 = static_cast<int>(bottomRight.y() / m_tileSizeY);
+
+			for (int y=y1; y<=y2; y++)
+			{
+				for (int x=x1; x<=x2; x++)
+				{
 					for (auto& item: getTileVector(x, y))
 					{
 						if (!callback(item))
@@ -59,13 +87,47 @@ template <class T, size_t TILES_X, size_t TILES_Y> class SpatialMap
 			}
 		}
 
+		void processAllElements(ProcessCallback callback) const
+		{
+			for (auto &v: m_tiles)
+			{
+				for (auto& item: v)
+				{
+					if (!callback(item))
+					{
+						return;
+					}
+				}
+			}
+		}
+
+		void processAllElements(NonConstProcessCallback callback)
+		{
+			for (auto &v: m_tiles)
+			{
+				for (auto& item: v)
+				{
+					if (!callback(item))
+					{
+						return;
+					}
+				}
+			}
+		}
+
+		std::array<TileVector, TILES_X*TILES_Y>& getTiles() { return m_tiles; }
+
 	private:
 		size_t m_fieldSizeX, m_fieldSizeY;
 		real_t m_tileSizeX, m_tileSizeY;
-		typedef std::vector<T> TileVector;
 		std::array<TileVector, TILES_X*TILES_Y> m_tiles;
 
-		const TileVector& getTileVector(int tileX, int tileY) const
+		TileVector& getTileVector(int tileX, int tileY)
+		{
+			return m_tiles[wrap<TILES_Y>(tileY)*TILES_X + wrap<TILES_X>(tileX)];
+		}
+
+		const TileVector& getConstTileVector(int tileX, int tileY) const
 		{
 			return m_tiles[wrap<TILES_Y>(tileY)*TILES_X + wrap<TILES_X>(tileX)];
 		}

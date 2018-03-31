@@ -87,8 +87,9 @@ bool Game::OnTimerInterval()
 	static uint32_t frameNumber = 0;
 	//std::cout << "Frame number #" << frameNumber++ << std::endl;
 
-	m_field->updateFood();
+	m_field->decayFood();
 	m_field->consumeFood();
+	m_field->removeFood();
 
 	m_field->moveAllBots();
 
