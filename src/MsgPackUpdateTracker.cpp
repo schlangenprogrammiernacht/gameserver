@@ -24,24 +24,18 @@ MsgPackUpdateTracker::MsgPackUpdateTracker()
 	reset();
 }
 
-void MsgPackUpdateTracker::foodConsumed(
-		const std::shared_ptr<Food> &food,
+void MsgPackUpdateTracker::foodConsumed(const Food &food,
 		const std::shared_ptr<Bot> &by_bot)
 {
-	MsgPackProtocol::FoodConsumeItem item;
-
-	item.bot_id = by_bot->getGUID();
-	item.food_id = food->getGUID();
-
-	m_foodConsumeMessage->items.push_back(item);
+	m_foodConsumeMessage->items.push_back({food.getGUID(), by_bot->getGUID()});
 }
 
-void MsgPackUpdateTracker::foodDecayed(const std::shared_ptr<Food> &food)
+void MsgPackUpdateTracker::foodDecayed(const Food &food)
 {
-	m_foodDecayMessage->food_ids.push_back(food->getGUID());
+	m_foodDecayMessage->food_ids.push_back(food.getGUID());
 }
 
-void MsgPackUpdateTracker::foodSpawned(const std::shared_ptr<Food> &food)
+void MsgPackUpdateTracker::foodSpawned(const Food &food)
 {
 	m_foodSpawnMessage->new_food.push_back(food);
 }
@@ -101,10 +95,12 @@ void MsgPackUpdateTracker::worldState(const std::shared_ptr<Field> &field)
 	MsgPackProtocol::WorldUpdateMessage msg;
 
 	msg.bots = field->getBots();
-	msg.food = field->getStaticFood();
 
-	const Field::FoodSet &dynFood = field->getDynamicFood();
-	msg.food.insert(dynFood.begin(), dynFood.end());
+	msg.food.reserve(1024);
+	field->getFoodMap().processAllElements([&msg](const Food& food) {
+		msg.food.push_back(food);
+		return true;
+	});
 
 	msgpack::sbuffer buf;
 	msgpack::pack(buf, msg);

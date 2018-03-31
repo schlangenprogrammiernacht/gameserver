@@ -22,7 +22,6 @@ class Field
 {
 	public:
 		typedef std::set< std::shared_ptr<Bot> > BotSet;
-		typedef std::set< std::shared_ptr<Food> > FoodSet;
 
 	public:
 		struct SnakeSegmentInfo {
@@ -36,12 +35,7 @@ class Field
 		};
 		typedef SpatialMap<SnakeSegmentInfo, config::SPATIAL_MAP_TILES_X, config::SPATIAL_MAP_TILES_Y> SegmentInfoMap;
 
-		struct FoodInfo {
-			std::shared_ptr<Food> food;
-			FoodInfo(const std::shared_ptr<Food> &f) : food(f) {}
-			const Vector2D& pos() const { return food->pos(); }
-		};
-		typedef SpatialMap<FoodInfo, config::SPATIAL_MAP_TILES_X, config::SPATIAL_MAP_TILES_Y> FoodInfoMap;
+		typedef SpatialMap<Food, config::SPATIAL_MAP_TILES_X, config::SPATIAL_MAP_TILES_Y> FoodMap;
 
 	private:
 		const real_t m_width;
@@ -50,8 +44,6 @@ class Field
 		real_t m_maxSegmentRadius = 0;
 
 		BotSet  m_bots;
-		FoodSet m_staticFood; //!< Food placed randomly in the field.
-		FoodSet m_dynamicFood; //!< Food generated dynamically by dying snakes.
 
 		std::unique_ptr<std::mt19937> m_rndGen;
 
@@ -64,13 +56,12 @@ class Field
 
 		std::shared_ptr<UpdateTracker> m_updateTracker;
 
-		FoodInfoMap m_foodMap;
+		FoodMap m_foodMap;
 		SegmentInfoMap m_segmentInfoMap;
 
 		void setupRandomness(void);
 		void createStaticFood(std::size_t count);
 
-		void updateFoodMap(void);
 		void updateSnakeSegmentMap(void);
 		void updateMaxSegmentRadius(void);
 
@@ -84,11 +75,11 @@ class Field
 		void newBot(const std::string &name);
 
 		/*!
-		 * Update all food pieces.
+		 * Decay all food.
 		 *
-		 * This includes decaying them and replacing them when decayed.
+		 * This includes replacing static food when decayed.
 		 */
-		void updateFood(void);
+		void decayFood(void);
 
 		/*!
 		 * Make all Snakes consume food in their eating range.
@@ -96,6 +87,11 @@ class Field
 		 * \todo This function is searching for a better name.
 		 */
 		void consumeFood(void);
+
+		/*!
+		 * \brief remove decayed and consumed food
+		 */
+		void removeFood(void);
 
 		/*!
 		 * Move all bots and check collisions.
@@ -106,16 +102,6 @@ class Field
 		 * Get the set of bots.
 		 */
 		const BotSet& getBots(void) const;
-
-		/*!
-		 * Get the set of static food.
-		 */
-		const FoodSet& getStaticFood(void) const;
-
-		/*!
-		 * Get the set of dynamic food.
-		 */
-		const FoodSet& getDynamicFood(void) const;
 
 		/*!
 		 * Add dynamic food equally distributed in the given circle.
@@ -169,6 +155,6 @@ class Field
 		 */
 		real_t getMaxSegmentRadius(void) const;
 
-		const FoodInfoMap& getFoodInfoMap() const { return m_foodMap; }
+		const FoodMap& getFoodMap() const { return m_foodMap; }
 		const SegmentInfoMap& getSegmentInfoMap() const { return m_segmentInfoMap; }
 };

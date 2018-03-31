@@ -31,12 +31,12 @@ class MsgPackUpdateTracker : public UpdateTracker
 
 		/* Implemented functions */
 		void foodConsumed(
-				const std::shared_ptr<Food> &food,
+				const Food &food,
 				const std::shared_ptr<Bot> &by_bot);
 
-		void foodDecayed(const std::shared_ptr<Food> &food);
+		void foodDecayed(const Food &food);
 
-		void foodSpawned(const std::shared_ptr<Food> &food);
+		void foodSpawned(const Food &food);
 
 		void botSpawned(const std::shared_ptr<Bot> &bot);
 

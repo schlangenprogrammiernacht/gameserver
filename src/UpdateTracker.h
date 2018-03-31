@@ -20,7 +20,7 @@ class UpdateTracker
 		 * \param by_bot   Pointer to the bot consuming the food.
 		 */
 		virtual void foodConsumed(
-				const std::shared_ptr<Food> &food,
+				const Food &food,
 				const std::shared_ptr<Bot> &by_bot) = 0;
 
 		/*!
@@ -28,14 +28,14 @@ class UpdateTracker
 		 *
 		 * \param food   Pointer to the food item that has decayed.
 		 */
-		virtual void foodDecayed(const std::shared_ptr<Food> &food) = 0;
+		virtual void foodDecayed(const Food &food) = 0;
 
 		/*!
 		 * Track an event of newly created food.
 		 *
 		 * \param food   Pointer to the food item that has just spawned.
 		 */
-		virtual void foodSpawned(const std::shared_ptr<Food> &food) = 0;
+		virtual void foodSpawned(const Food& food) = 0;
 
 		/*!
 		 * Track an event of a new bot spawning.

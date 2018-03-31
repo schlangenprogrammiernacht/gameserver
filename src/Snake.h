@@ -62,7 +62,7 @@ class Snake
 		/*!
 		 * Consume the given food piece.
 		 */
-		void consume(const std::shared_ptr<Food>& food);
+		void consume(const Food &food);
 
 		/*!
 		 * Move the snake by one step if boost==false or SNAKE_BOOST_STEPS if boost==true.
@@ -92,7 +92,17 @@ class Snake
 		/*!
 		 * Check if this Snake can consume the given Food.
 		 */
-		bool canConsume(const std::shared_ptr<Food> &food);
+		bool canConsume(const Food &food);
+
+		bool tryConsume(const Food &food)
+		{
+			if (!canConsume(food))
+			{
+				return false;
+			}
+			consume(food);
+			return true;
+		}
 
 		/*!
 		 * Convert this Snake to Food. This is normally the last action before the

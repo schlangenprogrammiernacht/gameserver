@@ -17,18 +17,20 @@ class Field;
 class Food : public IdentifyableObject, public PositionObject
 {
 	public:
-		enum class Type { STATIC, DYNAMIC };
-
 		/*!
 		 * Creates a new food pice at the given position and of the given value.
 		 */
-		Food(Type type, const Vector2D &pos, real_t value);
+		Food(bool shallRegenerate, const Vector2D &pos, real_t value);
 
-		void decay(void);
-		bool hasDecayed(void);
+		bool decay(void);
+		bool hasDecayed(void) const;
 		real_t getValue() const { return m_value; }
+		bool shallRegenerate() const { return m_shallRegenerate; }
+		bool shallBeRemoved() const { return m_shallBeRemoved; }
+		void markForRemove() { m_shallBeRemoved = true; }
 
 	private:
-		Type m_type;
 		real_t  m_value;
+		bool m_shallRegenerate;
+		bool m_shallBeRemoved;
 };

@@ -52,7 +52,7 @@ namespace MsgPackProtocol
 	struct WorldUpdateMessage
 	{
 		Field::BotSet bots;
-		Field::FoodSet food;
+		std::vector<Food> food;
 	};
 
 	struct BotSpawnMessage
@@ -81,7 +81,7 @@ namespace MsgPackProtocol
 
 	struct FoodSpawnMessage
 	{
-		std::vector< std::shared_ptr<Food> > new_food;
+		std::vector<Food> new_food;
 	};
 
 	struct FoodConsumeItem

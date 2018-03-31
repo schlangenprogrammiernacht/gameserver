@@ -64,9 +64,9 @@ real_t Snake::maxRotationPerStep(void)
 	return 10.0 / (m_segmentRadius/10.0 + 1);
 }
 
-void Snake::consume(const std::shared_ptr<Food>& food)
+void Snake::consume(const Food& food)
 {
-	m_mass += food->getValue();
+	m_mass += food.getValue();
 	ensureSizeMatchesMass();
 }
 
@@ -179,10 +179,10 @@ real_t Snake::getSegmentRadius(void) const
 	return m_segmentRadius;
 }
 
-bool Snake::canConsume(const std::shared_ptr<Food> &food)
+bool Snake::canConsume(const Food &food)
 {
 	const Vector2D &headPos = m_segments[0]->pos();
-	const Vector2D &foodPos = food->pos();
+	const Vector2D &foodPos = food.pos();
 
 	Vector2D unwrappedFoodPos = m_field->unwrapCoords(foodPos, headPos);
 	real_t maxRange = m_segmentRadius * config::SNAKE_CONSUME_RANGE;

@@ -125,21 +125,21 @@ std::vector<LuaFoodInfo>& LuaBot::apiFindFood(real_t radius, real_t min_size)
 
 	m_luaFoodInfoTable.clear();
 	auto field = m_bot.getField();
-	field->getFoodInfoMap().processElements(
+	field->getFoodMap().processElements(
 		head_pos,
 		radius,
-		[this, field, head_pos, heading_rad, min_size](const Field::FoodInfo& foodinfo)
+		[this, field, head_pos, heading_rad, min_size](const Food& food)
 		{
-			if (foodinfo.food->getValue()>=min_size)
+			if (food.getValue()>=min_size)
 			{
-				Vector2D relPos = field->unwrapRelativeCoords(foodinfo.pos() - head_pos);
+				Vector2D relPos = field->unwrapRelativeCoords(food.pos() - head_pos);
 				real_t direction = static_cast<real_t>(atan2(relPos.y(), relPos.x())) - heading_rad;
 				while (direction<0) { direction += 2*M_PI; }
 				while (direction>2*M_PI) { direction -= 2*M_PI; }
 				m_luaFoodInfoTable.emplace_back(
 					relPos.x(),
 					relPos.y(),
-					foodinfo.food->getValue(),
+					food.getValue(),
 					direction,
 					relPos.norm()
 				);
