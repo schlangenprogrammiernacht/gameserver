@@ -23,7 +23,7 @@ void Field::createStaticFood(std::size_t count)
 		real_t y     = (*m_positionYDistribution)(*m_rndGen);
 
 		std::shared_ptr<Food> newFood =
-			std::make_shared<Food>(this, Vector2D(x, y), value);
+			std::make_shared<Food>(Vector2D(x, y), value);
 
 		m_updateTracker->foodSpawned(newFood);
 		m_staticFood.insert( newFood );
@@ -241,7 +241,7 @@ void Field::createDynamicFood(real_t totalValue, const Vector2D &center, real_t 
 		Vector2D pos = wrapCoords(center + offset);
 
 		std::shared_ptr<Food> newFood =
-			std::make_shared<Food>(this, pos, value);
+			std::make_shared<Food>(pos, value);
 
 		m_updateTracker->foodSpawned(newFood);
 		m_dynamicFood.insert( newFood );

@@ -17,14 +17,13 @@ class Field;
 class Food : public IdentifyableObject, public PositionObject
 {
 	private:
-		Field   *m_field;
 		real_t  m_value;
 
 	public:
 		/*!
 		 * Creates a new food pice at the given position and of the given value.
 		 */
-		Food(Field *field, const Vector2D &pos, real_t value);
+		Food(const Vector2D &pos, real_t value);
 
 		void decay(void);
 		bool hasDecayed(void);
