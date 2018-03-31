@@ -23,10 +23,10 @@ void Field::createStaticFood(std::size_t count)
 		real_t y     = (*m_positionYDistribution)(*m_rndGen);
 
 		std::shared_ptr<Food> newFood =
-			std::make_shared<Food>(this, Vector2D(x, y), value);
+			std::make_shared<Food>(this, Vector2D(x, y), value, false); // not dynamic
 
 		m_updateTracker->foodSpawned(newFood);
-		m_staticFood.insert( newFood );
+		m_food.insert( newFood );
 	}
 }
 
@@ -55,11 +55,7 @@ void Field::setupRandomness(void)
 void Field::updateFoodMap()
 {
 	m_foodMap.clear();
-	for (auto &f : m_staticFood)
-	{
-		m_foodMap.addElement(f);
-	}
-	for (auto &f : m_dynamicFood)
+	for (auto &f : m_food)
 	{
 		m_foodMap.addElement(f);
 	}
@@ -107,45 +103,37 @@ void Field::newBot(const std::string &name)
 
 void Field::updateFood(void)
 {
-	// step 1: handle static food.
-	// when static food decays, it is recreated at different coordinates
 	std::size_t foodToGenerate = 0;
 
-	auto sfi = m_staticFood.begin();
-	while(sfi != m_staticFood.end()) {
-		(*sfi)->decay();
-		if((*sfi)->hasDecayed()) {
-			m_updateTracker->foodDecayed(*sfi);
-			sfi = m_staticFood.erase(sfi);
-			foodToGenerate++;
+	auto fi = m_food.begin();
+	while(fi != m_food.end()) {
+		(*fi)->decay();
+
+		if((*fi)->hasDecayed()) {
+			m_updateTracker->foodDecayed(*fi);
+
+			// static food is regenerated when it has decayed
+			if(!(*fi)->isDynamic()) {
+				foodToGenerate++;
+			}
+
+			fi = m_food.erase(fi);
 		} else {
-			sfi++;
+			fi++;
 		}
 	}
 
 	createStaticFood(foodToGenerate);
 
-	// step 2: handle dynamic food
-	// when dynamic food decays, it is removed permanently
-	auto dfi = m_dynamicFood.begin();
-	while(dfi != m_dynamicFood.end()) {
-		(*dfi)->decay();
-		if((*dfi)->hasDecayed()) {
-			m_updateTracker->foodDecayed(*dfi);
-			dfi = m_dynamicFood.erase(dfi);
-		} else {
-			dfi++;
-		}
-	}
-
-	// step 3: refresh food spatial map for faster access
+	// refresh food spatial map for faster access
 	updateFoodMap();
 }
 
 void Field::consumeFood(void)
 {
+	std::size_t foodToGenerate = 0;
+
 	for (auto &b: m_bots) {
-		std::size_t foodToGenerate = 0;
 
 		m_foodMap.processElements(
 			b->getSnake()->getHeadPosition(),
@@ -157,22 +145,19 @@ void Field::consumeFood(void)
 				b->getSnake()->consume(fi.food);
 				m_updateTracker->foodConsumed(fi.food, b);
 
-				if (m_staticFood.count(fi.food) > 0)
-				{
-					m_staticFood.erase(fi.food);
+				// regenerate static food
+				if(!fi.food->isDynamic()) {
 					foodToGenerate++;
 				}
-				else if (m_dynamicFood.count(fi.food) > 0)
-				{
-					m_dynamicFood.erase(fi.food);
-				}
+
+				m_food.erase(fi.food);
 
 				return true;
 			}
 		);
-
-		createStaticFood(foodToGenerate); // TODO should this be done outside the bot loop?
 	}
+
+	createStaticFood(foodToGenerate);
 
 	updateMaxSegmentRadius();
 }
@@ -214,14 +199,9 @@ const Field::BotSet& Field::getBots(void) const
 	return m_bots;
 }
 
-const Field::FoodSet& Field::getStaticFood(void) const
+const Field::FoodSet& Field::getFood(void) const
 {
-	return m_staticFood;
-}
-
-const Field::FoodSet& Field::getDynamicFood(void) const
-{
-	return m_dynamicFood;
+	return m_food;
 }
 
 void Field::createDynamicFood(real_t totalValue, const Vector2D &center, real_t radius)
@@ -241,10 +221,10 @@ void Field::createDynamicFood(real_t totalValue, const Vector2D &center, real_t 
 		Vector2D pos = wrapCoords(center + offset);
 
 		std::shared_ptr<Food> newFood =
-			std::make_shared<Food>(this, pos, value);
+			std::make_shared<Food>(this, pos, value, true); // dynamic
 
 		m_updateTracker->foodSpawned(newFood);
-		m_dynamicFood.insert( newFood );
+		m_food.insert( newFood );
 	}
 }
 
@@ -318,7 +298,7 @@ void Field::debugVisualization(void)
 	std::fill(rep.begin(), rep.end(), '.');
 
 	// draw food
-	for(auto &f: m_staticFood) {
+	for(auto &f: m_food) {
 		const Vector2D &pos = f->pos();
 
 		char c;

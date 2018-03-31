@@ -2,10 +2,11 @@
 
 #include "Food.h"
 
-Food::Food(Field *field, const Vector2D &pos, real_t value)
+Food::Food(Field *field, const Vector2D &pos, real_t value, bool isDynamic)
 	: PositionObject(pos)
 	, m_field(field)
 	, m_value(value)
+	, m_isDynamic(isDynamic)
 {
 }
 

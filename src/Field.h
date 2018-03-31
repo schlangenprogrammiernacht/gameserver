@@ -50,8 +50,7 @@ class Field
 		real_t m_maxSegmentRadius = 0;
 
 		BotSet  m_bots;
-		FoodSet m_staticFood; //!< Food placed randomly in the field.
-		FoodSet m_dynamicFood; //!< Food generated dynamically by dying snakes.
+		FoodSet m_food;
 
 		std::unique_ptr<std::mt19937> m_rndGen;
 
@@ -108,14 +107,9 @@ class Field
 		const BotSet& getBots(void) const;
 
 		/*!
-		 * Get the set of static food.
+		 * Get the set of food.
 		 */
-		const FoodSet& getStaticFood(void) const;
-
-		/*!
-		 * Get the set of dynamic food.
-		 */
-		const FoodSet& getDynamicFood(void) const;
+		const FoodSet& getFood(void) const;
 
 		/*!
 		 * Add dynamic food equally distributed in the given circle.

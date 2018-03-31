@@ -101,10 +101,7 @@ void MsgPackUpdateTracker::worldState(const std::shared_ptr<Field> &field)
 	MsgPackProtocol::WorldUpdateMessage msg;
 
 	msg.bots = field->getBots();
-	msg.food = field->getStaticFood();
-
-	const Field::FoodSet &dynFood = field->getDynamicFood();
-	msg.food.insert(dynFood.begin(), dynFood.end());
+	msg.food = field->getFood();
 
 	msgpack::sbuffer buf;
 	msgpack::pack(buf, msg);
