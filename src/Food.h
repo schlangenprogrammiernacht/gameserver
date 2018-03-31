@@ -16,16 +16,19 @@ class Field;
  */
 class Food : public IdentifyableObject, public PositionObject
 {
-	private:
-		real_t  m_value;
-
 	public:
+		enum class Type { STATIC, DYNAMIC };
+
 		/*!
 		 * Creates a new food pice at the given position and of the given value.
 		 */
-		Food(const Vector2D &pos, real_t value);
+		Food(Type type, const Vector2D &pos, real_t value);
 
 		void decay(void);
 		bool hasDecayed(void);
 		real_t getValue() const { return m_value; }
+
+	private:
+		Type m_type;
+		real_t  m_value;
 };

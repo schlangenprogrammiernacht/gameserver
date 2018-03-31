@@ -2,8 +2,9 @@
 
 #include "Food.h"
 
-Food::Food(const Vector2D &pos, real_t value)
+Food::Food(Type type, const Vector2D &pos, real_t value)
 	: PositionObject(pos)
+	, m_type(type)
 	, m_value(value)
 {
 }
