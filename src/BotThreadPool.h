@@ -3,6 +3,7 @@
 #include <vector>
 #include <thread>
 #include <mutex>
+#include <atomic>
 
 #include <queue>
 
@@ -26,12 +27,11 @@ class BotThreadPool
 		std::queue< std::unique_ptr<Job> > m_processedJobs;
 
 		std::mutex m_inputQueueMutex;
-		std::mutex m_activeThreadsMutex;
 		std::mutex m_processedQueueMutex;
 
 		bool m_shutdown = false;
 
-		std::size_t m_activeThreads = 0;
+		std::atomic<std::size_t> m_activeThreads;
 
 	public:
 		BotThreadPool(std::size_t num_threads);
