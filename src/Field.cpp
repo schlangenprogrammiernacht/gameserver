@@ -10,6 +10,7 @@ Field::Field(real_t w, real_t h, std::size_t food_parts, const std::shared_ptr<U
 	, m_updateTracker(update_tracker)
 	, m_foodMap(static_cast<size_t>(w), static_cast<size_t>(h), config::SPATIAL_MAP_RESERVE_COUNT)
 	, m_segmentInfoMap(static_cast<size_t>(w), static_cast<size_t>(h), config::SPATIAL_MAP_RESERVE_COUNT)
+	, m_threadPool(std::thread::hardware_concurrency())
 {
 	setupRandomness();
 	createStaticFood(food_parts);
@@ -146,30 +147,34 @@ void Field::consumeFood(void)
 
 void Field::moveAllBots(void)
 {
-	auto bi = m_bots.begin();
-	while(bi != m_bots.end()) {
-		size_t steps = (*bi)->move();
+	for(auto &b : m_bots) {
+		std::unique_ptr<BotThreadPool::Job> job(new BotThreadPool::Job{b, 0});
+		m_threadPool.addJob(std::move(job));
+	}
 
-		std::shared_ptr<Bot> killer = (*bi)->checkCollision();
+	m_threadPool.waitForCompletion();
+
+	// collision check for all bots
+	std::unique_ptr<BotThreadPool::Job> job;
+	while((job = m_threadPool.getProcessedJob()) != NULL) {
+		std::shared_ptr<Bot> victim = job->bot;
+		std::size_t steps = job->steps;
+
+		std::shared_ptr<Bot> killer = victim->checkCollision();
 
 		if(killer) {
 			// collision detected, convert the colliding bot to food
-			(*bi)->getSnake()->convertToFood();
-
-			// keep a pointer which can be handed to the update tracker
-			std::shared_ptr<Bot> victim = *bi;
+			victim->getSnake()->convertToFood();
 
 			// remove the bot from the field
-			bi = m_bots.erase(bi);
+			m_bots.erase(victim);
 
 			newBot(victim->getName());
 
 			m_updateTracker->botKilled(killer, victim);
 		} else {
 			// no collision, bot still alive
-			m_updateTracker->botMoved((*bi), steps);
-
-			bi++;
+			m_updateTracker->botMoved(victim, steps);
 		}
 	}
 
