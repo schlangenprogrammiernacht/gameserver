@@ -78,7 +78,8 @@ void BotThreadPool::waitForCompletion(void)
 {
 	std::unique_lock<std::mutex> lock(m_finishedMutex);
 	m_finishedCV.wait(lock, [this]() {
-			return m_activeThreads == 0;
+			std::lock_guard<std::mutex> inputQueueGuard(m_inputQueueMutex);
+			return m_inputJobs.empty() && (m_activeThreads == 0);
 		});
 }
 
