@@ -37,13 +37,14 @@ set(sources
 	src/IdentifyableObject.cpp
 	src/IdentifyableObject.h
 	src/PositionObject.h
-	src/SpatialMap.h
 	src/main.cpp
 	src/MsgPackProtocol.h
 	src/MsgPackUpdateTracker.cpp
 	src/MsgPackUpdateTracker.h
+	src/Semaphore.h
 	src/Snake.cpp
 	src/Snake.h
+	src/SpatialMap.h
 	src/types.h
 	src/UpdateTracker.h
 	)

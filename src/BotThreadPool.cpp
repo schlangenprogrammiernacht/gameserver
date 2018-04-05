@@ -15,6 +15,14 @@ BotThreadPool::BotThreadPool(std::size_t num_threads)
 					[this] ()
 					{
 						while(!m_shutdown) {
+							m_workAvailSemaphore.wait();
+
+							{
+								std::unique_lock<std::mutex> lock(m_finishedMutex);
+								m_activeThreads++;
+								m_finishedCV.notify_one();
+							}
+
 							std::unique_ptr<Job> currentJob;
 
 							{
@@ -23,8 +31,6 @@ BotThreadPool::BotThreadPool(std::size_t num_threads)
 								if(!m_inputJobs.empty()) {
 									currentJob = std::move(m_inputJobs.front());
 									m_inputJobs.pop();
-
-									m_activeThreads++;
 								} else {
 									currentJob = NULL;
 								}
@@ -35,10 +41,12 @@ BotThreadPool::BotThreadPool(std::size_t num_threads)
 
 								std::lock_guard<std::mutex> processedQueueGuard(m_processedQueueMutex);
 								m_processedJobs.push(std::move(currentJob));
+							}
 
+							{
+								std::unique_lock<std::mutex> lock(m_finishedMutex);
 								m_activeThreads--;
-							} else {
-								std::this_thread::sleep_for(config::THREAD_POOL_IDLE_SLEEP_TIME);
+								m_finishedCV.notify_one();
 							}
 						}
 					});
@@ -62,19 +70,16 @@ void BotThreadPool::addJob(std::unique_ptr<Job> job)
 {
 	std::lock_guard<std::mutex> guard(m_inputQueueMutex);
 	m_inputJobs.push(std::move(job));
+
+	m_workAvailSemaphore.post();
 }
 
-void BotThreadPool::run(void)
+void BotThreadPool::waitForCompletion(void)
 {
-	// run until the input queue is empty
-	bool still_working;
-
-	do {
-		std::this_thread::sleep_for(config::THREAD_POOL_IDLE_SLEEP_TIME);
-
-		std::lock_guard<std::mutex> inputQueueGuard(m_inputQueueMutex);
-		still_working = !m_inputJobs.empty() || (m_activeThreads > 0);
-	} while(still_working);
+	std::unique_lock<std::mutex> lock(m_finishedMutex);
+	m_finishedCV.wait(lock, [this]() {
+			return m_activeThreads == 0;
+		});
 }
 
 std::unique_ptr<BotThreadPool::Job> BotThreadPool::getProcessedJob()

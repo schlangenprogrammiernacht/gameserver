@@ -4,8 +4,11 @@
 #include <thread>
 #include <mutex>
 #include <atomic>
+#include <condition_variable>
 
 #include <queue>
+
+#include "Semaphore.h"
 
 // forward declaration
 class Bot;
@@ -29,9 +32,14 @@ class BotThreadPool
 		std::mutex m_inputQueueMutex;
 		std::mutex m_processedQueueMutex;
 
+		Semaphore m_workAvailSemaphore; // blocks worker threads if there is no work
+
 		bool m_shutdown = false;
 
-		std::atomic<std::size_t> m_activeThreads;
+		std::condition_variable m_finishedCV;
+		std::mutex m_finishedMutex;
+
+		std::size_t m_activeThreads;
 
 	public:
 		BotThreadPool(std::size_t num_threads);
@@ -39,21 +47,22 @@ class BotThreadPool
 		~BotThreadPool();
 
 		/*!
-		 * \brief Add a job to be processed in parallel
+		 * \brief Add a job to be processed in parallel.
+		 *
+		 * Processing starts immediately.
 		 *
 		 * \param job  The Job to add.
 		 */
 		void addJob(std::unique_ptr<Job> job);
 
 		/*!
-		 * \brief Execute queued jobs.
+		 * \brief Wait until all jobs are processed.
 		 *
 		 * \details
-		 * This function clears the queue of processed jobs and runs all queued
-		 * jobs through the thread pool, which stores the processed jobs in the
-		 * processed job queue.
+		 * This function blocks until all jobs have been processed by the worker
+		 * threads.
 		 */
-		void run(void);
+		void waitForCompletion(void);
 
 		/*!
 		 * \brief Get next processed job.

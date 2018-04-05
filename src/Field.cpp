@@ -185,11 +185,11 @@ void Field::moveAllBots(void)
 		m_threadPool.addJob(std::move(job));
 	}
 
-	m_threadPool.run();
+	m_threadPool.waitForCompletion();
 
 	// collision check for all bots
 	std::unique_ptr<BotThreadPool::Job> job;
-	while(job = m_threadPool.getProcessedJob()) {
+	while((job = m_threadPool.getProcessedJob()) != NULL) {
 		std::shared_ptr<Bot> victim = job->bot;
 		std::size_t steps = job->steps;
 
