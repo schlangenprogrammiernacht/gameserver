@@ -11,6 +11,8 @@ set(CMAKE_CXX_FLAGS "-Wall -pedantic")
 set(LUA_INCLUDE_DIR "/usr/include/lua5.3")
 set(LUA_LIB "lua5.3")
 
+find_package(Threads REQUIRED)
+
 find_package(Eigen3 REQUIRED)
 include_directories(${EIGEN3_INCLUDE_DIR})
 
@@ -18,6 +20,8 @@ include_directories(${EIGEN3_INCLUDE_DIR})
 set(sources
 	src/Bot.cpp
 	src/Bot.h
+	src/BotThreadPool.cpp
+	src/BotThreadPool.h
 	src/LuaBot.cpp
 	src/LuaBot.h
 	src/config.h
@@ -33,16 +37,17 @@ set(sources
 	src/IdentifyableObject.cpp
 	src/IdentifyableObject.h
 	src/PositionObject.h
-	src/SpatialMap.h
 	src/main.cpp
 	src/MsgPackProtocol.h
 	src/MsgPackUpdateTracker.cpp
 	src/MsgPackUpdateTracker.h
+	src/Semaphore.h
 	src/Snake.cpp
 	src/Snake.h
+	src/SpatialMap.h
 	src/types.h
 	src/UpdateTracker.h
-)
+	)
 
 include_directories(
 	${CMAKE_PROJECT_NAME}
@@ -50,18 +55,19 @@ include_directories(
 	lib/TcpServer/TcpServer/include/
 	lib/sol2
 	${LUA_INCLUDE_DIR}
-)
+	)
 
 add_executable(
 	${CMAKE_PROJECT_NAME}
 	${sources}
-)
+	)
 
 target_link_libraries(
 	${CMAKE_PROJECT_NAME}
 	tcpserver
 	${LUA_LIB}
-)
+	Threads::Threads
+	)
 
 configure_file("lua/demobot.lua" "lua/demobot.lua" COPYONLY)
 configure_file("lua/quota.lua" "lua/quota.lua" COPYONLY)

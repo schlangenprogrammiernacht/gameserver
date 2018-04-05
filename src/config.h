@@ -8,6 +8,8 @@
  */
 #pragma once
 
+#include <chrono>
+
 #include "types.h"
 
 namespace config {
@@ -49,4 +51,6 @@ namespace config {
 
 	// Food decay value per frame
 	static const real_t     FOOD_DECAY_STEP         = 0.001;
+
+	static const std::chrono::milliseconds THREAD_POOL_IDLE_SLEEP_TIME(5);
 }

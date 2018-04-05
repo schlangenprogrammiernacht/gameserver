@@ -10,6 +10,7 @@
 #include "Bot.h"
 #include "UpdateTracker.h"
 #include "SpatialMap.h"
+#include "BotThreadPool.h"
 
 /*!
  * Representation of the playing field.
@@ -65,6 +66,8 @@ class Field
 
 		FoodInfoMap m_foodMap;
 		SegmentInfoMap m_segmentInfoMap;
+
+		BotThreadPool m_threadPool;
 
 		void setupRandomness(void);
 		void createStaticFood(std::size_t count);
