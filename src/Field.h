@@ -158,6 +158,6 @@ class Field
 		 */
 		real_t getMaxSegmentRadius(void) const;
 
-		const FoodMap& getFoodMap() const { return m_foodMap; }
-		const SegmentInfoMap& getSegmentInfoMap() const { return m_segmentInfoMap; }
+		FoodMap& getFoodMap() { return m_foodMap; }
+		SegmentInfoMap& getSegmentInfoMap() { return m_segmentInfoMap; }
 };

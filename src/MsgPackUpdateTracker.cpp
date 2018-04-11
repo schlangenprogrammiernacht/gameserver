@@ -97,10 +97,10 @@ void MsgPackUpdateTracker::worldState(const std::shared_ptr<Field> &field)
 	msg.bots = field->getBots();
 
 	msg.food.reserve(1024);
-	field->getFoodMap().processAllElements([&msg](const Food& food) {
+	for (auto& food: field->getFoodMap()) // TODO directly serialize FoodMap
+	{
 		msg.food.push_back(food);
-		return true;
-	});
+	}
 
 	msgpack::sbuffer buf;
 	msgpack::pack(buf, msg);

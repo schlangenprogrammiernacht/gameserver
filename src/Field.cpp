@@ -93,7 +93,7 @@ void Field::newBot(const std::string &name)
 
 void Field::decayFood(void)
 {
-	m_foodMap.processAllElements([this](Food& item)
+	for (Food &item: m_foodMap)
 	{
 		if (item.decay()) {
 			m_updateTracker->foodDecayed(item);
@@ -102,44 +102,35 @@ void Field::decayFood(void)
 				createStaticFood(1);
 			}
 		}
-		return true;
-	});
+	};
 }
 
 void Field::removeFood()
 {
-	for (auto& tile: m_foodMap.getTiles())
-	{
-		tile.erase(
-			std::remove_if(tile.begin(), tile.end(), [](const Food& item) {
-				return item.shallBeRemoved();
-			}),
-			tile.end()
-		);
-	}
+	m_foodMap.erase_if([](const Food& item) {
+		return item.shallBeRemoved();
+	});
 }
 
 void Field::consumeFood(void)
 {
 	size_t newStaticFood = 0;
 	for (auto &b: m_bots) {
-		m_foodMap.processElements(
-			b->getSnake()->getHeadPosition(),
-			b->getSnake()->getSegmentRadius() * config::SNAKE_CONSUME_RANGE,
-			[this, &b, &newStaticFood](Food& fi)
+		auto headPos = b->getSnake()->getHeadPosition();
+		auto radius = b->getSnake()->getSegmentRadius() * config::SNAKE_CONSUME_RANGE;
+
+		for (auto& fi: m_foodMap.getRegion(headPos, radius))
+		{
+			if (b->getSnake()->tryConsume(fi))
 			{
-				if (b->getSnake()->tryConsume(fi))
+				m_updateTracker->foodConsumed(fi, b);
+				fi.markForRemove();
+				if (fi.shallRegenerate())
 				{
-					m_updateTracker->foodConsumed(fi, b);
-					fi.markForRemove();
-					if (fi.shallRegenerate())
-					{
-						newStaticFood++;
-					}
+					newStaticFood++;
 				}
-				return true;
 			}
-		);
+		}
 	}
 	createStaticFood(newStaticFood);
 	updateMaxSegmentRadius();
