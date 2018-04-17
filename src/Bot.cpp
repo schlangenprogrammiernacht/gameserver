@@ -42,34 +42,28 @@ std::shared_ptr<Bot> Bot::checkCollision(void) const
 	Vector2D headPos = m_snake->getHeadPosition();
 
 	std::shared_ptr<Bot> retval = nullptr;
-	m_field->getSegmentInfoMap().processElements(
-		headPos,
-		maxCollisionDistance,
-		[this, &headPos, &retval](const Field::SnakeSegmentInfo &fi)
+	for (auto &fi: m_field->getSegmentInfoMap().getRegion(headPos, maxCollisionDistance))
+	{
+		if(fi.bot->getGUID() == this->getGUID())
 		{
-			if(fi.bot->getGUID() == this->getGUID())
-			{
-				// prevent self-collision
-				return true;
-			}
-
-			// get actual distance to segment
-			real_t dist = (headPos - fi.pos()).squaredNorm();
-
-			// get maximum distance for collision detection
-			real_t collisionDist =
-				m_snake->getSegmentRadius() + fi.bot->getSnake()->getSegmentRadius();
-			collisionDist *= collisionDist; // square it
-
-			if(dist < collisionDist) {
-				// collision detected!
-				retval = fi.bot;
-				return false;
-			}
-
-			return true;
+			// prevent self-collision
+			continue;
 		}
-	);
+
+		// get actual distance to segment
+		real_t dist = (headPos - fi.pos()).squaredNorm();
+
+		// get maximum distance for collision detection
+		real_t collisionDist =
+			m_snake->getSegmentRadius() + fi.bot->getSnake()->getSegmentRadius();
+		collisionDist *= collisionDist; // square it
+
+		if(dist < collisionDist) {
+			// collision detected!
+			retval = fi.bot;
+			break;
+		}
+	}
 
 	return retval;
 }
