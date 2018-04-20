@@ -147,20 +147,38 @@ void Field::consumeFood(void)
 
 void Field::moveAllBots(void)
 {
+	// first round: move all bots
 	for(auto &b : m_bots) {
-		std::unique_ptr<BotThreadPool::Job> job(new BotThreadPool::Job{b, 0});
+		std::unique_ptr<BotThreadPool::Job> job(new BotThreadPool::Job(BotThreadPool::Move, b));
 		m_threadPool.addJob(std::move(job));
 	}
 
 	m_threadPool.waitForCompletion();
 
-	// collision check for all bots
+	// FIXME: make this work without temporary vector
+	std::vector< std::unique_ptr<BotThreadPool::Job> > tmpJobs;
+	tmpJobs.reserve(m_bots.size());
+
 	std::unique_ptr<BotThreadPool::Job> job;
+	while((job = m_threadPool.getProcessedJob()) != NULL) {
+		tmpJobs.push_back(std::move(job));
+	}
+
+	// second round: collision check
+	for(auto &j : tmpJobs) {
+		j->jobType = BotThreadPool::CollisionCheck;
+		m_threadPool.addJob(std::move(j));
+	}
+
+	m_threadPool.waitForCompletion();
+
+
+	// collision check for all bots
 	while((job = m_threadPool.getProcessedJob()) != NULL) {
 		std::shared_ptr<Bot> victim = job->bot;
 		std::size_t steps = job->steps;
 
-		std::shared_ptr<Bot> killer = victim->checkCollision();
+		std::shared_ptr<Bot> killer = job->killer;
 
 		if(killer) {
 			// collision detected, convert the colliding bot to food

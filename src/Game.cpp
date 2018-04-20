@@ -15,7 +15,7 @@ Game::Game()
 			config::FIELD_STATIC_FOOD,
 			m_updateTracker);
 
-	for(int i = 0; i < 20; i++) {
+	for(int i = 0; i < 200; i++) {
 		m_field->newBot("testBot");
 	}
 

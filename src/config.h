@@ -24,7 +24,7 @@ namespace config {
 	static constexpr const size_t SPATIAL_MAP_RESERVE_COUNT = 10;
 
 	// Items of static food on field
-	static const std::size_t FIELD_STATIC_FOOD       = 1000;
+	static const std::size_t FIELD_STATIC_FOOD       = 10000;
 
 	// Steps that a snake moves while boosting (normal speed = 1 step)
 	static const std::size_t SNAKE_BOOST_STEPS       = 3;

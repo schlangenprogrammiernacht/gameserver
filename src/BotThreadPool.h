@@ -16,12 +16,26 @@ class Bot;
 class BotThreadPool
 {
 	public:
+		enum JobType {
+			Move,
+			CollisionCheck
+		};
+
 		struct Job {
+			JobType jobType;
+
 			// inputs
 			std::shared_ptr<Bot> bot;
 
 			// output
+			// for jobType == Move
 			std::size_t steps;
+			// for jobType == CollisionCheck
+			std::shared_ptr<Bot> killer;
+
+			Job(JobType type, const std::shared_ptr<Bot> myBot)
+				: jobType(type), bot(myBot)
+			{}
 		};
 
 	private:

@@ -37,7 +37,15 @@ BotThreadPool::BotThreadPool(std::size_t num_threads)
 							}
 
 							if(currentJob) {
-								currentJob->steps = currentJob->bot->move();
+								switch(currentJob->jobType) {
+									case Move:
+										currentJob->steps = currentJob->bot->move();
+										break;
+
+									case CollisionCheck:
+										currentJob->killer = currentJob->bot->checkCollision();
+										break;
+								}
 
 								std::lock_guard<std::mutex> processedQueueGuard(m_processedQueueMutex);
 								m_processedJobs.push(std::move(currentJob));
