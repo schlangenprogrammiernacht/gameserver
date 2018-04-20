@@ -85,13 +85,16 @@ bool Game::OnTimerInterval()
 	// do all the game logic here and send updates to clients
 
 	static uint32_t frameNumber = 0;
-	//std::cout << "Frame number #" << frameNumber++ << std::endl;
+	frameNumber++;
+	//std::cout << "Frame number #" << frameNumber << std::endl;
 
 	m_field->decayFood();
 	m_field->consumeFood();
 	m_field->removeFood();
 
 	m_field->moveAllBots();
+
+	m_updateTracker->tick(frameNumber);
 
 	// send differential update to all connected clients
 	std::string update = m_updateTracker->serialize();

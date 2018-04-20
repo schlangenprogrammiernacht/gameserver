@@ -50,6 +50,9 @@ class MsgPackUpdateTracker : public UpdateTracker
 
 		void worldState(const std::shared_ptr<Field> &field);
 
+		void tick(uint64_t frame_id);
+
+
 		std::string serialize(void);
 
 		void reset(void);

@@ -107,6 +107,15 @@ void MsgPackUpdateTracker::worldState(const std::shared_ptr<Field> &field)
 	appendMessage(buf);
 }
 
+void MsgPackUpdateTracker::tick(uint64_t frame_id)
+{
+	MsgPackProtocol::TickMessage msg;
+	msg.frame_id = frame_id;
+	msgpack::sbuffer buf;
+	msgpack::pack(buf, msg);
+	appendMessage(buf);
+}
+
 std::string MsgPackUpdateTracker::serialize(void)
 {
 	// decayed food

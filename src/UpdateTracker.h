@@ -69,6 +69,8 @@ class UpdateTracker
 		 */
 		virtual void worldState(const std::shared_ptr<Field> &field) = 0;
 
+		virtual void tick(uint64_t frame_num) = 0;
+
 		/*!
 		 * Serialize the events added since the last reset or serialization.
 		 *
