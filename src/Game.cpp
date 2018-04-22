@@ -9,11 +9,11 @@
 
 Game::Game()
 {
-	m_updateTracker = std::make_shared<MsgPackUpdateTracker>();
-	m_field = std::make_shared<Field>(
-			config::FIELD_SIZE_X, config::FIELD_SIZE_Y,
-			config::FIELD_STATIC_FOOD,
-			m_updateTracker);
+	m_field = std::make_unique<Field>(
+		config::FIELD_SIZE_X, config::FIELD_SIZE_Y,
+		config::FIELD_STATIC_FOOD,
+		std::move(std::make_unique<MsgPackUpdateTracker>())
+	);
 
 	for(int i = 0; i < 20; i++) {
 		m_field->newBot("testBot");
@@ -56,7 +56,7 @@ bool Game::OnConnectionEstablished(TcpSocket &socket)
 	// send initial state
 	MsgPackUpdateTracker initTracker;
 	initTracker.gameInfo();
-	initTracker.worldState(m_field);
+	initTracker.worldState(*m_field);
 	socket.Write(initTracker.serialize());
 
 	return true;
@@ -93,11 +93,10 @@ bool Game::OnTimerInterval()
 	m_field->removeFood();
 
 	m_field->moveAllBots();
-
-	m_updateTracker->tick(frameNumber);
+	m_field->tick(frameNumber);
 
 	// send differential update to all connected clients
-	std::string update = m_updateTracker->serialize();
+	std::string update = m_field->getUpdateTracker().serialize();
 	server.Broadcast(update);
 
 	//std::cout << hexdump(update) << std::endl;

@@ -48,7 +48,7 @@ class MsgPackUpdateTracker : public UpdateTracker
 
 		void gameInfo(void);
 
-		void worldState(const std::shared_ptr<Field> &field);
+		void worldState(Field &field);
 
 		void tick(uint64_t frame_id);
 

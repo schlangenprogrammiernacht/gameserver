@@ -11,9 +11,7 @@ class Game
 {
 	private:
 		TcpServer server;
-
-		std::shared_ptr<UpdateTracker> m_updateTracker;
-		std::shared_ptr<Field> m_field;
+		std::unique_ptr<Field> m_field;
 
 	public:
 		Game();
