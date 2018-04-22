@@ -43,6 +43,13 @@ Game::Game()
 			return true;
 		}
 	);
+
+	m_field->addBotKilledCallback(
+		[this](std::shared_ptr<Bot> victim, std::shared_ptr<Bot> killer)
+		{
+			createBot(victim->getDatabaseId());
+		}
+	);
 }
 
 bool Game::OnConnectionEstablished(TcpSocket &socket)
