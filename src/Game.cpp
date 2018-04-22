@@ -5,6 +5,7 @@
 #include "debug_funcs.h"
 #include "MsgPackUpdateTracker.h"
 #include "Game.h"
+#include "LuaBot.h"
 
 Game::Game()
 {
@@ -120,9 +121,9 @@ int Game::Main()
 		return -2;
 	}
 
-	for (int i = 0; i < 20; i++)
+	for (auto& script: m_database->GetBotScripts())
 	{
-		m_field->newBot("testBot");
+		createBot(script.bot_id);
 	}
 
 	server.AddIntervalTimer(16666); // 60 fps
@@ -150,5 +151,16 @@ bool Game::connectDB()
 void Game::queryDB()
 {
 	// query for new bots and commands
+}
+
+void Game::createBot(int bot_id)
+{
+	auto res = m_database->GetBotScript(bot_id);
+	if (res.size() != 0)
+	{
+		auto luaBot = std::make_unique<LuaBot>();
+		luaBot->init(res[0].code);
+		m_field->newBot(res[0].bot_id, res[0].bot_name, std::move(luaBot));
+	}
 }
 

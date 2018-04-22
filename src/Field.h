@@ -8,6 +8,7 @@
 #include "config.h"
 #include "Food.h"
 #include "Bot.h"
+#include "LuaBot.h"
 #include "UpdateTracker.h"
 #include "SpatialMap.h"
 #include "BotThreadPool.h"
@@ -75,7 +76,7 @@ class Field
 		/*!
 		 * Create a new Bot on this field.
 		 */
-		void newBot(const std::string &name);
+		void newBot(int databaseId, const std::string &name, std::unique_ptr<LuaBot> luaBot);
 
 		/*!
 		 * Decay all food.

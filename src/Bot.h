@@ -17,13 +17,12 @@ class GlobalView;
 class Bot : public IdentifyableObject
 {
 	private:
-		std::string             m_name;
-		Field                  *m_field;
-		std::shared_ptr<Snake>  m_snake;
+		int m_databaseId;
+		std::string m_name;
+		Field *m_field;
+		std::shared_ptr<Snake> m_snake;
 		std::unique_ptr<LuaBot> m_lua_bot;
-
-		real_t                 m_heading;
-
+		real_t m_heading;
 		size_t m_moveCounter;
 
 	public:
@@ -31,7 +30,7 @@ class Bot : public IdentifyableObject
 		 * Creates a new bot identified by the given name on the given playing
 		 * field.
 		 */
-		Bot(Field *field, const std::string &name, const Vector2D &startPos, real_t startHeading);
+		Bot(Field *field, std::unique_ptr<LuaBot> luaBot, int databaseId, const std::string &name, const Vector2D &startPos, real_t startHeading);
 		~Bot();
 
 		/*!
@@ -57,4 +56,7 @@ class Bot : public IdentifyableObject
 		real_t getHeading() { return m_heading; }
 
 		Field* getField() { return m_field; }
+
+		int getDatabaseId() { return m_databaseId; }
+		LuaBot& getLuaBot() { return *m_lua_bot; }
 };

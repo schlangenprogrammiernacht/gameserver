@@ -76,13 +76,13 @@ void Field::updateMaxSegmentRadius(void)
 	}
 }
 
-void Field::newBot(const std::string &name)
+void Field::newBot(int databaseId, const std::string &name, std::unique_ptr<LuaBot> luaBot)
 {
 	real_t x = (*m_positionXDistribution)(*m_rndGen);
 	real_t y = (*m_positionYDistribution)(*m_rndGen);
 	real_t heading = (*m_angleDegreesDistribution)(*m_rndGen);
 
-	std::shared_ptr<Bot> bot = std::make_shared<Bot>(this, name, Vector2D(x,y), heading);
+	std::shared_ptr<Bot> bot = std::make_shared<Bot>(this, std::move(luaBot), databaseId, name, Vector2D(x,y), heading);
 
 	std::cerr << "Created Bot with ID " << bot->getGUID() << std::endl;
 
@@ -160,7 +160,7 @@ void Field::moveAllBots(void)
 			// remove the bot from the field
 			m_bots.erase(victim);
 
-			newBot(victim->getName());
+			// FIXME re-create bot in killed-callback!
 
 			m_updateTracker->botKilled(killer, victim);
 		} else {

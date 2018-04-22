@@ -21,6 +21,7 @@ class Game
 		uint32_t m_currentFrame = 0;
 		bool connectDB();
 		void queryDB();
+		void createBot(int bot_id);
 
 	public:
 		Game();
