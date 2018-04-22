@@ -24,6 +24,7 @@ class Field
 {
 	public:
 		typedef std::set< std::shared_ptr<Bot> > BotSet;
+		typedef std::function< void(std::shared_ptr<Bot>, std::shared_ptr<Bot>) > BotKilledCallback;
 
 	public:
 		struct SnakeSegmentInfo {
@@ -60,7 +61,7 @@ class Field
 
 		FoodMap m_foodMap;
 		SegmentInfoMap m_segmentInfoMap;
-
+		std::vector<BotKilledCallback> m_botKilledCallbacks;
 		BotThreadPool m_threadPool;
 
 		void setupRandomness(void);
@@ -68,6 +69,7 @@ class Field
 
 		void updateSnakeSegmentMap(void);
 		void updateMaxSegmentRadius(void);
+		void onBotKilled(std::shared_ptr<Bot> victim, std::shared_ptr<Bot> killer);
 
 	public:
 		Field(real_t w, real_t h, std::size_t food_parts,
@@ -161,4 +163,7 @@ class Field
 
 		FoodMap& getFoodMap() { return m_foodMap; }
 		SegmentInfoMap& getSegmentInfoMap() { return m_segmentInfoMap; }
+
+		void addBotKilledCallback(BotKilledCallback callback);
+
 };

@@ -160,7 +160,8 @@ void Field::moveAllBots(void)
 			// remove the bot from the field
 			m_bots.erase(victim);
 
-			// FIXME re-create bot in killed-callback!
+			// bot will eventually be recreated in callback
+			onBotKilled(victim, killer);
 
 			m_updateTracker->botKilled(killer, victim);
 		} else {
@@ -305,4 +306,17 @@ Vector2D Field::getSize(void) const
 real_t Field::getMaxSegmentRadius(void) const
 {
 	return m_maxSegmentRadius;
+}
+
+void Field::addBotKilledCallback(Field::BotKilledCallback callback)
+{
+	m_botKilledCallbacks.push_back(callback);
+}
+
+void Field::onBotKilled(std::shared_ptr<Bot> victim, std::shared_ptr<Bot> killer)
+{
+	for (auto& callback: m_botKilledCallbacks)
+	{
+		callback(victim, killer);
+	}
 }
