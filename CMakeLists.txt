@@ -47,7 +47,10 @@ set(sources
 	src/SpatialMap.h
 	src/types.h
 	src/UpdateTracker.h
-	)
+
+	src/Environment.h
+	src/Database.h src/Database.cpp
+)
 
 include_directories(
 	${CMAKE_PROJECT_NAME}
@@ -67,7 +70,8 @@ target_link_libraries(
 	tcpserver
 	${LUA_LIB}
 	Threads::Threads
-	)
+	mysqlcppconn
+)
 
 configure_file("lua/demobot.lua" "lua/demobot.lua" COPYONLY)
 configure_file("lua/quota.lua" "lua/quota.lua" COPYONLY)
