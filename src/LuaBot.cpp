@@ -6,6 +6,8 @@
 
 LuaBot::LuaBot(Bot &bot)
 	: m_bot(bot)
+	, m_allocator(100 * 1024*1024, 256)
+	, m_lua_state(sol::default_at_panic, PoolAllocator::lua_allocator, &m_allocator)
 {
 	LuaFoodInfo::Register(m_lua_state);
 	m_luaFoodInfoTable.reserve(1000);

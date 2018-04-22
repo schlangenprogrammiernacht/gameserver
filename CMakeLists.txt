@@ -41,6 +41,8 @@ set(sources
 	src/MsgPackProtocol.h
 	src/MsgPackUpdateTracker.cpp
 	src/MsgPackUpdateTracker.h
+	src/PoolAllocator.cpp
+	src/PoolAllocator.h
 	src/Semaphore.h
 	src/Snake.cpp
 	src/Snake.h
