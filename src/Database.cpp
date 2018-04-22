@@ -13,36 +13,26 @@ void MysqlDatabase::Connect(std::string host, std::string username, std::string 
 
 	_getBotScriptStmt = std::unique_ptr<sql::PreparedStatement>(
 		_connection->prepareStatement(
-			"SELECT "
-			"	s.id AS snake_id, "
-			"	s.name AS snake_name, "
-			"	sv.id AS version_id, "
-			"	sv.code AS code "
-			"FROM core_snakeversion sv "
-			"LEFT JOIN core_snake s ON (sv.snake_id=s.id) "
-			"WHERE sv.id=(SELECT MAX(id) FROM core_snakeversion WHERE snake_id=?);"
+			"SELECT u.id, u.username, sv.id, sv.code "
+			"FROM core_activesnake a "
+			"LEFT JOIN core_snakeversion sv ON (sv.id=a.version_id) "
+			"LEFT JOIN auth_user u ON (u.id=a.user_id) "
+			"WHERE a.user_id=?"
 		)
 	);
 
 	_getAllBotScriptsStmt = std::unique_ptr<sql::PreparedStatement>(
 		_connection->prepareStatement(
-			"SELECT "
-			"	s.id AS snake_id, "
-			"	s.name AS snake_name, "
-			"	sv.id AS version_id, "
-			"	sv.code AS code "
-			"FROM core_snakeversion sv "
-			"LEFT JOIN core_snake s ON (sv.snake_id=s.id) "
-			"WHERE sv.id=(SELECT MAX(id) FROM core_snakeversion WHERE snake_id=s.id);"
+			"SELECT u.id, u.username, sv.id, sv.code "
+			"FROM core_activesnake a "
+			"LEFT JOIN core_snakeversion sv ON (sv.id=a.version_id) "
+			"LEFT JOIN auth_user u ON (u.id=a.user_id) "
 		)
 	);
 
 	_getActiveBotIdsStmt = std::unique_ptr<sql::PreparedStatement>(
 		_connection->prepareStatement(
-			"SELECT s.id AS snake_id "
-			"FROM core_snakeversion sv "
-			"LEFT JOIN core_snake s ON (sv.snake_id=s.id) "
-			"WHERE sv.id=(SELECT MAX(id) FROM core_snakeversion WHERE snake_id=s.id);"
+			"SELECT user_id FROM core_activesnake"
 		)
 	);
 }
