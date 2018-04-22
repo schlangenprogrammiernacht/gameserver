@@ -1,10 +1,9 @@
 #include <iostream>
 
-#include "MsgPackUpdateTracker.h"
-
 #include "config.h"
+#include "Environment.h"
 #include "debug_funcs.h"
-
+#include "MsgPackUpdateTracker.h"
 #include "Game.h"
 
 Game::Game()
@@ -14,10 +13,6 @@ Game::Game()
 			config::FIELD_SIZE_X, config::FIELD_SIZE_Y,
 			config::FIELD_STATIC_FOOD,
 			m_updateTracker);
-
-	for(int i = 0; i < 20; i++) {
-		m_field->newBot("testBot");
-	}
 
 	server.AddConnectionEstablishedListener(
 		[this](TcpSocket& socket)
@@ -109,8 +104,19 @@ bool Game::OnTimerInterval()
 
 int Game::Main()
 {
-	if(!server.Listen(9010)) {
+	if (!server.Listen(9010))
+	{
 		return -1;
+	}
+
+	if (!connectDB())
+	{
+		return -2;
+	}
+
+	for (int i = 0; i < 20; i++)
+	{
+		m_field->newBot("testBot");
 	}
 
 	server.AddIntervalTimer(16666); // 60 fps
@@ -121,3 +127,17 @@ int Game::Main()
 		server.Poll(1000);
 	}
 }
+
+bool Game::connectDB()
+{
+	auto db = std::make_unique<db::MysqlDatabase>();
+	db->Connect(
+		Environment::GetDefault(Environment::ENV_MYSQL_HOST, Environment::ENV_MYSQL_HOST_DEFAULT),
+		Environment::GetDefault(Environment::ENV_MYSQL_USER, Environment::ENV_MYSQL_USER_DEFAULT),
+		Environment::GetDefault(Environment::ENV_MYSQL_PASSWORD, Environment::ENV_MYSQL_PASSWORD_DEFAULT),
+		Environment::GetDefault(Environment::ENV_MYSQL_DB, Environment::ENV_MYSQL_DB_DEFAULT)
+	);
+	m_database = std::move(db);
+	return true;
+}
+

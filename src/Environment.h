@@ -16,7 +16,7 @@ class Environment
 		static constexpr const char* ENV_MYSQL_DB = "MYSQL_DB";
 		static constexpr const char* ENV_MYSQL_DB_DEFAULT = "gameserver";
 
-		const char* GetDefault(const char* env, const char* defaultValue)
+		static const char* GetDefault(const char* env, const char* defaultValue)
 		{
 			const char* value = std::getenv(env);
 			return (value!=nullptr) ? value : defaultValue;

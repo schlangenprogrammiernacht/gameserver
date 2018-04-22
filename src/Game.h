@@ -6,6 +6,7 @@
 
 #include "UpdateTracker.h"
 #include "Field.h"
+#include "Database.h"
 
 class Game
 {
@@ -14,6 +15,8 @@ class Game
 
 		std::shared_ptr<UpdateTracker> m_updateTracker;
 		std::shared_ptr<Field> m_field;
+		std::unique_ptr<db::IDatabase> m_database;
+		bool connectDB();
 
 	public:
 		Game();
