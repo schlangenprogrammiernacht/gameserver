@@ -79,8 +79,14 @@ bool Game::OnTimerInterval()
 {
 	// do all the game logic here and send updates to clients
 
-	static uint32_t frameNumber = 0;
-	frameNumber++;
+	++m_currentFrame;
+
+	if (++m_dbQueryCounter >= DB_QUERY_INTERVAL)
+	{
+		queryDB();
+		m_dbQueryCounter = 0;
+	}
+
 	//std::cout << "Frame number #" << frameNumber << std::endl;
 
 	m_field->decayFood();
@@ -89,7 +95,7 @@ bool Game::OnTimerInterval()
 
 	m_field->moveAllBots();
 
-	m_updateTracker->tick(frameNumber);
+	m_updateTracker->tick(m_currentFrame);
 
 	// send differential update to all connected clients
 	std::string update = m_updateTracker->serialize();
@@ -139,5 +145,10 @@ bool Game::connectDB()
 	);
 	m_database = std::move(db);
 	return true;
+}
+
+void Game::queryDB()
+{
+	// query for new bots and commands
 }
 
