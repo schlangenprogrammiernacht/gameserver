@@ -178,6 +178,18 @@ const Field::BotSet& Field::getBots(void) const
 	return m_bots;
 }
 
+std::shared_ptr<Bot> Field::getBotByDatabaseId(int id)
+{
+	for (auto& bot: m_bots)
+	{
+		if (bot->getDatabaseId() == id)
+		{
+			return bot;
+		}
+	}
+	return nullptr;
+}
+
 void Field::createDynamicFood(real_t totalValue, const Vector2D &center, real_t radius)
 {
 	// create at least 1 food item

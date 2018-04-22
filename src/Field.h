@@ -108,6 +108,7 @@ class Field
 		 * Get the set of bots.
 		 */
 		const BotSet& getBots(void) const;
+		std::shared_ptr<Bot> getBotByDatabaseId(int id);
 
 		/*!
 		 * Add dynamic food equally distributed in the given circle.

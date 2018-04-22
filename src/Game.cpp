@@ -157,7 +157,16 @@ bool Game::connectDB()
 
 void Game::queryDB()
 {
-	// query for new bots and commands
+	for (auto& v: m_database->GetBotScripts())
+	{
+		if (m_field->getBotByDatabaseId(v.bot_id) == nullptr)
+		{
+			createBot(v.bot_id);
+		}
+	}
+
+	// TODO kill bots that are not in the database (any more)?
+	// TODO query commands
 }
 
 void Game::createBot(int bot_id)
