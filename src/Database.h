@@ -28,6 +28,7 @@ namespace db
 			virtual ~IDatabase() = default;
 			virtual std::vector<BotScript> GetBotScript(int bot_id) = 0;
 			virtual std::vector<BotScript> GetBotScripts() = 0;
+			virtual std::vector<int> GetActiveBotIds() = 0;
 	};
 
 	class MysqlDatabase : public IDatabase
@@ -36,6 +37,7 @@ namespace db
 			void Connect(std::string host, std::string username, std::string password, std::string database);
 			std::vector<BotScript> GetBotScript(int bot_id) override;
 			std::vector<BotScript> GetBotScripts() override;
+			std::vector<int> GetActiveBotIds() override;
 
 		private:
 			enum {
@@ -49,6 +51,7 @@ namespace db
 			std::unique_ptr<sql::Connection> _connection;
 			std::unique_ptr<sql::PreparedStatement> _getBotScriptStmt;
 			std::unique_ptr<sql::PreparedStatement> _getAllBotScriptsStmt;
+			std::unique_ptr<sql::PreparedStatement> _getActiveBotIdsStmt;
 
 			std::vector<BotScript> GetScripts(sql::PreparedStatement *stmt);
 	};

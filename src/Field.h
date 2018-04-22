@@ -69,7 +69,6 @@ class Field
 
 		void updateSnakeSegmentMap(void);
 		void updateMaxSegmentRadius(void);
-		void onBotKilled(std::shared_ptr<Bot> victim, std::shared_ptr<Bot> killer);
 
 	public:
 		Field(real_t w, real_t h, std::size_t food_parts,
@@ -166,5 +165,6 @@ class Field
 		SegmentInfoMap& getSegmentInfoMap() { return m_segmentInfoMap; }
 
 		void addBotKilledCallback(BotKilledCallback callback);
+		void killBot(std::shared_ptr<Bot> victim, std::shared_ptr<Bot> killer);
 
 };

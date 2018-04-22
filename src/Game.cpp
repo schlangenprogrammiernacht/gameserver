@@ -157,15 +157,29 @@ bool Game::connectDB()
 
 void Game::queryDB()
 {
-	for (auto& v: m_database->GetBotScripts())
+	auto active_ids = m_database->GetActiveBotIds();
+	for (auto id: active_ids)
 	{
-		if (m_field->getBotByDatabaseId(v.bot_id) == nullptr)
+		if (m_field->getBotByDatabaseId(id) == nullptr)
 		{
-			createBot(v.bot_id);
+			createBot(id);
 		}
 	}
 
-	// TODO kill bots that are not in the database (any more)?
+	std::vector<std::shared_ptr<Bot>> kill_bots;
+	for (auto& bot: m_field->getBots())
+	{
+		if (std::find(active_ids.begin(), active_ids.end(), bot->getDatabaseId()) == active_ids.end())
+		{
+			kill_bots.push_back(bot);
+		}
+	}
+
+	for (auto& bot: kill_bots)
+	{
+		m_field->killBot(bot, bot); // suicide!
+	}
+
 	// TODO query commands
 }
 

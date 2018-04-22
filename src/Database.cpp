@@ -23,6 +23,7 @@ void MysqlDatabase::Connect(std::string host, std::string username, std::string 
 			"WHERE sv.id=(SELECT MAX(id) FROM core_snakeversion WHERE snake_id=?);"
 		)
 	);
+
 	_getAllBotScriptsStmt = std::unique_ptr<sql::PreparedStatement>(
 		_connection->prepareStatement(
 			"SELECT "
@@ -30,6 +31,15 @@ void MysqlDatabase::Connect(std::string host, std::string username, std::string 
 			"	s.name AS snake_name, "
 			"	sv.id AS version_id, "
 			"	sv.code AS code "
+			"FROM core_snakeversion sv "
+			"LEFT JOIN core_snake s ON (sv.snake_id=s.id) "
+			"WHERE sv.id=(SELECT MAX(id) FROM core_snakeversion WHERE snake_id=s.id);"
+		)
+	);
+
+	_getActiveBotIdsStmt = std::unique_ptr<sql::PreparedStatement>(
+		_connection->prepareStatement(
+			"SELECT s.id AS snake_id "
 			"FROM core_snakeversion sv "
 			"LEFT JOIN core_snake s ON (sv.snake_id=s.id) "
 			"WHERE sv.id=(SELECT MAX(id) FROM core_snakeversion WHERE snake_id=s.id);"
@@ -46,6 +56,17 @@ std::vector<BotScript> MysqlDatabase::GetBotScript(int bot_id)
 std::vector<BotScript> MysqlDatabase::GetBotScripts()
 {
 	return GetScripts(_getAllBotScriptsStmt.get());
+}
+
+std::vector<int> MysqlDatabase::GetActiveBotIds()
+{
+	std::unique_ptr<sql::ResultSet> res(_getAllBotScriptsStmt->executeQuery());
+	std::vector<int> retval;
+	while (res->next())
+	{
+		retval.push_back(res->getInt(1));
+	}
+	return retval;
 }
 
 std::vector<BotScript> MysqlDatabase::GetScripts(sql::PreparedStatement *stmt)

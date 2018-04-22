@@ -153,17 +153,10 @@ void Field::moveAllBots(void)
 
 		std::shared_ptr<Bot> killer = victim->checkCollision();
 
-		if(killer) {
+		if (killer)
+		{
 			// collision detected, convert the colliding bot to food
-			victim->getSnake()->convertToFood();
-
-			// remove the bot from the field
-			m_bots.erase(victim);
-
-			// bot will eventually be recreated in callback
-			onBotKilled(victim, killer);
-
-			m_updateTracker->botKilled(killer, victim);
+			killBot(victim, killer);
 		} else {
 			// no collision, bot still alive
 			m_updateTracker->botMoved(victim, steps);
@@ -325,8 +318,13 @@ void Field::addBotKilledCallback(Field::BotKilledCallback callback)
 	m_botKilledCallbacks.push_back(callback);
 }
 
-void Field::onBotKilled(std::shared_ptr<Bot> victim, std::shared_ptr<Bot> killer)
+void Field::killBot(std::shared_ptr<Bot> victim, std::shared_ptr<Bot> killer)
 {
+	victim->getSnake()->convertToFood();
+	m_bots.erase(victim);
+	m_updateTracker->botKilled(killer, victim);
+
+	// bot will eventually be recreated in callbacks
 	for (auto& callback: m_botKilledCallbacks)
 	{
 		callback(victim, killer);
