@@ -108,6 +108,7 @@ PoolAllocator::~PoolAllocator()
 {
 #ifdef DEBUG_POOLALLOCATOR_STATS
 	std::cerr << "PoolAllocator: Destroying pool: remaining memory: " << m_currentUsage << " blocks; Max: " << m_maxUsage << " blocks" << std::endl;
+	std::cerr << "PoolAllocator: Destroying pool: Number of allocations: " << m_numAllocs << std::endl;
 #endif // DEBUG_POOLALLOCATOR_STATS
 }
 
@@ -118,6 +119,8 @@ void* PoolAllocator::allocate(std::size_t bytes)
 	PA_DEBUG(std::cerr << "PoolAllocator: allocating block with " << bytes << " bytes/" << blocks << " blocks." << std::endl);
 
 	std::size_t startBlock = findFreeBlockSequence(blocks);
+
+	assert(startBlock <= (m_numBlocks - blocks));
 
 	if(startBlock == SIZE_MAX) {
 		PA_DEBUG(std::cerr << "PoolAllocator: could not find " << blocks << " contiguous free blocks :(" << std::endl);
@@ -137,8 +140,12 @@ void* PoolAllocator::allocate(std::size_t bytes)
 
 	// set next search index for faster allocation
 	m_curBlockIdx += blocks;
+	if(m_curBlockIdx >= m_numBlocks) {
+		m_curBlockIdx = 0;
+	}
 
 	trackUsage(0, blocks);
+	m_numAllocs++;
 
 	return blockIdxToPtr(startBlock);
 }
@@ -202,6 +209,7 @@ void* PoolAllocator::reallocate(void *ptr, std::size_t bytes)
 				std::size_t blockIdx = origStartBlock + i;
 				m_blockUsed[blockIdx] = true;
 			}
+			assert(origStartBlock <= (m_numBlocks - newBlocks));
 
 			// increase mapped block size
 			m_blockMap[origStartBlock] = newBlocks;
@@ -231,10 +239,14 @@ void* PoolAllocator::reallocate(void *ptr, std::size_t bytes)
 
 void PoolAllocator::deallocate(void *ptr)
 {
+	if(!ptr) {
+		return;
+	}
+
 	std::size_t block = ptrToBlockIdx(ptr);
 	std::size_t length = m_blockMap[block];
 
-	PA_DEBUG(std::cerr << "PoolAllocator: Freeing block " << block << " with size " << length << " blocks" << std::endl);
+	assert(block < m_numBlocks);
 
 	for(size_t i = 0; i < length; i++) {
 		m_blockUsed[block + i] = false;

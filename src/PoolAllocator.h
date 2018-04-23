@@ -22,6 +22,7 @@ class PoolAllocator
 		// stats
 		std::size_t m_currentUsage = 0;
 		std::size_t m_maxUsage = 0;
+		std::size_t m_numAllocs = 0;
 
 		/*!
 		 * Find a continuous sequence of the given number of free blocks.
