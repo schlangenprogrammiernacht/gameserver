@@ -90,14 +90,14 @@ void MsgPackUpdateTracker::gameInfo(void)
 	appendMessage(buf);
 }
 
-void MsgPackUpdateTracker::worldState(const std::shared_ptr<Field> &field)
+void MsgPackUpdateTracker::worldState(Field& field)
 {
 	MsgPackProtocol::WorldUpdateMessage msg;
 
-	msg.bots = field->getBots();
+	msg.bots = field.getBots();
 
 	msg.food.reserve(1024);
-	for (auto& food: field->getFoodMap()) // TODO directly serialize FoodMap
+	for (auto& food: field.getFoodMap()) // TODO directly serialize FoodMap
 	{
 		msg.food.push_back(food);
 	}

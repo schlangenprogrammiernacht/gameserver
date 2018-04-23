@@ -13,6 +13,8 @@ class Field;
 class UpdateTracker
 {
 	public:
+		virtual ~UpdateTracker() = default;
+
 		/*!
 		 * Track the event where food was consumed by a snake/bot.
 		 *
@@ -67,7 +69,7 @@ class UpdateTracker
 		 *
 		 * \param field   Pointer to the Field containing the world state to be serialized.
 		 */
-		virtual void worldState(const std::shared_ptr<Field> &field) = 0;
+		virtual void worldState(Field &field) = 0;
 
 		virtual void tick(uint64_t frame_num) = 0;
 
