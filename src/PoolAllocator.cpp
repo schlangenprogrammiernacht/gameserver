@@ -4,6 +4,15 @@
 
 #include "PoolAllocator.h"
 
+#define DEBUG_POOLALLOCATOR_STATS
+//#define DEBUG_POOLALLOCATOR
+
+#ifdef DEBUG_POOLALLOCATOR
+#define PA_DEBUG(x) x
+#else
+#define PA_DEBUG(x)
+#endif
+
 /* Private methods */
 
 std::size_t PoolAllocator::findFreeBlockSequence(std::size_t blocks)
@@ -70,6 +79,15 @@ std::size_t PoolAllocator::ptrToBlockIdx(void *ptr)
 	return static_cast<std::size_t>(reinterpret_cast<uint8_t*>(ptr) - m_pool.data()) / m_blockSize;
 }
 
+void PoolAllocator::trackUsage(std::size_t oldSize, std::size_t newSize)
+{
+	m_currentUsage = m_currentUsage + newSize - oldSize;
+
+	if(m_currentUsage > m_maxUsage) {
+		m_maxUsage = m_currentUsage;
+	}
+}
+
 /* Public methods */
 
 PoolAllocator::PoolAllocator(std::size_t bytes, std::size_t blockSize)
@@ -86,16 +104,28 @@ PoolAllocator::PoolAllocator(std::size_t bytes, std::size_t blockSize)
 	m_curBlockIdx = 0;
 }
 
+PoolAllocator::~PoolAllocator()
+{
+#ifdef DEBUG_POOLALLOCATOR_STATS
+	std::cerr << "PoolAllocator: Destroying pool: remaining memory: " << m_currentUsage << " blocks; Max: " << m_maxUsage << " blocks" << std::endl;
+#endif // DEBUG_POOLALLOCATOR_STATS
+}
+
 void* PoolAllocator::allocate(std::size_t bytes)
 {
 	std::size_t blocks = bytesToBlocks(bytes);
 
+	PA_DEBUG(std::cerr << "PoolAllocator: allocating block with " << bytes << " bytes/" << blocks << " blocks." << std::endl);
+
 	std::size_t startBlock = findFreeBlockSequence(blocks);
 
 	if(startBlock == SIZE_MAX) {
+		PA_DEBUG(std::cerr << "PoolAllocator: could not find " << blocks << " contiguous free blocks :(" << std::endl);
 		// out of memory :(
 		return nullptr;
 	}
+
+	PA_DEBUG(std::cerr << "PoolAllocator: found free block at index " << startBlock << std::endl);
 
 	// mark blocks as allocated
 	for(std::size_t i = 0; i < blocks; i++) {
@@ -107,6 +137,8 @@ void* PoolAllocator::allocate(std::size_t bytes)
 
 	// set next search index for faster allocation
 	m_curBlockIdx += blocks;
+
+	trackUsage(0, blocks);
 
 	return blockIdxToPtr(startBlock);
 }
@@ -124,6 +156,8 @@ void* PoolAllocator::reallocate(void *ptr, std::size_t bytes)
 	std::size_t newBlocks = bytesToBlocks(bytes);
 	std::size_t oldBlocks = m_blockMap[origStartBlock];
 
+	PA_DEBUG(std::cerr << "PoolAllocator: Resizing block " << origStartBlock << " from " << oldBlocks << " to " << newBlocks << " blocks" << std::endl);
+
 	if(oldBlocks == newBlocks) {
 		// nothing to do
 		return ptr;
@@ -134,6 +168,8 @@ void* PoolAllocator::reallocate(void *ptr, std::size_t bytes)
 		}
 
 		m_blockMap[origStartBlock] = newBlocks;
+
+		trackUsage(oldBlocks, newBlocks);
 
 		return ptr;
 	} else {
@@ -159,9 +195,24 @@ void* PoolAllocator::reallocate(void *ptr, std::size_t bytes)
 		}
 
 		if(reallocated) {
+			PA_DEBUG(std::cerr << "PoolAllocator: Reallocation: found enough free blocks after the current block." << std::endl);
+
+			// mark blocks as used
+			for(std::size_t i = oldBlocks; i < newBlocks; i++) {
+				std::size_t blockIdx = origStartBlock + i;
+				m_blockUsed[blockIdx] = true;
+			}
+
+			// increase mapped block size
+			m_blockMap[origStartBlock] = newBlocks;
+
+			trackUsage(oldBlocks, newBlocks);
+
 			// block pointer has not changed
 			return ptr;
 		} else {
+			PA_DEBUG(std::cerr << "PoolAllocator: Reallocation: moving memory to a new block." << std::endl);
+
 			// try to find a new block and copy the memory there
 			void *newBlockPtr = allocate(newBlocks*m_blockSize);
 
@@ -183,11 +234,15 @@ void PoolAllocator::deallocate(void *ptr)
 	std::size_t block = ptrToBlockIdx(ptr);
 	std::size_t length = m_blockMap[block];
 
+	PA_DEBUG(std::cerr << "PoolAllocator: Freeing block " << block << " with size " << length << " blocks" << std::endl);
+
 	for(size_t i = 0; i < length; i++) {
 		m_blockUsed[block + i] = false;
 	}
 
 	m_blockMap.erase(block);
+
+	trackUsage(length, 0);
 }
 
 void* PoolAllocator::lua_allocator(void *ud, void *ptr, size_t osize, size_t nsize)

@@ -17,7 +17,11 @@ class PoolAllocator
 		std::size_t          m_numBlocks;
 		std::size_t          m_blockSize;
 
-		size_t m_curBlockIdx;
+		std::size_t m_curBlockIdx;
+
+		// stats
+		std::size_t m_currentUsage = 0;
+		std::size_t m_maxUsage = 0;
 
 		/*!
 		 * Find a continuous sequence of the given number of free blocks.
@@ -43,8 +47,17 @@ class PoolAllocator
 		 */
 		std::size_t ptrToBlockIdx(void *ptr);
 
+		/*!
+		 * Track a change in the overall pool usage.
+		 *
+		 * \param oldSize   The old size of the block.
+		 * \param newSize   The new size of the block.
+		 */
+		void trackUsage(std::size_t oldSize, std::size_t newSize);
+
 	public:
 		PoolAllocator(std::size_t bytes, std::size_t blockSize);
+		~PoolAllocator();
 
 		void* allocate(std::size_t bytes);
 		void* reallocate(void *ptr, std::size_t bytes);
