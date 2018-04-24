@@ -4,9 +4,11 @@
 #include "Food.h"
 #include "Field.h"
 
+#include "config.h"
+
 LuaBot::LuaBot(Bot &bot)
 	: m_bot(bot)
-	, m_allocator(100 * 1024*1024, 256)
+	, m_allocator(config::LUA_MEM_POOL_SIZE_BYTES, config::LUA_MEM_POOL_BLOCK_SIZE_BYTES)
 	, m_lua_state(sol::default_at_panic, PoolAllocator::lua_allocator, &m_allocator)
 {
 	LuaFoodInfo::Register(m_lua_state);
