@@ -4,10 +4,10 @@
 
 #include "Field.h"
 
-Field::Field(real_t w, real_t h, std::size_t food_parts, const std::shared_ptr<UpdateTracker> &update_tracker)
+Field::Field(real_t w, real_t h, std::size_t food_parts, std::unique_ptr<UpdateTracker> update_tracker)
 	: m_width(w)
 	, m_height(h)
-	, m_updateTracker(update_tracker)
+	, m_updateTracker(std::move(update_tracker))
 	, m_foodMap(static_cast<size_t>(w), static_cast<size_t>(h), config::SPATIAL_MAP_RESERVE_COUNT)
 	, m_segmentInfoMap(static_cast<size_t>(w), static_cast<size_t>(h), config::SPATIAL_MAP_RESERVE_COUNT)
 	, m_threadPool(std::thread::hardware_concurrency())
@@ -164,6 +164,11 @@ void Field::moveAllBots(void)
 	}
 
 	updateSnakeSegmentMap();
+}
+
+void Field::tick(uint32_t frameNumber)
+{
+	m_updateTracker->tick(frameNumber);
 }
 
 const Field::BotSet& Field::getBots(void) const

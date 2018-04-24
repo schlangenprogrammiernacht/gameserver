@@ -57,7 +57,7 @@ class Field
 		std::unique_ptr< std::uniform_real_distribution<real_t> > m_angleRadDistribution;
 		std::unique_ptr< std::uniform_real_distribution<real_t> > m_simple0To1Distribution;
 
-		std::shared_ptr<UpdateTracker> m_updateTracker;
+		std::unique_ptr<UpdateTracker> m_updateTracker;
 
 		FoodMap m_foodMap;
 		SegmentInfoMap m_segmentInfoMap;
@@ -71,8 +71,7 @@ class Field
 		void updateMaxSegmentRadius(void);
 
 	public:
-		Field(real_t w, real_t h, std::size_t food_parts,
-				const std::shared_ptr<UpdateTracker> &update_tracker);
+		Field(real_t w, real_t h, std::size_t food_parts, std::unique_ptr<UpdateTracker> update_tracker);
 
 		/*!
 		 * Create a new Bot on this field.
@@ -102,6 +101,8 @@ class Field
 		 * Move all bots and check collisions.
 		 */
 		void moveAllBots(void);
+
+		void tick(uint32_t frameNumber);
 
 		/*!
 		 * Get the set of bots.
@@ -167,4 +168,5 @@ class Field
 		void addBotKilledCallback(BotKilledCallback callback);
 		void killBot(std::shared_ptr<Bot> victim, std::shared_ptr<Bot> killer);
 
+		UpdateTracker& getUpdateTracker() { return *m_updateTracker; }
 };

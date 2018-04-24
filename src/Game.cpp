@@ -9,11 +9,11 @@
 
 Game::Game()
 {
-	m_updateTracker = std::make_shared<MsgPackUpdateTracker>();
-	m_field = std::make_shared<Field>(
-			config::FIELD_SIZE_X, config::FIELD_SIZE_Y,
-			config::FIELD_STATIC_FOOD,
-			m_updateTracker);
+	m_field = std::make_unique<Field>(
+		config::FIELD_SIZE_X, config::FIELD_SIZE_Y,
+		config::FIELD_STATIC_FOOD,
+		std::make_unique<MsgPackUpdateTracker>()
+	);
 
 	server.AddConnectionEstablishedListener(
 		[this](TcpSocket& socket)
@@ -59,7 +59,7 @@ bool Game::OnConnectionEstablished(TcpSocket &socket)
 	// send initial state
 	MsgPackUpdateTracker initTracker;
 	initTracker.gameInfo();
-	initTracker.worldState(m_field);
+	initTracker.worldState(*m_field);
 	socket.Write(initTracker.serialize());
 
 	return true;
@@ -102,11 +102,10 @@ bool Game::OnTimerInterval()
 	m_field->removeFood();
 
 	m_field->moveAllBots();
-
-	m_updateTracker->tick(m_currentFrame);
+	m_field->tick(m_currentFrame);
 
 	// send differential update to all connected clients
-	std::string update = m_updateTracker->serialize();
+	std::string update = m_field->getUpdateTracker().serialize();
 	server.Broadcast(update);
 
 	//std::cout << hexdump(update) << std::endl;
@@ -118,7 +117,7 @@ bool Game::OnTimerInterval()
 
 int Game::Main()
 {
-	if (!server.Listen(9010))
+	if (!server.Listen(9010)) 
 	{
 		return -1;
 	}
@@ -128,9 +127,9 @@ int Game::Main()
 		return -2;
 	}
 
-	for (auto& script: m_database->GetBotScripts())
+	for (auto id: m_database->GetActiveBotIds())
 	{
-		createBot(script.bot_id);
+		createBot(id);
 	}
 
 	server.AddIntervalTimer(16666); // 60 fps
