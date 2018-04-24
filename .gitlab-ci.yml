@@ -2,7 +2,7 @@ image: buildpack-deps:xenial
 
 before_script:
 - apt update
-- apt install -y liblua5.3-dev libeigen3-dev cmake
+- apt install -y liblua5.3-dev libeigen3-dev cmake libmysqlcppconn-dev
 
 variables:
     GIT_SUBMODULE_STRATEGY: "normal"
