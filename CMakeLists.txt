@@ -2,6 +2,7 @@ cmake_minimum_required (VERSION 3.2)
 project (GameServer VERSION 0.1 LANGUAGES CXX)
 
 add_subdirectory(lib/TcpServer/TcpServer)
+add_subdirectory(test)
 
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_FLAGS "-Wall -pedantic")
