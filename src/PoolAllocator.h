@@ -10,7 +10,6 @@ class PoolAllocator
 {
 	private:
 		std::vector<uint8_t> m_pool;
-		std::vector<bool>    m_blockUsed;
 
 		std::map<std::size_t, std::size_t> m_blockMap; //!< Allocated Block Map (maps block-index to length)
 
@@ -23,6 +22,21 @@ class PoolAllocator
 		std::size_t m_currentUsage = 0;
 		std::size_t m_maxUsage = 0;
 		std::size_t m_numAllocs = 0;
+
+		/*!
+		 * Find the next allocated block, starting from a given block.
+		 *
+		 * An allocated block can consist of multiple unit blocks, depending on
+		 * it’s size.
+		 *
+		 * When the maximum search distance is reached, startBlock + maxDistance is
+		 * returned.
+		 *
+		 * \param startBlock    The block where to start the search.
+		 * \param maxDistance   Maximum search distance.
+		 * \returns             The index of the next allocation.
+		 */
+		std::size_t findNextAlloc(std::size_t startBlock, std::size_t maxDistance);
 
 		/*!
 		 * Find a continuous sequence of the given number of free blocks.
@@ -63,6 +77,8 @@ class PoolAllocator
 		void* allocate(std::size_t bytes);
 		void* reallocate(void *ptr, std::size_t bytes);
 		void  deallocate(void *ptr);
+
+		void debugPrint(void);
 
 		/*!
 		 * This is the implementation of the lua_Alloc type.

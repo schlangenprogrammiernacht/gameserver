@@ -15,41 +15,46 @@
 
 /* Private methods */
 
+std::size_t PoolAllocator::findNextAlloc(std::size_t startBlock, std::size_t maxDistance)
+{
+	std::size_t i = startBlock;
+	while((i < m_numBlocks) && (i < startBlock + maxDistance)) {
+		if(m_blockMap.find(i) != m_blockMap.end()) {
+			// found a block starting at this index
+			break;
+		}
+
+		++i;
+	}
+
+	return i;
+}
+
 std::size_t PoolAllocator::findFreeBlockSequence(std::size_t blocks)
 {
 	std::size_t startBlock = m_curBlockIdx;
-	std::size_t lastBlockToCheck = (m_curBlockIdx + m_numBlocks - 1) % m_numBlocks;
+	std::size_t totalInc = 0;
 
-	while(startBlock != lastBlockToCheck) {
-		bool rangeFree = true;
-
-		std::size_t offset;
-		for(offset = 0; offset < blocks; offset++) {
-			std::size_t idx = startBlock + offset;
-
-			if(idx >= m_numBlocks) {
-				rangeFree = false;
-				break;
-			}
-
-			if(idx == lastBlockToCheck) {
-				/* Came across the last block to check, which means there is not enough
-				 * memory left for this allocation. Panic? */
-				return SIZE_MAX;
-			}
-
-			if(m_blockUsed[idx]) {
-				rangeFree = false;
-				break;
-			}
+	while(totalInc < m_numBlocks) {
+		if(startBlock >= m_numBlocks) {
+			startBlock = 0;
 		}
 
-		if(rangeFree) {
+		std::size_t nextAlloc = findNextAlloc(startBlock, blocks+1);
+		std::size_t nextAllocDistance = nextAlloc - startBlock;
+
+		totalInc += nextAllocDistance;
+
+		if(nextAllocDistance >= blocks) {
 			return startBlock;
 		} else {
-			startBlock += offset + 1;
-			if(startBlock >= m_numBlocks) {
-				startBlock -= m_numBlocks;
+			startBlock = nextAlloc;
+
+			std::map<std::size_t, std::size_t>::iterator iter;
+			while((totalInc < m_numBlocks) &&
+					(iter = m_blockMap.find(startBlock)) != m_blockMap.end()) {
+				startBlock += iter->second;
+				totalInc += iter->second;
 			}
 		}
 	}
@@ -99,7 +104,6 @@ PoolAllocator::PoolAllocator(std::size_t bytes, std::size_t blockSize)
 	}
 
 	m_pool.resize(m_numBlocks * m_blockSize);
-	m_blockUsed.resize(m_numBlocks, false); // all blocks unused at startup
 
 	m_curBlockIdx = 0;
 }
@@ -120,29 +124,21 @@ void* PoolAllocator::allocate(std::size_t bytes)
 
 	std::size_t startBlock = findFreeBlockSequence(blocks);
 
-	assert(startBlock <= (m_numBlocks - blocks));
-
 	if(startBlock == SIZE_MAX) {
 		PA_DEBUG(std::cerr << "PoolAllocator: could not find " << blocks << " contiguous free blocks :(" << std::endl);
 		// out of memory :(
 		return nullptr;
 	}
 
-	PA_DEBUG(std::cerr << "PoolAllocator: found free block at index " << startBlock << std::endl);
+	assert(startBlock <= (m_numBlocks - blocks));
 
-	// mark blocks as allocated
-	for(std::size_t i = 0; i < blocks; i++) {
-		m_blockUsed[startBlock + i] = true;
-	}
+	PA_DEBUG(std::cerr << "PoolAllocator: found free block at index " << startBlock << std::endl);
 
 	// remember block size
 	m_blockMap[startBlock] = blocks;
 
 	// set next search index for faster allocation
-	m_curBlockIdx += blocks;
-	if(m_curBlockIdx >= m_numBlocks) {
-		m_curBlockIdx = 0;
-	}
+	m_curBlockIdx = startBlock + blocks;
 
 	trackUsage(0, blocks);
 	m_numAllocs++;
@@ -170,10 +166,6 @@ void* PoolAllocator::reallocate(void *ptr, std::size_t bytes)
 		return ptr;
 	} else if(newBlocks < oldBlocks) {
 		// block shrinked -> free now unused blocks
-		for(size_t i = oldBlocks; i < newBlocks; i++) {
-			m_blockUsed[origStartBlock + i] = false;
-		}
-
 		m_blockMap[origStartBlock] = newBlocks;
 
 		trackUsage(oldBlocks, newBlocks);
@@ -182,33 +174,11 @@ void* PoolAllocator::reallocate(void *ptr, std::size_t bytes)
 	} else {
 		// block should be grown
 
-		// check if there are enough free blocks following
-		bool reallocated = true;
+		std::size_t nextAlloc = findNextAlloc(origStartBlock + 1, newBlocks);
+		std::size_t nextAllocDistance = nextAlloc - origStartBlock;
 
-		if((origStartBlock + newBlocks) < m_numBlocks) {
-			for(std::size_t i = oldBlocks; i < newBlocks; i++) {
-				std::size_t blockIdx = origStartBlock + i;
-
-				if(m_blockUsed[blockIdx]) {
-					// found a used block in our new block range,
-					// so we cannot simply grow the block
-					reallocated = false;
-					break;
-				}
-			}
-		} else {
-			// block would grow over the end of buffer
-			reallocated = false;
-		}
-
-		if(reallocated) {
+		if(nextAllocDistance >= newBlocks) {
 			PA_DEBUG(std::cerr << "PoolAllocator: Reallocation: found enough free blocks after the current block." << std::endl);
-
-			// mark blocks as used
-			for(std::size_t i = oldBlocks; i < newBlocks; i++) {
-				std::size_t blockIdx = origStartBlock + i;
-				m_blockUsed[blockIdx] = true;
-			}
 			assert(origStartBlock <= (m_numBlocks - newBlocks));
 
 			// increase mapped block size
@@ -248,13 +218,35 @@ void PoolAllocator::deallocate(void *ptr)
 
 	assert(block < m_numBlocks);
 
-	for(size_t i = 0; i < length; i++) {
-		m_blockUsed[block + i] = false;
-	}
+	PA_DEBUG(std::cerr << "PoolAllocator: Freeing block " << block << " with size " << length << " blocks" << std::endl);
 
 	m_blockMap.erase(block);
 
 	trackUsage(length, 0);
+}
+
+void PoolAllocator::debugPrint(void)
+{
+	std::vector<std::size_t> usageMap;
+	usageMap.resize(m_numBlocks, 0);
+
+	for(auto &elem: m_blockMap) {
+		for(std::size_t i = 0; i < elem.second; i++) {
+			usageMap[elem.first + i]++;
+		}
+	}
+
+	std::cerr << "Usage map: ";
+	for(auto &e: usageMap) {
+		if(e == 0) {
+			std::cerr << ".";
+		} else if(e < 10) {
+			std::cerr << e;
+		} else {
+			std::cerr << "#";
+		}
+	}
+	std::cerr << std::endl;
 }
 
 void* PoolAllocator::lua_allocator(void *ud, void *ptr, size_t osize, size_t nsize)
