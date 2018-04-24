@@ -22,6 +22,20 @@ namespace db
 			{}
 	};
 
+	class Command
+	{
+		public:
+			static constexpr const char* CMD_KILL = "kill";
+
+			long id = -1;
+			long bot_id = -1;
+			std::string command;
+
+			Command(long commandId, long botId, std::string cmd)
+				: id(commandId), bot_id(botId), command(cmd)
+			{}
+	};
+
 	class IDatabase
 	{
 		public:
@@ -29,6 +43,8 @@ namespace db
 			virtual std::vector<BotScript> GetBotScript(int bot_id) = 0;
 			virtual std::vector<BotScript> GetBotScripts() = 0;
 			virtual std::vector<int> GetActiveBotIds() = 0;
+			virtual std::vector<Command> GetActiveCommands() = 0;
+			virtual void SetCommandCompleted(long commandId, bool result, std::string resultMsg) = 0;
 	};
 
 	class MysqlDatabase : public IDatabase
@@ -38,6 +54,8 @@ namespace db
 			std::vector<BotScript> GetBotScript(int bot_id) override;
 			std::vector<BotScript> GetBotScripts() override;
 			std::vector<int> GetActiveBotIds() override;
+			std::vector<Command> GetActiveCommands() override;
+			void SetCommandCompleted(long commandId, bool result, std::string resultMsg) override;
 
 		private:
 			enum {
@@ -52,6 +70,8 @@ namespace db
 			std::unique_ptr<sql::PreparedStatement> _getBotScriptStmt;
 			std::unique_ptr<sql::PreparedStatement> _getAllBotScriptsStmt;
 			std::unique_ptr<sql::PreparedStatement> _getActiveBotIdsStmt;
+			std::unique_ptr<sql::PreparedStatement> _getActiveCommandsStmt;
+			std::unique_ptr<sql::PreparedStatement> _commandCompletedStmt;
 
 			std::vector<BotScript> GetScripts(sql::PreparedStatement *stmt);
 	};

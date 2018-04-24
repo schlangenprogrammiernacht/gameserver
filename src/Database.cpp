@@ -35,6 +35,18 @@ void MysqlDatabase::Connect(std::string host, std::string username, std::string 
 			"SELECT user_id FROM core_activesnake"
 		)
 	);
+
+	_getActiveCommandsStmt = std::unique_ptr<sql::PreparedStatement>(
+		_connection->prepareStatement(
+			"SELECT id, user_id, command FROM core_servercommand WHERE ISNULL(result) ORDER BY dt_created"
+		)
+	);
+
+	_commandCompletedStmt = std::unique_ptr<sql::PreparedStatement>(
+		_connection->prepareStatement(
+			"UPDATE core_servercommand SET result=?, result_msg=?, dt_processed=UTC_TIMESTAMP() WHERE id=?"
+		)
+	);
 }
 
 std::vector<BotScript> MysqlDatabase::GetBotScript(int bot_id)
@@ -57,6 +69,25 @@ std::vector<int> MysqlDatabase::GetActiveBotIds()
 		retval.push_back(res->getInt(1));
 	}
 	return retval;
+}
+
+std::vector<Command> MysqlDatabase::GetActiveCommands()
+{
+	std::unique_ptr<sql::ResultSet> res(_getActiveCommandsStmt->executeQuery());
+	std::vector<Command> retval;
+	while (res->next())
+	{
+		retval.emplace_back(res->getInt64(1), res->getInt64(2), res->getString(3));
+	}
+	return retval;
+}
+
+void MysqlDatabase::SetCommandCompleted(long commandId, bool result, std::string resultMsg)
+{
+	_commandCompletedStmt->setBoolean(1, result);
+	_commandCompletedStmt->setString(2, resultMsg);
+	_commandCompletedStmt->setInt64(3, commandId);
+	_commandCompletedStmt->execute();
 }
 
 std::vector<BotScript> MysqlDatabase::GetScripts(sql::PreparedStatement *stmt)

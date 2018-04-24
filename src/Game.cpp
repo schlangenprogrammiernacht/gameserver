@@ -179,7 +179,26 @@ void Game::queryDB()
 		m_field->killBot(bot, bot); // suicide!
 	}
 
-	// TODO query commands
+	for (auto& cmd: m_database->GetActiveCommands())
+	{
+		if (cmd.command == db::Command::CMD_KILL)
+		{
+			auto bot = m_field->getBotByDatabaseId(static_cast<int>(cmd.bot_id));
+			if (bot != nullptr)
+			{
+				m_field->killBot(bot, bot); // suicide!
+				m_database->SetCommandCompleted(cmd.id, true, "killed");
+			}
+			else
+			{
+				m_database->SetCommandCompleted(cmd.id, false, "bot not known / not active");
+			}
+		}
+		else
+		{
+			m_database->SetCommandCompleted(cmd.id, false, "command not known");
+		}
+	}
 }
 
 void Game::createBot(int bot_id)
