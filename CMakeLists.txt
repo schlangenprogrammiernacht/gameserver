@@ -2,6 +2,7 @@ cmake_minimum_required (VERSION 3.2)
 project (GameServer VERSION 0.1 LANGUAGES CXX)
 
 add_subdirectory(lib/TcpServer/TcpServer)
+add_subdirectory(test)
 
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_FLAGS "-Wall -pedantic")
@@ -41,6 +42,8 @@ set(sources
 	src/MsgPackProtocol.h
 	src/MsgPackUpdateTracker.cpp
 	src/MsgPackUpdateTracker.h
+	src/PoolAllocator.cpp
+	src/PoolAllocator.h
 	src/Semaphore.h
 	src/Snake.cpp
 	src/Snake.h

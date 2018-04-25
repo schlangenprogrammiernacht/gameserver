@@ -52,5 +52,7 @@ namespace config {
 	// Food decay value per frame
 	static const real_t     FOOD_DECAY_STEP         = 0.001;
 
-	static const std::chrono::milliseconds THREAD_POOL_IDLE_SLEEP_TIME(5);
+	// Lua memory pool configuration
+	static const std::size_t LUA_MEM_POOL_SIZE_BYTES       = 10 * 1024*1024;
+	static const std::size_t LUA_MEM_POOL_BLOCK_SIZE_BYTES = 256;
 }
