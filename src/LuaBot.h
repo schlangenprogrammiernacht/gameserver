@@ -2,6 +2,8 @@
 #include <sol.hpp>
 #include "types.h"
 
+#include "PoolAllocator.h"
+
 struct LuaSegmentInfo
 {
 	real_t x, y, r, d, dist;
@@ -58,6 +60,7 @@ class LuaBot
 	private:
 		Bot& m_bot;
 		bool m_initialized = false;
+		PoolAllocator m_allocator;
 		sol::state m_lua_state;
 		sol::environment m_lua_safe_env;
 		std::vector<LuaFoodInfo> m_luaFoodInfoTable;
