@@ -47,6 +47,15 @@ Game::Game()
 	m_field->addBotKilledCallback(
 		[this](std::shared_ptr<Bot> victim, std::shared_ptr<Bot> killer)
 		{
+			long killer_id = (killer==nullptr) ? -1 : killer->getDatabaseId();
+			m_database->ReportBotKilled(
+				victim->getDatabaseId(),
+				victim->getDatabaseVersionId(),
+				victim->getStartFrame(),
+				m_currentFrame,
+				killer_id,
+				victim->getSnake()->getMass()
+			);
 			createBot(victim->getDatabaseId());
 		}
 	);
@@ -208,7 +217,6 @@ void Game::createBot(int bot_id)
 	{
 		auto luaBot = std::make_unique<LuaBot>();
 		luaBot->init(res[0].code);
-		m_field->newBot(res[0].bot_id, res[0].bot_name, std::move(luaBot));
+		m_field->newBot(m_currentFrame, res[0].bot_id, res[0].version_id, res[0].bot_name, std::move(luaBot));
 	}
 }
-

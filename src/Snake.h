@@ -111,4 +111,6 @@ class Snake
 		 * Snake is removed from the Field.
 		 */
 		void convertToFood(void) const;
+
+		real_t getMass() { return m_mass; }
 };

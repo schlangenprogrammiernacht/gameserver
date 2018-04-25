@@ -76,7 +76,7 @@ class Field
 		/*!
 		 * Create a new Bot on this field.
 		 */
-		void newBot(int databaseId, const std::string &name, std::unique_ptr<LuaBot> luaBot);
+		void newBot(uint32_t currentFrame, int databaseId, int databaseVersionId, const std::string &name, std::unique_ptr<LuaBot> luaBot);
 
 		/*!
 		 * Decay all food.

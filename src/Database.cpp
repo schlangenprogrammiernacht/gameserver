@@ -11,41 +11,38 @@ void MysqlDatabase::Connect(std::string host, std::string username, std::string 
 	_connection = std::unique_ptr<sql::Connection>(_driver->connect(host, username, password));
 	_connection->setSchema(database);
 
-	_getBotScriptStmt = std::unique_ptr<sql::PreparedStatement>(
-		_connection->prepareStatement(
-			"SELECT u.id, u.username, sv.id, sv.code "
-			"FROM core_activesnake a "
-			"LEFT JOIN core_snakeversion sv ON (sv.id=a.version_id) "
-			"LEFT JOIN auth_user u ON (u.id=a.user_id) "
-			"WHERE a.user_id=?"
-		)
+	_getBotScriptStmt = makePreparedStatement(
+		"SELECT u.id, u.username, sv.id, sv.code "
+		"FROM core_activesnake a "
+		"LEFT JOIN core_snakeversion sv ON (sv.id=a.version_id) "
+		"LEFT JOIN auth_user u ON (u.id=a.user_id) "
+		"WHERE a.user_id=?"
 	);
 
-	_getAllBotScriptsStmt = std::unique_ptr<sql::PreparedStatement>(
-		_connection->prepareStatement(
-			"SELECT u.id, u.username, sv.id, sv.code "
-			"FROM core_activesnake a "
-			"LEFT JOIN core_snakeversion sv ON (sv.id=a.version_id) "
-			"LEFT JOIN auth_user u ON (u.id=a.user_id) "
-		)
+	_getAllBotScriptsStmt = makePreparedStatement(
+		"SELECT u.id, u.username, sv.id, sv.code "
+		"FROM core_activesnake a "
+		"LEFT JOIN core_snakeversion sv ON (sv.id=a.version_id) "
+		"LEFT JOIN auth_user u ON (u.id=a.user_id)"
 	);
 
-	_getActiveBotIdsStmt = std::unique_ptr<sql::PreparedStatement>(
-		_connection->prepareStatement(
-			"SELECT user_id FROM core_activesnake"
-		)
+	_getActiveBotIdsStmt = makePreparedStatement(
+		"SELECT user_id FROM core_activesnake"
 	);
 
-	_getActiveCommandsStmt = std::unique_ptr<sql::PreparedStatement>(
-		_connection->prepareStatement(
-			"SELECT id, user_id, command FROM core_servercommand WHERE ISNULL(result) ORDER BY dt_created"
-		)
+	_getActiveCommandsStmt = makePreparedStatement(
+		"SELECT id, user_id, command FROM core_servercommand WHERE ISNULL(result) ORDER BY dt_created"
 	);
 
-	_commandCompletedStmt = std::unique_ptr<sql::PreparedStatement>(
-		_connection->prepareStatement(
-			"UPDATE core_servercommand SET result=?, result_msg=?, dt_processed=UTC_TIMESTAMP() WHERE id=?"
-		)
+	_commandCompletedStmt = makePreparedStatement(
+		"UPDATE core_servercommand SET result=?, result_msg=?, dt_processed=UTC_TIMESTAMP() WHERE id=?"
+	);
+
+	_reportBotKilledStmt = makePreparedStatement(
+		"INSERT INTO core_snakegame "
+		" (user_id, snake_version_id, start_frame, end_frame, killer_id, final_mass, end_date) "
+		"VALUES "
+		" (?, ?, ?, ?, ?, ?, UTC_TIMESTAMP())"
 	);
 }
 
@@ -90,6 +87,18 @@ void MysqlDatabase::SetCommandCompleted(long commandId, bool result, std::string
 	_commandCompletedStmt->execute();
 }
 
+void MysqlDatabase::ReportBotKilled(long victim_id, long version_id, long start_frame, long end_frame, long killer_id, double final_mass)
+{
+	_reportBotKilledStmt->setInt64(1, victim_id);
+	_reportBotKilledStmt->setInt64(2, version_id);
+	_reportBotKilledStmt->setInt64(3, start_frame);
+	_reportBotKilledStmt->setInt64(4, end_frame);
+	_reportBotKilledStmt->setInt64(5, killer_id);
+	if (killer_id<0) { _reportBotKilledStmt->setNull(5, 0); }
+	_reportBotKilledStmt->setDouble(6, final_mass);
+	_reportBotKilledStmt->execute();
+}
+
 std::vector<BotScript> MysqlDatabase::GetScripts(sql::PreparedStatement *stmt)
 {
 	std::unique_ptr<sql::ResultSet> res(stmt->executeQuery());
@@ -104,5 +113,12 @@ std::vector<BotScript> MysqlDatabase::GetScripts(sql::PreparedStatement *stmt)
 		);
 	}
 	return retval;
+}
+
+std::unique_ptr<sql::PreparedStatement> MysqlDatabase::makePreparedStatement(std::string sql)
+{
+	return std::unique_ptr<sql::PreparedStatement>(
+		_connection->prepareStatement(sql)
+	);
 }
 

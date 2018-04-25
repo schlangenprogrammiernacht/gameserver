@@ -3,8 +3,10 @@
 #include "Field.h"
 #include "LuaBot.h"
 
-Bot::Bot(Field *field, std::unique_ptr<LuaBot> luaBot, int databaseId, const std::string &name, const Vector2D &startPos, real_t startHeading)
-	: m_databaseId(databaseId)
+Bot::Bot(Field *field, std::unique_ptr<LuaBot> luaBot, uint32_t startFrame, int databaseId, int databaseVersionId, const std::string &name, const Vector2D &startPos, real_t startHeading)
+	: m_startFrame(startFrame)
+	, m_databaseId(databaseId)
+	, m_databaseVersionId(databaseVersionId)
 	, m_name(name)
 	, m_field(field)
 	, m_lua_bot(std::move(luaBot))
