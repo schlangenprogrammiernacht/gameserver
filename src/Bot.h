@@ -27,6 +27,10 @@ class Bot : public IdentifyableObject
 		real_t m_heading;
 		size_t m_moveCounter;
 
+		real_t m_consumedFoodHuntedBySelf = 0;
+		real_t m_consumedFoodHuntedByOthers = 0;
+		real_t m_consumedNaturalFood = 0;
+
 	public:
 		/*!
 		 * Creates a new bot identified by the given name on the given playing
@@ -63,4 +67,6 @@ class Bot : public IdentifyableObject
 		int getDatabaseVersionId() { return m_databaseVersionId; }
 		LuaBot& getLuaBot() { return *m_lua_bot; }
 		uint32_t getStartFrame() { return m_startFrame; }
+
+		void updateConsumeStats(const Food &food);
 };

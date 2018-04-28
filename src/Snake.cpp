@@ -188,11 +188,11 @@ bool Snake::canConsume(const Food &food)
 	return (headPos - unwrappedFoodPos).squaredNorm() < (maxRange*maxRange);
 }
 
-void Snake::convertToFood(void) const
+void Snake::convertToFood(const std::shared_ptr<Bot> &hunter) const
 {
 	real_t foodPerSegment = m_mass / m_segments.size() * config::SNAKE_CONVERSION_FACTOR;
 
 	for(auto &s: m_segments) {
-		m_field->createDynamicFood(foodPerSegment, s.pos(), m_segmentRadius);
+		m_field->createDynamicFood(foodPerSegment, s.pos(), m_segmentRadius, hunter);
 	}
 }

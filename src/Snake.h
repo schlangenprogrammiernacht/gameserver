@@ -9,6 +9,7 @@
 // forward declaration
 class Field;
 class Food;
+class Bot;
 
 /*!
  * Representation of a Snake.
@@ -110,7 +111,7 @@ class Snake
 		 * Convert this Snake to Food. This is normally the last action before the
 		 * Snake is removed from the Field.
 		 */
-		void convertToFood(void) const;
+		void convertToFood(const std::shared_ptr<Bot> &hunter) const;
 
 		real_t getMass() { return m_mass; }
 };

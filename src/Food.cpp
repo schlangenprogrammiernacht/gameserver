@@ -2,11 +2,13 @@
 
 #include "Food.h"
 
-Food::Food(bool shallRegenerate, const Vector2D &pos, real_t value)
+Food::Food(bool shallRegenerate, const Vector2D &pos, real_t value,
+		const std::shared_ptr<Bot> &hunter)
 	: PositionObject(pos)
 	, m_value(value)
 	, m_shallRegenerate(shallRegenerate)
 	, m_shallBeRemoved(false)
+	, m_hunter(hunter)
 {
 }
 

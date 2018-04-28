@@ -119,8 +119,11 @@ class Field
 		 * \param totalValue   Total (average) value of the food created.
 		 * \param center       Center of the distribution circle.
 		 * \param radius       Radius of the distribution circle.
+		 * \param hunter       Pointer to the bot killing the Bot that this Food is
+		 *                     spawned from.
 		 */
-		void createDynamicFood(real_t totalValue, const Vector2D &center, real_t radius);
+		void createDynamicFood(real_t totalValue, const Vector2D &center, real_t radius,
+				const std::shared_ptr<Bot> &hunter);
 
 		/*!
 		 * Wrap the coordinates of the given vector into the Fields unique area.

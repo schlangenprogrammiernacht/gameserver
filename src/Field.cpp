@@ -123,6 +123,7 @@ void Field::consumeFood(void)
 		{
 			if (b->getSnake()->tryConsume(fi))
 			{
+				b->updateConsumeStats(fi);
 				m_updateTracker->foodConsumed(fi, b);
 				fi.markForRemove();
 				if (fi.shallRegenerate())
@@ -188,7 +189,8 @@ std::shared_ptr<Bot> Field::getBotByDatabaseId(int id)
 	return nullptr;
 }
 
-void Field::createDynamicFood(real_t totalValue, const Vector2D &center, real_t radius)
+void Field::createDynamicFood(real_t totalValue, const Vector2D &center, real_t radius,
+		const std::shared_ptr<Bot> &hunter)
 {
 	// create at least 1 food item
 	std::size_t count = 1 + totalValue / config::FOOD_SIZE_MEAN;
@@ -204,7 +206,7 @@ void Field::createDynamicFood(real_t totalValue, const Vector2D &center, real_t 
 
 		Vector2D pos = wrapCoords(center + offset);
 
-		Food food {false, pos, value};
+		Food food {false, pos, value, hunter};
 		m_updateTracker->foodSpawned(food);
 		m_foodMap.addElement(food);
 	}
@@ -325,7 +327,7 @@ void Field::addBotKilledCallback(Field::BotKilledCallback callback)
 
 void Field::killBot(std::shared_ptr<Bot> victim, std::shared_ptr<Bot> killer)
 {
-	victim->getSnake()->convertToFood();
+	victim->getSnake()->convertToFood(killer);
 	m_bots.erase(victim);
 	m_updateTracker->botKilled(killer, victim);
 

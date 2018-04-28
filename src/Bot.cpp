@@ -1,3 +1,5 @@
+#include <iostream>
+
 #include "Bot.h"
 
 #include "Field.h"
@@ -19,6 +21,10 @@ Bot::Bot(Field *field, std::unique_ptr<LuaBot> luaBot, uint32_t startFrame, int 
 
 Bot::~Bot()
 {
+	std::cerr << "Bot consume stats: " <<
+		m_consumedNaturalFood << " / " <<
+		m_consumedFoodHuntedByOthers << " / " <<
+		m_consumedFoodHuntedBySelf << std::endl;
 }
 
 std::size_t Bot::move(void)
@@ -70,4 +76,20 @@ std::shared_ptr<Bot> Bot::checkCollision(void) const
 	}
 
 	return retval;
+}
+
+void Bot::updateConsumeStats(const Food &food)
+{
+	std::shared_ptr<Bot> hunter = food.getHunter();
+
+	if(!hunter) {
+		// nullptr indicates natural food
+		m_consumedNaturalFood += food.getValue();
+	} else if(this->getGUID() == hunter->getGUID()) {
+		// food was hunted by this bot
+		m_consumedFoodHuntedBySelf += food.getValue();
+	} else {
+		// food was hunted by another bot
+		m_consumedFoodHuntedByOthers += food.getValue();
+	}
 }
