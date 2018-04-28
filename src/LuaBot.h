@@ -53,13 +53,13 @@ class Bot;
 class LuaBot
 {
 	public:
-		LuaBot(Bot& bot);
-		bool init();
-		bool step(float &next_heading, bool &boost);
+		LuaBot();
+		bool init(std::string script);
+		bool step(Bot& bot, float &next_heading, bool &boost);
 
 	private:
-		Bot& m_bot;
 		bool m_initialized = false;
+		Bot *m_bot = nullptr;
 		PoolAllocator m_allocator;
 		sol::state m_lua_state;
 		sol::environment m_lua_safe_env;

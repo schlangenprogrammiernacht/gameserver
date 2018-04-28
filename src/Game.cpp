@@ -1,23 +1,19 @@
 #include <iostream>
 
-#include "MsgPackUpdateTracker.h"
-
 #include "config.h"
+#include "Environment.h"
 #include "debug_funcs.h"
-
+#include "MsgPackUpdateTracker.h"
 #include "Game.h"
+#include "LuaBot.h"
 
 Game::Game()
 {
 	m_field = std::make_unique<Field>(
 		config::FIELD_SIZE_X, config::FIELD_SIZE_Y,
 		config::FIELD_STATIC_FOOD,
-		std::move(std::make_unique<MsgPackUpdateTracker>())
+		std::make_unique<MsgPackUpdateTracker>()
 	);
-
-	for(int i = 0; i < 20; i++) {
-		m_field->newBot("testBot");
-	}
 
 	server.AddConnectionEstablishedListener(
 		[this](TcpSocket& socket)
@@ -45,6 +41,22 @@ Game::Game()
 		{
 			OnTimerInterval();
 			return true;
+		}
+	);
+
+	m_field->addBotKilledCallback(
+		[this](std::shared_ptr<Bot> victim, std::shared_ptr<Bot> killer)
+		{
+			long killer_id = (killer==nullptr) ? -1 : killer->getDatabaseId();
+			m_database->ReportBotKilled(
+				victim->getDatabaseId(),
+				victim->getDatabaseVersionId(),
+				victim->getStartFrame(),
+				m_currentFrame,
+				killer_id,
+				victim->getSnake()->getMass()
+			);
+			createBot(victim->getDatabaseId());
 		}
 	);
 }
@@ -84,8 +96,14 @@ bool Game::OnTimerInterval()
 {
 	// do all the game logic here and send updates to clients
 
-	static uint32_t frameNumber = 0;
-	frameNumber++;
+	++m_currentFrame;
+
+	if (++m_dbQueryCounter >= DB_QUERY_INTERVAL)
+	{
+		queryDB();
+		m_dbQueryCounter = 0;
+	}
+
 	//std::cout << "Frame number #" << frameNumber << std::endl;
 
 	m_field->decayFood();
@@ -93,7 +111,7 @@ bool Game::OnTimerInterval()
 	m_field->removeFood();
 
 	m_field->moveAllBots();
-	m_field->tick(frameNumber);
+	m_field->tick(m_currentFrame);
 
 	// send differential update to all connected clients
 	std::string update = m_field->getUpdateTracker().serialize();
@@ -108,8 +126,19 @@ bool Game::OnTimerInterval()
 
 int Game::Main()
 {
-	if(!server.Listen(9010)) {
+	if (!server.Listen(9010)) 
+	{
 		return -1;
+	}
+
+	if (!connectDB())
+	{
+		return -2;
+	}
+
+	for (auto id: m_database->GetActiveBotIds())
+	{
+		createBot(id);
 	}
 
 	server.AddIntervalTimer(16666); // 60 fps
@@ -118,5 +147,76 @@ int Game::Main()
 
 	while(true) {
 		server.Poll(1000);
+	}
+}
+
+bool Game::connectDB()
+{
+	auto db = std::make_unique<db::MysqlDatabase>();
+	db->Connect(
+		Environment::GetDefault(Environment::ENV_MYSQL_HOST, Environment::ENV_MYSQL_HOST_DEFAULT),
+		Environment::GetDefault(Environment::ENV_MYSQL_USER, Environment::ENV_MYSQL_USER_DEFAULT),
+		Environment::GetDefault(Environment::ENV_MYSQL_PASSWORD, Environment::ENV_MYSQL_PASSWORD_DEFAULT),
+		Environment::GetDefault(Environment::ENV_MYSQL_DB, Environment::ENV_MYSQL_DB_DEFAULT)
+	);
+	m_database = std::move(db);
+	return true;
+}
+
+void Game::queryDB()
+{
+	auto active_ids = m_database->GetActiveBotIds();
+	for (auto id: active_ids)
+	{
+		if (m_field->getBotByDatabaseId(id) == nullptr)
+		{
+			createBot(id);
+		}
+	}
+
+	std::vector<std::shared_ptr<Bot>> kill_bots;
+	for (auto& bot: m_field->getBots())
+	{
+		if (std::find(active_ids.begin(), active_ids.end(), bot->getDatabaseId()) == active_ids.end())
+		{
+			kill_bots.push_back(bot);
+		}
+	}
+
+	for (auto& bot: kill_bots)
+	{
+		m_field->killBot(bot, bot); // suicide!
+	}
+
+	for (auto& cmd: m_database->GetActiveCommands())
+	{
+		if (cmd.command == db::Command::CMD_KILL)
+		{
+			auto bot = m_field->getBotByDatabaseId(static_cast<int>(cmd.bot_id));
+			if (bot != nullptr)
+			{
+				m_field->killBot(bot, bot); // suicide!
+				m_database->SetCommandCompleted(cmd.id, true, "killed");
+			}
+			else
+			{
+				m_database->SetCommandCompleted(cmd.id, false, "bot not known / not active");
+			}
+		}
+		else
+		{
+			m_database->SetCommandCompleted(cmd.id, false, "command not known");
+		}
+	}
+}
+
+void Game::createBot(int bot_id)
+{
+	auto res = m_database->GetBotScript(bot_id);
+	if (res.size() != 0)
+	{
+		auto luaBot = std::make_unique<LuaBot>();
+		luaBot->init(res[0].code);
+		m_field->newBot(m_currentFrame, res[0].bot_id, res[0].version_id, res[0].bot_name, std::move(luaBot));
 	}
 }

@@ -76,13 +76,13 @@ void Field::updateMaxSegmentRadius(void)
 	}
 }
 
-void Field::newBot(const std::string &name)
+void Field::newBot(uint32_t currentFrame, int databaseId, int databaseVersionId, const std::string &name, std::unique_ptr<LuaBot> luaBot)
 {
 	real_t x = (*m_positionXDistribution)(*m_rndGen);
 	real_t y = (*m_positionYDistribution)(*m_rndGen);
 	real_t heading = (*m_angleDegreesDistribution)(*m_rndGen);
 
-	std::shared_ptr<Bot> bot = std::make_shared<Bot>(this, name, Vector2D(x,y), heading);
+	std::shared_ptr<Bot> bot = std::make_shared<Bot>(this, std::move(luaBot), currentFrame, databaseId, databaseVersionId, name, Vector2D(x,y), heading);
 
 	std::cerr << "Created Bot with ID " << bot->getGUID() << std::endl;
 
@@ -153,16 +153,10 @@ void Field::moveAllBots(void)
 
 		std::shared_ptr<Bot> killer = victim->checkCollision();
 
-		if(killer) {
+		if (killer)
+		{
 			// collision detected, convert the colliding bot to food
-			victim->getSnake()->convertToFood();
-
-			// remove the bot from the field
-			m_bots.erase(victim);
-
-			newBot(victim->getName());
-
-			m_updateTracker->botKilled(killer, victim);
+			killBot(victim, killer);
 		} else {
 			// no collision, bot still alive
 			m_updateTracker->botMoved(victim, steps);
@@ -180,6 +174,18 @@ void Field::tick(uint32_t frameNumber)
 const Field::BotSet& Field::getBots(void) const
 {
 	return m_bots;
+}
+
+std::shared_ptr<Bot> Field::getBotByDatabaseId(int id)
+{
+	for (auto& bot: m_bots)
+	{
+		if (bot->getDatabaseId() == id)
+		{
+			return bot;
+		}
+	}
+	return nullptr;
 }
 
 void Field::createDynamicFood(real_t totalValue, const Vector2D &center, real_t radius)
@@ -310,4 +316,22 @@ Vector2D Field::getSize(void) const
 real_t Field::getMaxSegmentRadius(void) const
 {
 	return m_maxSegmentRadius;
+}
+
+void Field::addBotKilledCallback(Field::BotKilledCallback callback)
+{
+	m_botKilledCallbacks.push_back(callback);
+}
+
+void Field::killBot(std::shared_ptr<Bot> victim, std::shared_ptr<Bot> killer)
+{
+	victim->getSnake()->convertToFood();
+	m_bots.erase(victim);
+	m_updateTracker->botKilled(killer, victim);
+
+	// bot will eventually be recreated in callbacks
+	for (auto& callback: m_botKilledCallbacks)
+	{
+		callback(victim, killer);
+	}
 }

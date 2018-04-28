@@ -3,14 +3,18 @@
 #include "Field.h"
 #include "LuaBot.h"
 
-Bot::Bot(Field *field, const std::string &name, const Vector2D &startPos, real_t startHeading)
-	: m_name(name), m_field(field), m_moveCounter(0)
+Bot::Bot(Field *field, std::unique_ptr<LuaBot> luaBot, uint32_t startFrame, int databaseId, int databaseVersionId, const std::string &name, const Vector2D &startPos, real_t startHeading)
+	: m_startFrame(startFrame)
+	, m_databaseId(databaseId)
+	, m_databaseVersionId(databaseVersionId)
+	, m_name(name)
+	, m_field(field)
+	, m_lua_bot(std::move(luaBot))
+	, m_moveCounter(0)
 {
 	// TODO: random start coordinates
 	m_snake = std::make_shared<Snake>(field, startPos, 5, startHeading);
-
 	m_heading = rand() * 360.0f / RAND_MAX;
-	m_lua_bot = std::make_unique<LuaBot>(*this);
 }
 
 Bot::~Bot()
@@ -21,7 +25,7 @@ std::size_t Bot::move(void)
 {
 	bool boost;
 	float new_heading;
-	if (m_lua_bot->step(new_heading, boost))
+	if (m_lua_bot->step(*this, new_heading, boost))
 	{
 		new_heading = fmod(new_heading, 360);
 		if (new_heading<0)

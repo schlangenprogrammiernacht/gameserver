@@ -3,12 +3,10 @@
 #include "Bot.h"
 #include "Food.h"
 #include "Field.h"
-
 #include "config.h"
 
-LuaBot::LuaBot(Bot &bot)
-	: m_bot(bot)
-	, m_allocator(config::LUA_MEM_POOL_SIZE_BYTES, config::LUA_MEM_POOL_BLOCK_SIZE_BYTES)
+LuaBot::LuaBot()
+	: m_allocator(config::LUA_MEM_POOL_SIZE_BYTES, config::LUA_MEM_POOL_BLOCK_SIZE_BYTES)
 	, m_lua_state(sol::default_at_panic, PoolAllocator::lua_allocator, &m_allocator)
 {
 	LuaFoodInfo::Register(m_lua_state);
@@ -18,14 +16,14 @@ LuaBot::LuaBot(Bot &bot)
 	m_luaSegmentInfoTable.reserve(1000);
 }
 
-bool LuaBot::init()
+bool LuaBot::init(std::string script)
 {
 	try
 	{
 		m_lua_state.open_libraries();
 		m_lua_state.script_file("lua/quota.lua");
 		m_lua_safe_env = createEnvironment();
-		m_lua_state.safe_script_file("lua/demobot.lua", m_lua_safe_env);
+		m_lua_state.safe_script(script, m_lua_safe_env);
 		m_initialized = true;
 		return true;
 	}
@@ -37,20 +35,22 @@ bool LuaBot::init()
 	}
 }
 
-bool LuaBot::step(float &next_heading, bool &boost)
+bool LuaBot::step(Bot &bot, float &next_heading, bool &boost)
 {
-	real_t last_heading = m_bot.getHeading();
-	next_heading = last_heading;
-	boost = false;
-
-	if (!m_initialized && !init())
+	if (!m_initialized)
 	{
 		return false;
 	}
 
+	m_bot = &bot;
+
+	real_t last_heading = bot.getHeading();
+	next_heading = last_heading;
+	boost = false;
+
 	m_lua_safe_env["self"] = m_lua_state.create_table_with(
-		"id", m_bot.getGUID(),
-		"r",  m_bot.getSnake()->getSegmentRadius()
+		"id", bot.getGUID(),
+		"r",  bot.getSnake()->getSegmentRadius()
 	);
 
 	try
@@ -122,13 +122,15 @@ sol::table LuaBot::createFunctionTable(const std::string &obj, const std::vector
 
 std::vector<LuaFoodInfo>& LuaBot::apiFindFood(real_t radius, real_t min_size)
 {
-	auto head_pos = m_bot.getSnake()->getHeadPosition();
-	real_t heading_rad = static_cast<real_t>(2.0 * M_PI * (m_bot.getHeading() / 360.0));
+	m_luaFoodInfoTable.clear();
+	if (m_bot == nullptr) { return m_luaFoodInfoTable; }
+
+	auto head_pos = m_bot->getSnake()->getHeadPosition();
+	real_t heading_rad = static_cast<real_t>(2.0 * M_PI * (m_bot->getHeading() / 360.0));
 
 	radius = std::min(radius, getMaxSightRadius());
 
-	m_luaFoodInfoTable.clear();
-	auto field = m_bot.getField();
+	auto field = m_bot->getField();
 	for (auto &food: field->getFoodMap().getRegion(head_pos, radius))
 	{
 		if (food.getValue()>=min_size)
@@ -152,13 +154,15 @@ std::vector<LuaFoodInfo>& LuaBot::apiFindFood(real_t radius, real_t min_size)
 
 std::vector<LuaSegmentInfo>& LuaBot::apiFindSegments(real_t radius, bool include_self)
 {
-	auto pos = m_bot.getSnake()->getHeadPosition();
-	real_t heading_rad = 2*M_PI * (m_bot.getHeading() / 360.0);
-	radius = std::min(radius, getMaxSightRadius());
-	auto self_id = m_bot.getGUID();
-
 	m_luaSegmentInfoTable.clear();
-	auto field = m_bot.getField();
+	if (m_bot==nullptr) { return m_luaSegmentInfoTable; }
+
+	auto pos = m_bot->getSnake()->getHeadPosition();
+	real_t heading_rad = 2*M_PI * (m_bot->getHeading() / 360.0);
+	radius = std::min(radius, getMaxSightRadius());
+	auto self_id = m_bot->getGUID();
+
+	auto field = m_bot->getField();
 	for (auto &segmentInfo: field->getSegmentInfoMap().getRegion(pos, radius))
 	{
 		if (!include_self && (segmentInfo.bot->getGUID() == self_id)) { continue; }
@@ -181,5 +185,6 @@ std::vector<LuaSegmentInfo>& LuaBot::apiFindSegments(real_t radius, bool include
 
 real_t LuaBot::getMaxSightRadius() const
 {
-	return 50.0f + 15.0f * m_bot.getSnake()->getSegmentRadius();
+	if (m_bot==nullptr) { return 0; }
+	return 50.0f + 15.0f * m_bot->getSnake()->getSegmentRadius();
 }

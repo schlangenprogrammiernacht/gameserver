@@ -8,6 +8,7 @@
 #include "config.h"
 #include "Food.h"
 #include "Bot.h"
+#include "LuaBot.h"
 #include "UpdateTracker.h"
 #include "SpatialMap.h"
 #include "BotThreadPool.h"
@@ -23,6 +24,7 @@ class Field
 {
 	public:
 		typedef std::set< std::shared_ptr<Bot> > BotSet;
+		typedef std::function< void(std::shared_ptr<Bot>, std::shared_ptr<Bot>) > BotKilledCallback;
 
 	public:
 		struct SnakeSegmentInfo {
@@ -59,7 +61,7 @@ class Field
 
 		FoodMap m_foodMap;
 		SegmentInfoMap m_segmentInfoMap;
-
+		std::vector<BotKilledCallback> m_botKilledCallbacks;
 		BotThreadPool m_threadPool;
 
 		void setupRandomness(void);
@@ -74,7 +76,7 @@ class Field
 		/*!
 		 * Create a new Bot on this field.
 		 */
-		void newBot(const std::string &name);
+		void newBot(uint32_t currentFrame, int databaseId, int databaseVersionId, const std::string &name, std::unique_ptr<LuaBot> luaBot);
 
 		/*!
 		 * Decay all food.
@@ -106,6 +108,7 @@ class Field
 		 * Get the set of bots.
 		 */
 		const BotSet& getBots(void) const;
+		std::shared_ptr<Bot> getBotByDatabaseId(int id);
 
 		/*!
 		 * Add dynamic food equally distributed in the given circle.
@@ -161,6 +164,9 @@ class Field
 
 		FoodMap& getFoodMap() { return m_foodMap; }
 		SegmentInfoMap& getSegmentInfoMap() { return m_segmentInfoMap; }
+
+		void addBotKilledCallback(BotKilledCallback callback);
+		void killBot(std::shared_ptr<Bot> victim, std::shared_ptr<Bot> killer);
 
 		UpdateTracker& getUpdateTracker() { return *m_updateTracker; }
 };
