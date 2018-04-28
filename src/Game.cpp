@@ -212,11 +212,18 @@ void Game::queryDB()
 
 void Game::createBot(int bot_id)
 {
-	auto res = m_database->GetBotScript(bot_id);
-	if (res.size() != 0)
+	auto data = m_database->GetBotScript(bot_id);
+	if (data != nullptr)
 	{
 		auto luaBot = std::make_unique<LuaBot>();
-		luaBot->init(res[0].code);
-		m_field->newBot(m_currentFrame, res[0].bot_id, res[0].version_id, res[0].bot_name, std::move(luaBot));
+		luaBot->init(data->code);
+		m_field->newBot(
+			m_currentFrame,
+			data->bot_id,
+			data->version_id,
+			data->viewer_key,
+			data->bot_name,
+			std::move(luaBot)
+		);
 	}
 }

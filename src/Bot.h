@@ -20,6 +20,7 @@ class Bot : public IdentifyableObject
 		uint32_t m_startFrame;
 		int m_databaseId;
 		int m_databaseVersionId;
+		uint64_t m_viewerKey;
 		std::string m_name;
 		Field *m_field;
 		std::shared_ptr<Snake> m_snake;
@@ -32,7 +33,7 @@ class Bot : public IdentifyableObject
 		 * Creates a new bot identified by the given name on the given playing
 		 * field.
 		 */
-		Bot(Field *field, std::unique_ptr<LuaBot> luaBot, uint32_t startFrame, int databaseId, int databaseVersionId, const std::string &name, const Vector2D &startPos, real_t startHeading);
+		Bot(Field *field, std::unique_ptr<LuaBot> luaBot, uint32_t startFrame, int databaseId, int databaseVersionId, uint64_t viewerKey, const std::string &name, const Vector2D &startPos, real_t startHeading);
 		~Bot();
 
 		/*!
@@ -63,4 +64,5 @@ class Bot : public IdentifyableObject
 		int getDatabaseVersionId() { return m_databaseVersionId; }
 		LuaBot& getLuaBot() { return *m_lua_bot; }
 		uint32_t getStartFrame() { return m_startFrame; }
+		uint64_t getViewerKey() { return m_viewerKey; }
 };
