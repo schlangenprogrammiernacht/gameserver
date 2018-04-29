@@ -28,9 +28,14 @@ bool LuaBot::init(std::string& initErrorMessage)
 
 		std::string chunkName = "bot.lua";
 		auto result = m_lua_state.safe_script(m_script, m_lua_safe_env, chunkName, sol::load_mode::text);
+
+		if (m_lua_safe_env["step"].get_type() != sol::type::function)
+		{
+			throw std::runtime_error("script does not define a step() function.");
+		}
 		return true;
 	}
-	catch (const sol::error& e)
+	catch (const std::runtime_error& e)
 	{
 		initErrorMessage = e.what();
 		printf("init failed: %s\n", e.what());
