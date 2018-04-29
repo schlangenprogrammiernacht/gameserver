@@ -172,6 +172,13 @@ void Field::tick(uint32_t frameNumber)
 	m_updateTracker->tick(frameNumber);
 }
 
+void Field::updateStats(void)
+{
+	for(auto &bot: m_bots) {
+		m_updateTracker->botStats(bot);
+	}
+}
+
 const Field::BotSet& Field::getBots(void) const
 {
 	return m_bots;

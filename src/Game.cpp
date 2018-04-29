@@ -111,6 +111,11 @@ bool Game::OnTimerInterval()
 	m_field->removeFood();
 
 	m_field->moveAllBots();
+
+	if(++m_statsUpdateCounter >= STATS_UPDATE_INTERVAL) {
+		m_field->updateStats();
+	}
+
 	m_field->tick(m_currentFrame);
 
 	// send differential update to all connected clients

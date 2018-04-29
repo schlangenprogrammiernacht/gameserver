@@ -12,11 +12,13 @@ class Game
 {
 	private:
 		static constexpr const int DB_QUERY_INTERVAL = 60;
+		static constexpr const int STATS_UPDATE_INTERVAL = 60;
 
 		TcpServer server;
 		std::unique_ptr<Field> m_field;
 		std::unique_ptr<db::IDatabase> m_database;
 		int m_dbQueryCounter = 0;
+		int m_statsUpdateCounter = 0;
 		uint32_t m_currentFrame = 0;
 		bool connectDB();
 		void queryDB();

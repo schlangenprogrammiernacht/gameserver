@@ -105,6 +105,11 @@ class Field
 		void tick(uint32_t frameNumber);
 
 		/*!
+		 * Send statistics to the UpdateTracker.
+		 */
+		void updateStats(void);
+
+		/*!
 		 * Get the set of bots.
 		 */
 		const BotSet& getBots(void) const;

@@ -68,5 +68,9 @@ class Bot : public IdentifyableObject
 		LuaBot& getLuaBot() { return *m_lua_bot; }
 		uint32_t getStartFrame() { return m_startFrame; }
 
+		double getConsumedNaturalFood(void) { return m_consumedNaturalFood; }
+		double getConsumedFoodHuntedByOthers(void) { return m_consumedFoodHuntedByOthers; }
+		double getConsumedFoodHuntedBySelf(void) { return m_consumedFoodHuntedBySelf; }
+
 		void updateConsumeStats(const Food &food);
 };

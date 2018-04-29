@@ -74,6 +74,13 @@ class UpdateTracker
 		virtual void tick(uint64_t frame_num) = 0;
 
 		/*!
+		 * Add a bot statistics entry.
+		 *
+		 * \param bot   Pointer to the bot that should be included in the stats.
+		 */
+		virtual void botStats(const std::shared_ptr<Bot> &bot) = 0;
+
+		/*!
 		 * Serialize the events added since the last reset or serialization.
 		 *
 		 * This also resets all internal state.

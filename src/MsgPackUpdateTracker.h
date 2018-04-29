@@ -21,6 +21,7 @@ class MsgPackUpdateTracker : public UpdateTracker
 		std::unique_ptr<MsgPackProtocol::FoodSpawnMessage> m_foodSpawnMessage;
 		std::unique_ptr<MsgPackProtocol::FoodDecayMessage> m_foodDecayMessage;
 		std::unique_ptr<MsgPackProtocol::BotMoveMessage> m_botMoveMessage;
+		std::unique_ptr<MsgPackProtocol::BotStatsMessage> m_botStatsMessage;
 
 		std::ostringstream m_stream;
 
@@ -52,6 +53,7 @@ class MsgPackUpdateTracker : public UpdateTracker
 
 		void tick(uint64_t frame_id);
 
+		void botStats(const std::shared_ptr<Bot> &bot);
 
 		std::string serialize(void);
 
