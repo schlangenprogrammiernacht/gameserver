@@ -4,6 +4,7 @@
 #include <memory>
 #include <random>
 
+#include "Database.h"
 #include "types.h"
 #include "config.h"
 #include "Food.h"
@@ -43,8 +44,8 @@ class Field
 	private:
 		const real_t m_width;
 		const real_t m_height;
-
 		real_t m_maxSegmentRadius = 0;
+		uint32_t m_currentFrame = 0;
 
 		BotSet  m_bots;
 
@@ -76,7 +77,7 @@ class Field
 		/*!
 		 * Create a new Bot on this field.
 		 */
-		void newBot(uint32_t currentFrame, int databaseId, int databaseVersionId, uint64_t viewerKey, const std::string &name, std::unique_ptr<LuaBot> luaBot);
+		void newBot(std::unique_ptr<db::BotScript> data);
 
 		/*!
 		 * Decay all food.
@@ -110,7 +111,10 @@ class Field
 		 */
 		void processLog(void);
 
-		void tick(uint32_t frameNumber);
+		/*!
+		 * \brief increment current frame number and send tick message
+		 */
+		void tick();
 
 		/*!
 		 * Get the set of bots.
@@ -177,4 +181,6 @@ class Field
 		void killBot(std::shared_ptr<Bot> victim, std::shared_ptr<Bot> killer);
 
 		UpdateTracker& getUpdateTracker() { return *m_updateTracker; }
+
+		uint32_t getCurrentFrame() { return m_currentFrame; }
 };

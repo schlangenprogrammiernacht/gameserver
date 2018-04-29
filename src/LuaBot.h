@@ -53,8 +53,8 @@ class Bot;
 class LuaBot
 {
 	public:
-		LuaBot();
-		bool init(std::string script);
+		LuaBot(std::string script);
+		bool init();
 		bool step(Bot& bot, float &next_heading, bool &boost);
 
 	private:
@@ -65,6 +65,7 @@ class LuaBot
 		sol::environment m_lua_safe_env;
 		std::vector<LuaFoodInfo> m_luaFoodInfoTable;
 		std::vector<LuaSegmentInfo> m_luaSegmentInfoTable;
+		std::string m_script;
 
 		void setQuota(uint32_t num_instructions, double seconds);
 		sol::environment createEnvironment();

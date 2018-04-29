@@ -3,22 +3,23 @@
 #include "Field.h"
 #include "LuaBot.h"
 
-Bot::Bot(Field *field, std::unique_ptr<LuaBot> luaBot, uint32_t startFrame, int databaseId, int databaseVersionId, uint64_t viewerKey, const std::string &name, const Vector2D &startPos, real_t startHeading)
-	: m_startFrame(startFrame)
-	, m_databaseId(databaseId)
-	, m_databaseVersionId(databaseVersionId)
-	, m_viewerKey(viewerKey)
-	, m_name(name)
-	, m_field(field)
-	, m_lua_bot(std::move(luaBot))
+Bot::Bot(Field *field, uint32_t startFrame, std::unique_ptr<db::BotScript> dbData, const Vector2D &startPos, real_t startHeading)
+	: m_field(field)
+	, m_startFrame(startFrame)
+	, m_dbData(std::move(dbData))
 {
-	// TODO: random start coordinates
 	m_snake = std::make_shared<Snake>(field, startPos, 5, startHeading);
 	m_heading = rand() * 360.0f / RAND_MAX;
+	m_lua_bot = std::make_unique<LuaBot>(m_dbData->code);
 }
 
 Bot::~Bot()
 {
+}
+
+bool Bot::init()
+{
+	return m_lua_bot->init();
 }
 
 std::size_t Bot::move(void)
@@ -80,10 +81,13 @@ void Bot::increaseLogCredit()
 	);
 }
 
-bool Bot::appendLogMessage(const std::string& data)
+bool Bot::appendLogMessage(const std::string& data, bool checkCredit)
 {
-	if (m_logCredit<1) { return false; }
+	if (checkCredit)
+	{
+		if (m_logCredit<1) { return false; }
+		m_logCredit -= 1;
+	}
 	m_logMessages.push_back(data.substr(0, config::LOG_MAX_MESSAGE_SIZE));
-	m_logCredit -= 1;
 	return true;
 }

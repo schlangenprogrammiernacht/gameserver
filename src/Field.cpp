@@ -76,19 +76,26 @@ void Field::updateMaxSegmentRadius(void)
 	}
 }
 
-void Field::newBot(uint32_t currentFrame, int databaseId, int databaseVersionId, uint64_t viewerKey, const std::string &name, std::unique_ptr<LuaBot> luaBot)
+void Field::newBot(std::unique_ptr<db::BotScript> data)
 {
 	real_t x = (*m_positionXDistribution)(*m_rndGen);
 	real_t y = (*m_positionYDistribution)(*m_rndGen);
 	real_t heading = (*m_angleDegreesDistribution)(*m_rndGen);
 
-	std::shared_ptr<Bot> bot = std::make_shared<Bot>(this, std::move(luaBot), currentFrame, databaseId, databaseVersionId, viewerKey, name, Vector2D(x,y), heading);
+	std::shared_ptr<Bot> bot = std::make_shared<Bot>(
+		this,
+		getCurrentFrame(),
+		std::move(data),
+		Vector2D(x,y),
+		heading
+	);
 
-	std::cerr << "Created Bot with ID " << bot->getGUID() << std::endl;
-
-	m_updateTracker->botSpawned(bot);
-
-	m_bots.insert(bot);
+	if (bot->init())
+	{
+		std::cerr << "Created Bot with ID " << bot->getGUID() << std::endl;
+		m_updateTracker->botSpawned(bot);
+		m_bots.insert(bot);
+	}
 }
 
 void Field::decayFood(void)
@@ -179,9 +186,10 @@ void Field::processLog()
 	}
 }
 
-void Field::tick(uint32_t frameNumber)
+void Field::tick()
 {
-	m_updateTracker->tick(frameNumber);
+	m_currentFrame++;
+	m_updateTracker->tick(m_currentFrame);
 }
 
 const Field::BotSet& Field::getBots(void) const

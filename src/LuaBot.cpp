@@ -4,10 +4,12 @@
 #include "Food.h"
 #include "Field.h"
 #include "config.h"
+#include <iostream>
 
-LuaBot::LuaBot()
+LuaBot::LuaBot(std::string script)
 	: m_allocator(config::LUA_MEM_POOL_SIZE_BYTES, config::LUA_MEM_POOL_BLOCK_SIZE_BYTES)
 	, m_lua_state(sol::default_at_panic, PoolAllocator::lua_allocator, &m_allocator)
+	, m_script(script)
 {
 	LuaFoodInfo::Register(m_lua_state);
 	m_luaFoodInfoTable.reserve(1000);
@@ -16,14 +18,17 @@ LuaBot::LuaBot()
 	m_luaSegmentInfoTable.reserve(1000);
 }
 
-bool LuaBot::init(std::string script)
+bool LuaBot::init()
 {
 	try
 	{
 		m_lua_state.open_libraries();
 		m_lua_state.script_file("lua/quota.lua");
 		m_lua_safe_env = createEnvironment();
-		m_lua_state.safe_script(script, m_lua_safe_env);
+
+		std::string chunkName = "bot.lua";
+		auto result = m_lua_state.safe_script(m_script, m_lua_safe_env, chunkName, sol::load_mode::text);
+
 		m_initialized = true;
 		return true;
 	}
@@ -53,17 +58,21 @@ bool LuaBot::step(Bot &bot, float &next_heading, bool &boost)
 		"r",  bot.getSnake()->getSegmentRadius()
 	);
 
-	try
+	setQuota(1000000, 0.1);
+	sol::protected_function step = m_lua_safe_env["step"];
+	auto result = step();
+	if (result.valid())
 	{
-		setQuota(1000000, 0.1);
-		next_heading = m_lua_safe_env["step"]();
+		next_heading = result;
 		next_heading = 180 * (next_heading / M_PI);
 		next_heading += last_heading;
 		return true;
 	}
-	catch (const sol::error& e)
+	else
 	{
-		printf("script aborted: %s\n", e.what());
+		sol::error err = result;
+		//std::cerr << err.what() << std::endl;
+		m_bot->appendLogMessage(err.what(), true);
 		return false;
 	}
 }
@@ -186,7 +195,7 @@ std::vector<LuaSegmentInfo>& LuaBot::apiFindSegments(real_t radius, bool include
 bool LuaBot::apiLog(std::string data)
 {
 	if (m_bot==nullptr) { return false; }
-	return m_bot->appendLogMessage(data);
+	return m_bot->appendLogMessage(data, true);
 }
 
 real_t LuaBot::getMaxSightRadius() const

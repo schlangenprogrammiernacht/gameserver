@@ -11,7 +11,7 @@ void MysqlDatabase::Connect(std::string host, std::string username, std::string 
 	_connection = std::unique_ptr<sql::Connection>(_driver->connect(host, username, password));
 	_connection->setSchema(database);
 
-	_getBotScriptStmt = makePreparedStatement(
+	_getBotDataStmt = makePreparedStatement(
 		"SELECT u.id, u.username, sv.id, sv.code, IFNULL(up.viewer_key, 0) AS viewer_key "
 		"FROM core_activesnake a "
 		"LEFT JOIN core_snakeversion sv ON (sv.id=a.version_id) "
@@ -40,11 +40,11 @@ void MysqlDatabase::Connect(std::string host, std::string username, std::string 
 	);
 }
 
-std::unique_ptr<BotScript> MysqlDatabase::GetBotScript(int bot_id)
+std::unique_ptr<BotScript> MysqlDatabase::GetBotData(int bot_id)
 {
-	_getBotScriptStmt->setInt(1, bot_id);
+	_getBotDataStmt->setInt(1, bot_id);
 
-	std::unique_ptr<sql::ResultSet> res(_getBotScriptStmt->executeQuery());
+	std::unique_ptr<sql::ResultSet> res(_getBotDataStmt->executeQuery());
 	std::vector<BotScript> retval;
 	if (!res->next())
 	{
