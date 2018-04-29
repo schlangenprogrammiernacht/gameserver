@@ -22,6 +22,7 @@ namespace MsgPackProtocol
 		MESSAGE_TYPE_BOT_SPAWN = 0x20,
 		MESSAGE_TYPE_BOT_KILL = 0x21,
 		MESSAGE_TYPE_BOT_MOVE = 0x22,
+		MESSAGE_TYPE_BOT_LOG = 0x23,
 
 		MESSAGE_TYPE_FOOD_SPAWN = 0x30,
 		MESSAGE_TYPE_FOOD_CONSUME = 0x31,
@@ -98,6 +99,17 @@ namespace MsgPackProtocol
 	struct FoodDecayMessage
 	{
 		std::vector<guid_t> food_ids; // food is deleted in this frame
+	};
+
+	struct BotLogItem
+	{
+		uint64_t viewer_key;
+		std::string message;
+	};
+
+	struct BotLogMessage
+	{
+		std::vector<BotLogItem> items;
 	};
 
 }
@@ -316,6 +328,28 @@ namespace msgpack {
 				}
 			};
 
+			template <> struct pack<MsgPackProtocol::BotLogMessage>
+			{
+				template <typename Stream> msgpack::packer<Stream>& operator()(msgpack::packer<Stream>& o, MsgPackProtocol::BotLogMessage const& v) const
+				{
+					o.pack_array(3);
+					o.pack(MsgPackProtocol::PROTOCOL_VERSION);
+					o.pack(static_cast<int>(MsgPackProtocol::MESSAGE_TYPE_BOT_LOG));
+					o.pack(v.items);
+					return o;
+				}
+			};
+
+			template <> struct pack<MsgPackProtocol::BotLogItem>
+			{
+				template <typename Stream> msgpack::packer<Stream>& operator()(msgpack::packer<Stream>& o, MsgPackProtocol::BotLogItem const& v) const
+				{
+					o.pack_array(2);
+					o.pack(v.viewer_key);
+					o.pack(v.message);
+					return o;
+				}
+			};
 		} // namespace adaptor
 	} // MSGPACK_API_VERSION_NAMESPACE(MSGPACK_DEFAULT_API_NS)
 } // namespace msgpack

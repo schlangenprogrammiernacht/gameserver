@@ -102,6 +102,14 @@ class Field
 		 */
 		void moveAllBots(void);
 
+		/*!
+		 * \brief process bot log messages
+		 *
+		 * move all pending log messages to update tracker
+		 * and increase log credit for all active bots
+		 */
+		void processLog(void);
+
 		void tick(uint32_t frameNumber);
 
 		/*!

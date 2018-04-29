@@ -166,6 +166,19 @@ void Field::moveAllBots(void)
 	updateSnakeSegmentMap();
 }
 
+void Field::processLog()
+{
+	for (auto &b : m_bots)
+	{
+		for (auto &msg: b->getLogMessages())
+		{
+			m_updateTracker->botLogMessage(b->getViewerKey(), msg);
+		}
+		b->clearLogMessages();
+		b->increaseLogCredit();
+	}
+}
+
 void Field::tick(uint32_t frameNumber)
 {
 	m_updateTracker->tick(frameNumber);

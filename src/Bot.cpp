@@ -11,7 +11,6 @@ Bot::Bot(Field *field, std::unique_ptr<LuaBot> luaBot, uint32_t startFrame, int 
 	, m_name(name)
 	, m_field(field)
 	, m_lua_bot(std::move(luaBot))
-	, m_moveCounter(0)
 {
 	// TODO: random start coordinates
 	m_snake = std::make_shared<Snake>(field, startPos, 5, startHeading);
@@ -71,4 +70,20 @@ std::shared_ptr<Bot> Bot::checkCollision(void) const
 	}
 
 	return retval;
+}
+
+void Bot::increaseLogCredit()
+{
+	m_logCredit = std::min(
+		m_logCredit+config::LOG_CREDITS_PER_FRAME,
+		config::LOG_MAX_CREDITS
+	);
+}
+
+bool Bot::appendLogMessage(const std::string& data)
+{
+	if (m_logCredit<1) { return false; }
+	m_logMessages.push_back(data.substr(0, config::LOG_MAX_MESSAGE_SIZE));
+	m_logCredit -= 1;
+	return true;
 }

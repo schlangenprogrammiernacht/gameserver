@@ -2,7 +2,9 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
+#include "config.h"
 #include "IdentifyableObject.h"
 #include "Snake.h"
 #include "types.h"
@@ -26,7 +28,8 @@ class Bot : public IdentifyableObject
 		std::shared_ptr<Snake> m_snake;
 		std::unique_ptr<LuaBot> m_lua_bot;
 		real_t m_heading;
-		size_t m_moveCounter;
+		std::vector<std::string> m_logMessages;
+		real_t m_logCredit = config::LOG_INITIAL_CREDITS;
 
 	public:
 		/*!
@@ -52,6 +55,11 @@ class Bot : public IdentifyableObject
 		 */
 		std::shared_ptr<Bot> checkCollision(void) const;
 
+		/*!
+		 * \brief increase log credit every frame, until config::LOG_MAX_CREDITS is reached
+		 */
+		void increaseLogCredit();
+
 		std::shared_ptr<Snake> getSnake(void) const { return m_snake; }
 
 		const std::string &getName(void) const { return m_name; }
@@ -65,4 +73,9 @@ class Bot : public IdentifyableObject
 		LuaBot& getLuaBot() { return *m_lua_bot; }
 		uint32_t getStartFrame() { return m_startFrame; }
 		uint64_t getViewerKey() { return m_viewerKey; }
+
+		bool appendLogMessage(const std::string &data);
+		real_t getLogCredit() { return m_logCredit; }
+		std::vector<std::string> &getLogMessages() { return m_logMessages; }
+		void clearLogMessages() { m_logMessages.clear(); }
 };

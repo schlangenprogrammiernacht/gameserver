@@ -76,9 +76,9 @@ void LuaBot::setQuota(uint32_t num_instructions, double seconds)
 sol::environment LuaBot::createEnvironment()
 {
 	auto env = sol::environment(m_lua_state, sol::create);
-	env["log"] = [](std::string v) { printf("%s\n", v.c_str()); };
 	env["findFood"] = [this](real_t radius, real_t min_size) { return apiFindFood(radius, min_size); };
 	env["findSegments"] = [this](real_t radius, bool include_self) { return apiFindSegments(radius, include_self); };
+	env["log"] = [this](std::string v) { return apiLog(v); };
 
 	for (auto& func: std::vector<std::string>{
 		"assert", "print", "ipairs", "error", "next", "pairs", "pcall", "select",
@@ -181,6 +181,12 @@ std::vector<LuaSegmentInfo>& LuaBot::apiFindSegments(real_t radius, bool include
 	}
 
 	return m_luaSegmentInfoTable;
+}
+
+bool LuaBot::apiLog(std::string data)
+{
+	if (m_bot==nullptr) { return false; }
+	return m_bot->appendLogMessage(data);
 }
 
 real_t LuaBot::getMaxSightRadius() const

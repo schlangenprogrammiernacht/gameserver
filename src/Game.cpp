@@ -111,6 +111,7 @@ bool Game::OnTimerInterval()
 	m_field->removeFood();
 
 	m_field->moveAllBots();
+	m_field->processLog();
 	m_field->tick(m_currentFrame);
 
 	// send differential update to all connected clients

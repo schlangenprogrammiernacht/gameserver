@@ -72,6 +72,7 @@ class LuaBot
 
 		std::vector<LuaFoodInfo>& apiFindFood(real_t radius, real_t min_size);
 		std::vector<LuaSegmentInfo>& apiFindSegments(real_t radius, bool include_self);
+		bool apiLog(std::string data);
 
 		real_t getMaxSightRadius() const;
 
