@@ -17,9 +17,9 @@ Bot::~Bot()
 {
 }
 
-bool Bot::init()
+bool Bot::init(std::string& initErrorMessage)
 {
-	return m_lua_bot->init();
+	return m_lua_bot->init(initErrorMessage);
 }
 
 std::size_t Bot::move(void)

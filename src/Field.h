@@ -76,8 +76,9 @@ class Field
 
 		/*!
 		 * Create a new Bot on this field.
+		 * @return shared_ptr to the new bot; non-empty initErrorMessage if initialization failed
 		 */
-		void newBot(std::unique_ptr<db::BotScript> data);
+		std::shared_ptr<Bot> newBot(std::unique_ptr<db::BotScript> data, std::string &initErrorMessage);
 
 		/*!
 		 * Decay all food.

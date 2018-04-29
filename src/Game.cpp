@@ -205,8 +205,16 @@ void Game::queryDB()
 void Game::createBot(int bot_id)
 {
 	auto data = m_database->GetBotData(bot_id);
-	if (data != nullptr)
+	if (data == nullptr)
 	{
-		m_field->newBot(std::move(data));
+		return;
+	}
+
+	std::string initErrorMessage;
+	auto newBot = m_field->newBot(std::move(data), initErrorMessage);
+	if (!initErrorMessage.empty())
+	{
+		// TODO set bot inactive, save error message, lock in inactive state
+		// TODO send log message
 	}
 }

@@ -54,11 +54,10 @@ class LuaBot
 {
 	public:
 		LuaBot(std::string script);
-		bool init();
+		bool init(std::string &initErrorMessage);
 		bool step(Bot& bot, float &next_heading, bool &boost);
 
 	private:
-		bool m_initialized = false;
 		Bot *m_bot = nullptr;
 		PoolAllocator m_allocator;
 		sol::state m_lua_state;

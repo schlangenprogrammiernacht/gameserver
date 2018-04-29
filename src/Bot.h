@@ -42,7 +42,7 @@ class Bot : public IdentifyableObject
 		 * initialize the bot, e.g. parse the lua script
 		 * \return true if init successful, false if failed
 		 */
-		bool init();
+		bool init(std::string &initErrorMessage);
 
 		/*!
 		 * Run the bot's movement code and update the Snake’s position.

@@ -18,7 +18,7 @@ LuaBot::LuaBot(std::string script)
 	m_luaSegmentInfoTable.reserve(1000);
 }
 
-bool LuaBot::init()
+bool LuaBot::init(std::string& initErrorMessage)
 {
 	try
 	{
@@ -28,13 +28,11 @@ bool LuaBot::init()
 
 		std::string chunkName = "bot.lua";
 		auto result = m_lua_state.safe_script(m_script, m_lua_safe_env, chunkName, sol::load_mode::text);
-
-		m_initialized = true;
 		return true;
 	}
 	catch (const sol::error& e)
 	{
-		m_initialized = false;
+		initErrorMessage = e.what();
 		printf("init failed: %s\n", e.what());
 		return false;
 	}
@@ -42,11 +40,6 @@ bool LuaBot::init()
 
 bool LuaBot::step(Bot &bot, float &next_heading, bool &boost)
 {
-	if (!m_initialized)
-	{
-		return false;
-	}
-
 	m_bot = &bot;
 
 	real_t last_heading = bot.getHeading();

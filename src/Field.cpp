@@ -76,7 +76,7 @@ void Field::updateMaxSegmentRadius(void)
 	}
 }
 
-void Field::newBot(std::unique_ptr<db::BotScript> data)
+std::shared_ptr<Bot> Field::newBot(std::unique_ptr<db::BotScript> data, std::string& initErrorMessage)
 {
 	real_t x = (*m_positionXDistribution)(*m_rndGen);
 	real_t y = (*m_positionYDistribution)(*m_rndGen);
@@ -90,12 +90,18 @@ void Field::newBot(std::unique_ptr<db::BotScript> data)
 		heading
 	);
 
-	if (bot->init())
+	initErrorMessage = "";
+	if (bot->init(initErrorMessage))
 	{
 		std::cerr << "Created Bot with ID " << bot->getGUID() << std::endl;
 		m_updateTracker->botSpawned(bot);
 		m_bots.insert(bot);
 	}
+	else
+	{
+		m_updateTracker->botLogMessage(bot->getViewerKey(), "cannot start bot: " + initErrorMessage);
+	}
+	return bot;
 }
 
 void Field::decayFood(void)
