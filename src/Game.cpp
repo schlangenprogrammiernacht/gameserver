@@ -214,7 +214,7 @@ void Game::createBot(int bot_id)
 	auto newBot = m_field->newBot(std::move(data), initErrorMessage);
 	if (!initErrorMessage.empty())
 	{
-		// TODO set bot inactive, save error message, lock in inactive state
-		// TODO send log message
+		m_database->DisableBotVersion(newBot->getDatabaseVersionId(), initErrorMessage);
+		// TODO save error message, maybe lock version in inactive state
 	}
 }

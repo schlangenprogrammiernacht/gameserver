@@ -38,6 +38,14 @@ void MysqlDatabase::Connect(std::string host, std::string username, std::string 
 		"VALUES "
 		" (?, ?, ?, ?, ?, ?, UTC_TIMESTAMP())"
 	);
+
+	_disableBotVersionStmt = makePreparedStatement(
+		"DELETE FROM core_activesnake WHERE version_id=?"
+	);
+
+	_saveBotVersionErrorMessageStmt = makePreparedStatement(
+		"UPDATE core_snakeversion SET server_error_message=? WHERE id=?"
+	);
 }
 
 std::unique_ptr<BotScript> MysqlDatabase::GetBotData(int bot_id)
@@ -100,6 +108,19 @@ void MysqlDatabase::ReportBotKilled(long victim_id, long version_id, long start_
 	if (killer_id<0) { _reportBotKilledStmt->setNull(5, 0); }
 	_reportBotKilledStmt->setDouble(6, final_mass);
 	_reportBotKilledStmt->execute();
+}
+
+void MysqlDatabase::DisableBotVersion(long version_id, std::string errorMessage)
+{
+	_disableBotVersionStmt->setInt64(1, version_id);
+	_disableBotVersionStmt->execute();
+
+	if (!errorMessage.empty())
+	{
+		_saveBotVersionErrorMessageStmt->setString(1, errorMessage);
+		_saveBotVersionErrorMessageStmt->setInt64(2, version_id);
+		_saveBotVersionErrorMessageStmt->execute();
+	}
 }
 
 std::unique_ptr<sql::PreparedStatement> MysqlDatabase::makePreparedStatement(std::string sql)

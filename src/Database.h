@@ -46,6 +46,7 @@ namespace db
 			virtual std::vector<Command> GetActiveCommands() = 0;
 			virtual void SetCommandCompleted(long commandId, bool result, std::string resultMsg) = 0;
 			virtual void ReportBotKilled(long victim_id, long version_id, long start_frame, long end_frame, long killer_id, double final_mass) = 0;
+			virtual void DisableBotVersion(long version_id, std::string errorMessage) = 0;
 	};
 
 	class MysqlDatabase : public IDatabase
@@ -57,6 +58,7 @@ namespace db
 			std::vector<Command> GetActiveCommands() override;
 			void SetCommandCompleted(long commandId, bool result, std::string resultMsg) override;
 			void ReportBotKilled(long victim_id, long version_id, long start_frame, long end_frame, long killer_id, double final_mass) override;
+			void DisableBotVersion(long version_id, std::string errorMessage) override;
 
 		private:
 			enum {
@@ -74,6 +76,8 @@ namespace db
 			std::unique_ptr<sql::PreparedStatement> _getActiveCommandsStmt;
 			std::unique_ptr<sql::PreparedStatement> _commandCompletedStmt;
 			std::unique_ptr<sql::PreparedStatement> _reportBotKilledStmt;
+			std::unique_ptr<sql::PreparedStatement> _disableBotVersionStmt;
+			std::unique_ptr<sql::PreparedStatement> _saveBotVersionErrorMessageStmt;
 			std::unique_ptr<sql::PreparedStatement> makePreparedStatement(std::string sql);
 	};
 }
