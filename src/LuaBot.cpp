@@ -4,66 +4,77 @@
 #include "Food.h"
 #include "Field.h"
 #include "config.h"
+#include <iostream>
 
-LuaBot::LuaBot()
-	: m_allocator(config::LUA_MEM_POOL_SIZE_BYTES, config::LUA_MEM_POOL_BLOCK_SIZE_BYTES)
+LuaBot::LuaBot(Bot &bot, std::string script)
+	: m_bot(bot)
+	, m_allocator(config::LUA_MEM_POOL_SIZE_BYTES, config::LUA_MEM_POOL_BLOCK_SIZE_BYTES)
 	, m_lua_state(sol::default_at_panic, PoolAllocator::lua_allocator, &m_allocator)
+	, m_self(bot.getGUID(), 0)
+	, m_script(script)
 {
 	LuaFoodInfo::Register(m_lua_state);
 	m_luaFoodInfoTable.reserve(1000);
 
 	LuaSegmentInfo::Register(m_lua_state);
 	m_luaSegmentInfoTable.reserve(1000);
+
+	LuaSelfInfo::Register(m_lua_state);
+	m_self.colors.push_back(0x0000FF);
 }
 
-bool LuaBot::init(std::string script)
+bool LuaBot::init(std::string& initErrorMessage)
 {
 	try
 	{
 		m_lua_state.open_libraries();
 		m_lua_state.script_file("lua/quota.lua");
 		m_lua_safe_env = createEnvironment();
-		m_lua_state.safe_script(script, m_lua_safe_env);
-		m_initialized = true;
+
+		std::string chunkName = "bot.lua";
+		m_lua_state.safe_script(m_script, m_lua_safe_env, chunkName, sol::load_mode::text);
+
+		auto step_function = m_lua_safe_env["step"];
+		if (step_function.get_type() != sol::type::function)
+		{
+			throw std::runtime_error("script does not define a step() function.");
+		}
+
+		apiCallInit();
+		m_self.colorsLocked = true;
+
 		return true;
 	}
-	catch (const sol::error& e)
+	catch (const std::runtime_error& e)
 	{
-		m_initialized = false;
+		initErrorMessage = e.what();
 		printf("init failed: %s\n", e.what());
 		return false;
 	}
 }
 
-bool LuaBot::step(Bot &bot, float &next_heading, bool &boost)
+bool LuaBot::step(float &next_heading, bool &boost)
 {
-	if (!m_initialized)
-	{
-		return false;
-	}
-
-	m_bot = &bot;
-
-	real_t last_heading = bot.getHeading();
+	real_t last_heading = m_bot.getHeading();
 	next_heading = last_heading;
 	boost = false;
 
-	m_lua_safe_env["self"] = m_lua_state.create_table_with(
-		"id", bot.getGUID(),
-		"r",  bot.getSnake()->getSegmentRadius()
-	);
-
-	try
+	m_self.r = m_bot.getSnake()->getSegmentRadius();
+	setQuota(1000000, 0.1);
+	sol::protected_function step = m_lua_safe_env["step"];
+	auto result = step();
+	if (result.valid())
 	{
-		setQuota(1000000, 0.1);
-		next_heading = m_lua_safe_env["step"]();
+		next_heading = result;
 		next_heading = 180 * (next_heading / M_PI);
 		next_heading += last_heading;
 		return true;
 	}
-	catch (const sol::error& e)
+	else
 	{
-		printf("script aborted: %s\n", e.what());
+		sol::error err = result;
+		//std::cerr << err.what() << std::endl;
+		m_bot.appendLogMessage(err.what(), false);
 		return false;
 	}
 }
@@ -76,9 +87,10 @@ void LuaBot::setQuota(uint32_t num_instructions, double seconds)
 sol::environment LuaBot::createEnvironment()
 {
 	auto env = sol::environment(m_lua_state, sol::create);
-	env["log"] = [](std::string v) { printf("%s\n", v.c_str()); };
+	env["self"] = &m_self;
 	env["findFood"] = [this](real_t radius, real_t min_size) { return apiFindFood(radius, min_size); };
 	env["findSegments"] = [this](real_t radius, bool include_self) { return apiFindSegments(radius, include_self); };
+	env["log"] = [this](std::string v) { return apiLog(v); };
 
 	for (auto& func: std::vector<std::string>{
 		"assert", "print", "ipairs", "error", "next", "pairs", "pcall", "select",
@@ -123,14 +135,13 @@ sol::table LuaBot::createFunctionTable(const std::string &obj, const std::vector
 std::vector<LuaFoodInfo>& LuaBot::apiFindFood(real_t radius, real_t min_size)
 {
 	m_luaFoodInfoTable.clear();
-	if (m_bot == nullptr) { return m_luaFoodInfoTable; }
 
-	auto head_pos = m_bot->getSnake()->getHeadPosition();
-	real_t heading_rad = static_cast<real_t>(2.0 * M_PI * (m_bot->getHeading() / 360.0));
+	auto head_pos = m_bot.getSnake()->getHeadPosition();
+	real_t heading_rad = static_cast<real_t>(2.0 * M_PI * (m_bot.getHeading() / 360.0));
 
 	radius = std::min(radius, getMaxSightRadius());
 
-	auto field = m_bot->getField();
+	auto field = m_bot.getField();
 	for (auto &food: field->getFoodMap().getRegion(head_pos, radius))
 	{
 		if (food.getValue()>=min_size)
@@ -155,14 +166,13 @@ std::vector<LuaFoodInfo>& LuaBot::apiFindFood(real_t radius, real_t min_size)
 std::vector<LuaSegmentInfo>& LuaBot::apiFindSegments(real_t radius, bool include_self)
 {
 	m_luaSegmentInfoTable.clear();
-	if (m_bot==nullptr) { return m_luaSegmentInfoTable; }
 
-	auto pos = m_bot->getSnake()->getHeadPosition();
-	real_t heading_rad = 2*M_PI * (m_bot->getHeading() / 360.0);
+	auto pos = m_bot.getSnake()->getHeadPosition();
+	real_t heading_rad = 2*M_PI * (m_bot.getHeading() / 360.0);
 	radius = std::min(radius, getMaxSightRadius());
-	auto self_id = m_bot->getGUID();
+	auto self_id = m_bot.getGUID();
 
-	auto field = m_bot->getField();
+	auto field = m_bot.getField();
 	for (auto &segmentInfo: field->getSegmentInfoMap().getRegion(pos, radius))
 	{
 		if (!include_self && (segmentInfo.bot->getGUID() == self_id)) { continue; }
@@ -183,8 +193,30 @@ std::vector<LuaSegmentInfo>& LuaBot::apiFindSegments(real_t radius, bool include
 	return m_luaSegmentInfoTable;
 }
 
+bool LuaBot::apiLog(std::string data)
+{
+	return m_bot.appendLogMessage(data, true);
+}
+
+void LuaBot::apiCallInit()
+{
+	sol::protected_function init_func = m_lua_safe_env["init"];
+	if (init_func.get_type() != sol::type::function)
+	{
+		/* undefined init() is okay */
+		return;
+	}
+
+	setQuota(1000000, 0.1);
+	auto result = init_func();
+	if (!result.valid())
+	{
+		sol::error err = result;
+		throw std::runtime_error(err.what());
+	}
+}
+
 real_t LuaBot::getMaxSightRadius() const
 {
-	if (m_bot==nullptr) { return 0; }
-	return 50.0f + 15.0f * m_bot->getSnake()->getSegmentRadius();
+	return 50.0f + 15.0f * m_bot.getSnake()->getSegmentRadius();
 }

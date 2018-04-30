@@ -52,7 +52,7 @@ Game::Game()
 				victim->getDatabaseId(),
 				victim->getDatabaseVersionId(),
 				victim->getStartFrame(),
-				m_currentFrame,
+				m_field->getCurrentFrame(),
 				killer_id,
 				victim->getSnake()->getMass()
 			);
@@ -96,20 +96,9 @@ bool Game::OnTimerInterval()
 {
 	// do all the game logic here and send updates to clients
 
-	++m_currentFrame;
-
-	if (++m_dbQueryCounter >= DB_QUERY_INTERVAL)
-	{
-		queryDB();
-		m_dbQueryCounter = 0;
-	}
-
-	//std::cout << "Frame number #" << frameNumber << std::endl;
-
 	m_field->decayFood();
 	m_field->consumeFood();
 	m_field->removeFood();
-
 	m_field->moveAllBots();
 
 	if(++m_statsUpdateCounter >= STATS_UPDATE_INTERVAL) {
@@ -117,15 +106,18 @@ bool Game::OnTimerInterval()
 		m_statsUpdateCounter = 0;
 	}
 
-	m_field->tick(m_currentFrame);
+	m_field->processLog();
+	m_field->tick();
 
 	// send differential update to all connected clients
 	std::string update = m_field->getUpdateTracker().serialize();
 	server.Broadcast(update);
 
-	//std::cout << hexdump(update) << std::endl;
-
-	//m_field->debugVisualization();
+	if (++m_dbQueryCounter >= DB_QUERY_INTERVAL)
+	{
+		queryDB();
+		m_dbQueryCounter = 0;
+	}
 
 	return true;
 }
@@ -218,11 +210,17 @@ void Game::queryDB()
 
 void Game::createBot(int bot_id)
 {
-	auto res = m_database->GetBotScript(bot_id);
-	if (res.size() != 0)
+	auto data = m_database->GetBotData(bot_id);
+	if (data == nullptr)
 	{
-		auto luaBot = std::make_unique<LuaBot>();
-		luaBot->init(res[0].code);
-		m_field->newBot(m_currentFrame, res[0].bot_id, res[0].version_id, res[0].bot_name, std::move(luaBot));
+		return;
+	}
+
+	std::string initErrorMessage;
+	auto newBot = m_field->newBot(std::move(data), initErrorMessage);
+	if (!initErrorMessage.empty())
+	{
+		m_database->DisableBotVersion(newBot->getDatabaseVersionId(), initErrorMessage);
+		// TODO save error message, maybe lock version in inactive state
 	}
 }

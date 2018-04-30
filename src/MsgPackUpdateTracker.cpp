@@ -77,6 +77,11 @@ void MsgPackUpdateTracker::botMoved(const std::shared_ptr<Bot> &bot, std::size_t
 	m_botMoveMessage->items.push_back(item);
 }
 
+void MsgPackUpdateTracker::botLogMessage(uint64_t viewerKey, const std::string& message)
+{
+	m_botLogMessage->items.push_back({viewerKey, message});
+}
+
 void MsgPackUpdateTracker::gameInfo(void)
 {
 	MsgPackProtocol::GameInfoMessage msg;
@@ -165,6 +170,13 @@ std::string MsgPackUpdateTracker::serialize(void)
 		appendMessage(buf);
 	}
 
+	// log messages
+	if (!m_botLogMessage->items.empty()) {
+		msgpack::sbuffer buf;
+		msgpack::pack(buf, m_botLogMessage);
+		appendMessage(buf);
+	}
+
 	std::string result = m_stream.str();
 	reset();
 	return result;
@@ -177,6 +189,7 @@ void MsgPackUpdateTracker::reset(void)
 	m_foodDecayMessage = std::make_unique<MsgPackProtocol::FoodDecayMessage>();
 	m_botMoveMessage = std::make_unique<MsgPackProtocol::BotMoveMessage>();
 	m_botStatsMessage = std::make_unique<MsgPackProtocol::BotStatsMessage>();
+	m_botLogMessage = std::make_unique<MsgPackProtocol::BotLogMessage>();
 
 	m_stream.str("");
 }

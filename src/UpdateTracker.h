@@ -64,6 +64,8 @@ class UpdateTracker
 		 */
 		virtual void botMoved(const std::shared_ptr<Bot> &bot, std::size_t steps) = 0;
 
+		virtual void botLogMessage(uint64_t viewerKey, const std::string& message) = 0;
+
 		/*!
 		 * Add a serialized version of the world state to the stream.
 		 *

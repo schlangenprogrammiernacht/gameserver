@@ -76,19 +76,32 @@ void Field::updateMaxSegmentRadius(void)
 	}
 }
 
-void Field::newBot(uint32_t currentFrame, int databaseId, int databaseVersionId, const std::string &name, std::unique_ptr<LuaBot> luaBot)
+std::shared_ptr<Bot> Field::newBot(std::unique_ptr<db::BotScript> data, std::string& initErrorMessage)
 {
 	real_t x = (*m_positionXDistribution)(*m_rndGen);
 	real_t y = (*m_positionYDistribution)(*m_rndGen);
 	real_t heading = (*m_angleDegreesDistribution)(*m_rndGen);
 
-	std::shared_ptr<Bot> bot = std::make_shared<Bot>(this, std::move(luaBot), currentFrame, databaseId, databaseVersionId, name, Vector2D(x,y), heading);
+	std::shared_ptr<Bot> bot = std::make_shared<Bot>(
+		this,
+		getCurrentFrame(),
+		std::move(data),
+		Vector2D(x,y),
+		heading
+	);
 
-	std::cerr << "Created Bot with ID " << bot->getGUID() << std::endl;
-
-	m_updateTracker->botSpawned(bot);
-
-	m_bots.insert(bot);
+	initErrorMessage = "";
+	if (bot->init(initErrorMessage))
+	{
+		std::cerr << "Created Bot with ID " << bot->getGUID() << std::endl;
+		m_updateTracker->botSpawned(bot);
+		m_bots.insert(bot);
+	}
+	else
+	{
+		m_updateTracker->botLogMessage(bot->getViewerKey(), "cannot start bot: " + initErrorMessage);
+	}
+	return bot;
 }
 
 void Field::decayFood(void)
@@ -167,9 +180,23 @@ void Field::moveAllBots(void)
 	updateSnakeSegmentMap();
 }
 
-void Field::tick(uint32_t frameNumber)
+void Field::processLog()
 {
-	m_updateTracker->tick(frameNumber);
+	for (auto &b : m_bots)
+	{
+		for (auto &msg: b->getLogMessages())
+		{
+			m_updateTracker->botLogMessage(b->getViewerKey(), msg);
+		}
+		b->clearLogMessages();
+		b->increaseLogCredit();
+	}
+}
+
+void Field::tick()
+{
+	m_currentFrame++;
+	m_updateTracker->tick(m_currentFrame);
 }
 
 void Field::updateStats(void)

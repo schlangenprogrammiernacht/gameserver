@@ -22,6 +22,7 @@ namespace MsgPackProtocol
 		MESSAGE_TYPE_BOT_SPAWN = 0x20,
 		MESSAGE_TYPE_BOT_KILL = 0x21,
 		MESSAGE_TYPE_BOT_MOVE = 0x22,
+		MESSAGE_TYPE_BOT_LOG = 0x23,
 		MESSAGE_TYPE_BOT_STATS = 0x24,
 
 		MESSAGE_TYPE_FOOD_SPAWN = 0x30,
@@ -112,6 +113,17 @@ namespace MsgPackProtocol
 	struct BotStatsMessage
 	{
 		std::vector<BotStatsItem> items;
+	};
+
+	struct BotLogItem
+	{
+		uint64_t viewer_key;
+		std::string message;
+	};
+
+	struct BotLogMessage
+	{
+		std::vector<BotLogItem> items;
 	};
 }
 
@@ -338,22 +350,35 @@ namespace msgpack {
 					o.pack(v->getGUID());
 					o.pack(v->getName());
 					o.pack(v->getSnake()->getSegmentRadius());
-
-					// segments
 					o.pack(v->getSnake()->getSegments());
-
-					// FIXME: colormap: array of RGB values
-					o.pack_array(3);
-					o.pack(0xFF0000);
-					o.pack(0x00FF00);
-					o.pack(0x0000FF);
-
+					o.pack(v->getColors());
 					o.pack(v->getDatabaseVersionId());
-
 					return o;
 				}
 			};
 
+			template <> struct pack<MsgPackProtocol::BotLogMessage>
+			{
+				template <typename Stream> msgpack::packer<Stream>& operator()(msgpack::packer<Stream>& o, MsgPackProtocol::BotLogMessage const& v) const
+				{
+					o.pack_array(3);
+					o.pack(MsgPackProtocol::PROTOCOL_VERSION);
+					o.pack(static_cast<int>(MsgPackProtocol::MESSAGE_TYPE_BOT_LOG));
+					o.pack(v.items);
+					return o;
+				}
+			};
+
+			template <> struct pack<MsgPackProtocol::BotLogItem>
+			{
+				template <typename Stream> msgpack::packer<Stream>& operator()(msgpack::packer<Stream>& o, MsgPackProtocol::BotLogItem const& v) const
+				{
+					o.pack_array(2);
+					o.pack(v.viewer_key);
+					o.pack(v.message);
+					return o;
+				}
+			};
 		} // namespace adaptor
 	} // MSGPACK_API_VERSION_NAMESPACE(MSGPACK_DEFAULT_API_NS)
 } // namespace msgpack
