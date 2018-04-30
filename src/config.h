@@ -61,4 +61,7 @@ namespace config {
 	static constexpr const real_t LOG_INITIAL_CREDITS = 10;
 	static constexpr const real_t LOG_MAX_CREDITS = 50;
 	static constexpr const size_t LOG_MAX_MESSAGE_SIZE = 200;
+
+	// maximum number of colors a bot can have
+	static constexpr const size_t MAX_COLORS = 100;
 }

@@ -10,6 +10,7 @@ LuaBot::LuaBot(Bot &bot, std::string script)
 	: m_bot(bot)
 	, m_allocator(config::LUA_MEM_POOL_SIZE_BYTES, config::LUA_MEM_POOL_BLOCK_SIZE_BYTES)
 	, m_lua_state(sol::default_at_panic, PoolAllocator::lua_allocator, &m_allocator)
+	, m_self(bot.getGUID(), 0)
 	, m_script(script)
 {
 	LuaFoodInfo::Register(m_lua_state);
@@ -18,7 +19,8 @@ LuaBot::LuaBot(Bot &bot, std::string script)
 	LuaSegmentInfo::Register(m_lua_state);
 	m_luaSegmentInfoTable.reserve(1000);
 
-	m_colors.push_back(0x00808080);
+	LuaSelfInfo::Register(m_lua_state);
+	m_self.colors.push_back(0x0000FF);
 }
 
 bool LuaBot::init(std::string& initErrorMessage)
@@ -38,7 +40,9 @@ bool LuaBot::init(std::string& initErrorMessage)
 			throw std::runtime_error("script does not define a step() function.");
 		}
 
-		return apiCallInit(initErrorMessage);
+		apiCallInit();
+
+		return true;
 	}
 	catch (const std::runtime_error& e)
 	{
@@ -54,12 +58,7 @@ bool LuaBot::step(float &next_heading, bool &boost)
 	next_heading = last_heading;
 	boost = false;
 
-	m_lua_safe_env["self"] = m_lua_state.create_table_with(
-		"id", m_bot.getGUID(),
-		"r",  m_bot.getSnake()->getSegmentRadius(),
-		"colors", getColors()
-	);
-
+	m_self.r = m_bot.getSnake()->getSegmentRadius();
 	setQuota(1000000, 0.1);
 	sol::protected_function step = m_lua_safe_env["step"];
 	auto result = step();
@@ -87,6 +86,7 @@ void LuaBot::setQuota(uint32_t num_instructions, double seconds)
 sol::environment LuaBot::createEnvironment()
 {
 	auto env = sol::environment(m_lua_state, sol::create);
+	env["self"] = &m_self;
 	env["findFood"] = [this](real_t radius, real_t min_size) { return apiFindFood(radius, min_size); };
 	env["findSegments"] = [this](real_t radius, bool include_self) { return apiFindSegments(radius, include_self); };
 	env["log"] = [this](std::string v) { return apiLog(v); };
@@ -197,26 +197,21 @@ bool LuaBot::apiLog(std::string data)
 	return m_bot.appendLogMessage(data, true);
 }
 
-bool LuaBot::apiCallInit(std::string& initErrorMessage)
+void LuaBot::apiCallInit()
 {
 	sol::protected_function init_func = m_lua_safe_env["init"];
 	if (init_func.get_type() != sol::type::function)
 	{
 		/* undefined init() is okay */
-		return true;
+		return;
 	}
 
 	setQuota(1000000, 0.1);
 	auto result = init_func();
-	if (result.valid())
-	{
-		return true;
-	}
-	else
+	if (!result.valid())
 	{
 		sol::error err = result;
-		initErrorMessage = err.what();
-		return false;
+		throw std::runtime_error(err.what());
 	}
 }
 
