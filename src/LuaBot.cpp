@@ -6,8 +6,9 @@
 #include "config.h"
 #include <iostream>
 
-LuaBot::LuaBot(std::string script)
-	: m_allocator(config::LUA_MEM_POOL_SIZE_BYTES, config::LUA_MEM_POOL_BLOCK_SIZE_BYTES)
+LuaBot::LuaBot(Bot &bot, std::string script)
+	: m_bot(bot)
+	, m_allocator(config::LUA_MEM_POOL_SIZE_BYTES, config::LUA_MEM_POOL_BLOCK_SIZE_BYTES)
 	, m_lua_state(sol::default_at_panic, PoolAllocator::lua_allocator, &m_allocator)
 	, m_script(script)
 {
@@ -16,6 +17,8 @@ LuaBot::LuaBot(std::string script)
 
 	LuaSegmentInfo::Register(m_lua_state);
 	m_luaSegmentInfoTable.reserve(1000);
+
+	m_colors.push_back(0x00808080);
 }
 
 bool LuaBot::init(std::string& initErrorMessage)
@@ -27,13 +30,15 @@ bool LuaBot::init(std::string& initErrorMessage)
 		m_lua_safe_env = createEnvironment();
 
 		std::string chunkName = "bot.lua";
-		auto result = m_lua_state.safe_script(m_script, m_lua_safe_env, chunkName, sol::load_mode::text);
+		m_lua_state.safe_script(m_script, m_lua_safe_env, chunkName, sol::load_mode::text);
 
-		if (m_lua_safe_env["step"].get_type() != sol::type::function)
+		auto step_function = m_lua_safe_env["step"];
+		if (step_function.get_type() != sol::type::function)
 		{
 			throw std::runtime_error("script does not define a step() function.");
 		}
-		return true;
+
+		return apiCallInit(initErrorMessage);
 	}
 	catch (const std::runtime_error& e)
 	{
@@ -43,17 +48,16 @@ bool LuaBot::init(std::string& initErrorMessage)
 	}
 }
 
-bool LuaBot::step(Bot &bot, float &next_heading, bool &boost)
+bool LuaBot::step(float &next_heading, bool &boost)
 {
-	m_bot = &bot;
-
-	real_t last_heading = bot.getHeading();
+	real_t last_heading = m_bot.getHeading();
 	next_heading = last_heading;
 	boost = false;
 
 	m_lua_safe_env["self"] = m_lua_state.create_table_with(
-		"id", bot.getGUID(),
-		"r",  bot.getSnake()->getSegmentRadius()
+		"id", m_bot.getGUID(),
+		"r",  m_bot.getSnake()->getSegmentRadius(),
+		"colors", getColors()
 	);
 
 	setQuota(1000000, 0.1);
@@ -70,7 +74,7 @@ bool LuaBot::step(Bot &bot, float &next_heading, bool &boost)
 	{
 		sol::error err = result;
 		//std::cerr << err.what() << std::endl;
-		m_bot->appendLogMessage(err.what(), true);
+		m_bot.appendLogMessage(err.what(), false);
 		return false;
 	}
 }
@@ -130,14 +134,13 @@ sol::table LuaBot::createFunctionTable(const std::string &obj, const std::vector
 std::vector<LuaFoodInfo>& LuaBot::apiFindFood(real_t radius, real_t min_size)
 {
 	m_luaFoodInfoTable.clear();
-	if (m_bot == nullptr) { return m_luaFoodInfoTable; }
 
-	auto head_pos = m_bot->getSnake()->getHeadPosition();
-	real_t heading_rad = static_cast<real_t>(2.0 * M_PI * (m_bot->getHeading() / 360.0));
+	auto head_pos = m_bot.getSnake()->getHeadPosition();
+	real_t heading_rad = static_cast<real_t>(2.0 * M_PI * (m_bot.getHeading() / 360.0));
 
 	radius = std::min(radius, getMaxSightRadius());
 
-	auto field = m_bot->getField();
+	auto field = m_bot.getField();
 	for (auto &food: field->getFoodMap().getRegion(head_pos, radius))
 	{
 		if (food.getValue()>=min_size)
@@ -162,14 +165,13 @@ std::vector<LuaFoodInfo>& LuaBot::apiFindFood(real_t radius, real_t min_size)
 std::vector<LuaSegmentInfo>& LuaBot::apiFindSegments(real_t radius, bool include_self)
 {
 	m_luaSegmentInfoTable.clear();
-	if (m_bot==nullptr) { return m_luaSegmentInfoTable; }
 
-	auto pos = m_bot->getSnake()->getHeadPosition();
-	real_t heading_rad = 2*M_PI * (m_bot->getHeading() / 360.0);
+	auto pos = m_bot.getSnake()->getHeadPosition();
+	real_t heading_rad = 2*M_PI * (m_bot.getHeading() / 360.0);
 	radius = std::min(radius, getMaxSightRadius());
-	auto self_id = m_bot->getGUID();
+	auto self_id = m_bot.getGUID();
 
-	auto field = m_bot->getField();
+	auto field = m_bot.getField();
 	for (auto &segmentInfo: field->getSegmentInfoMap().getRegion(pos, radius))
 	{
 		if (!include_self && (segmentInfo.bot->getGUID() == self_id)) { continue; }
@@ -192,12 +194,33 @@ std::vector<LuaSegmentInfo>& LuaBot::apiFindSegments(real_t radius, bool include
 
 bool LuaBot::apiLog(std::string data)
 {
-	if (m_bot==nullptr) { return false; }
-	return m_bot->appendLogMessage(data, true);
+	return m_bot.appendLogMessage(data, true);
+}
+
+bool LuaBot::apiCallInit(std::string& initErrorMessage)
+{
+	sol::protected_function init_func = m_lua_safe_env["init"];
+	if (init_func.get_type() != sol::type::function)
+	{
+		/* undefined init() is okay */
+		return true;
+	}
+
+	setQuota(1000000, 0.1);
+	auto result = init_func();
+	if (result.valid())
+	{
+		return true;
+	}
+	else
+	{
+		sol::error err = result;
+		initErrorMessage = err.what();
+		return false;
+	}
 }
 
 real_t LuaBot::getMaxSightRadius() const
 {
-	if (m_bot==nullptr) { return 0; }
-	return 50.0f + 15.0f * m_bot->getSnake()->getSegmentRadius();
+	return 50.0f + 15.0f * m_bot.getSnake()->getSegmentRadius();
 }

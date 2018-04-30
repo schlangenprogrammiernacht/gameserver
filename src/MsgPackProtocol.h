@@ -312,18 +312,9 @@ namespace msgpack {
 					o.pack(v->getGUID());
 					o.pack(v->getName());
 					o.pack(v->getSnake()->getSegmentRadius());
-
-					// segments
 					o.pack(v->getSnake()->getSegments());
-
-					// FIXME: colormap: array of RGB values
-					o.pack_array(3);
-					o.pack(0xFF0000);
-					o.pack(0x00FF00);
-					o.pack(0x0000FF);
-
+					o.pack(v->getColors());
 					o.pack(v->getDatabaseVersionId());
-
 					return o;
 				}
 			};

@@ -79,4 +79,7 @@ class Bot : public IdentifyableObject
 		real_t getLogCredit() { return m_logCredit; }
 		std::vector<std::string> &getLogMessages() { return m_logMessages; }
 		void clearLogMessages() { m_logMessages.clear(); }
+
+		std::vector<uint32_t> getColors();
+
 };

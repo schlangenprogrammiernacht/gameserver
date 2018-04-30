@@ -53,17 +53,19 @@ class Bot;
 class LuaBot
 {
 	public:
-		LuaBot(std::string script);
+		LuaBot(Bot &bot, std::string script);
 		bool init(std::string &initErrorMessage);
-		bool step(Bot& bot, float &next_heading, bool &boost);
+		bool step(float &next_heading, bool &boost);
+		std::vector<uint32_t> getColors() { return m_colors; };
 
 	private:
-		Bot *m_bot = nullptr;
+		Bot& m_bot;
 		PoolAllocator m_allocator;
 		sol::state m_lua_state;
 		sol::environment m_lua_safe_env;
 		std::vector<LuaFoodInfo> m_luaFoodInfoTable;
 		std::vector<LuaSegmentInfo> m_luaSegmentInfoTable;
+		std::vector<uint32_t> m_colors;
 		std::string m_script;
 
 		void setQuota(uint32_t num_instructions, double seconds);
@@ -73,6 +75,7 @@ class LuaBot
 		std::vector<LuaFoodInfo>& apiFindFood(real_t radius, real_t min_size);
 		std::vector<LuaSegmentInfo>& apiFindSegments(real_t radius, bool include_self);
 		bool apiLog(std::string data);
+		bool apiCallInit(std::string &initErrorMessage);
 
 		real_t getMaxSightRadius() const;
 
