@@ -54,9 +54,10 @@ struct LuaSelfInfo
 	guid_t id;
 	real_t r;
 	std::vector<uint32_t> colors;
+	bool colorsLocked;
 
 	LuaSelfInfo(guid_t aId, real_t radius)
-		: id(aId), r(radius)
+		: id(aId), r(radius), colorsLocked(false)
 	{}
 
 	std::vector<uint32_t>& getColors()
@@ -66,6 +67,10 @@ struct LuaSelfInfo
 
 	void setColors(sol::table v)
 	{
+		if (colorsLocked)
+		{
+			throw std::runtime_error("snake colors can only be changed in the init() function");
+		}
 		std::map<size_t,uint32_t> colorMap;
 		v.for_each([&colorMap](sol::object key, sol::object value)
 		{

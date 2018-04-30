@@ -41,6 +41,7 @@ bool LuaBot::init(std::string& initErrorMessage)
 		}
 
 		apiCallInit();
+		m_self.colorsLocked = true;
 
 		return true;
 	}
