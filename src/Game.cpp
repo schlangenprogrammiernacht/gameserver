@@ -114,6 +114,7 @@ bool Game::OnTimerInterval()
 
 	if(++m_statsUpdateCounter >= STATS_UPDATE_INTERVAL) {
 		m_field->updateStats();
+		m_statsUpdateCounter = 0;
 	}
 
 	m_field->tick(m_currentFrame);
