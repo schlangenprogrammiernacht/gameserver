@@ -54,7 +54,10 @@ Game::Game()
 				victim->getStartFrame(),
 				m_field->getCurrentFrame(),
 				killer_id,
-				victim->getSnake()->getMass()
+				victim->getSnake()->getMass(),
+				victim->getConsumedNaturalFood(),
+				victim->getConsumedFoodHuntedByOthers(),
+				victim->getConsumedFoodHuntedBySelf()
 			);
 
 			m_database->RemoveLiveStats(

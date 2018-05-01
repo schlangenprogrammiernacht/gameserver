@@ -45,7 +45,7 @@ namespace db
 			virtual std::vector<int> GetActiveBotIds() = 0;
 			virtual std::vector<Command> GetActiveCommands() = 0;
 			virtual void SetCommandCompleted(long commandId, bool result, std::string resultMsg) = 0;
-			virtual void ReportBotKilled(long victim_id, long version_id, long start_frame, long end_frame, long killer_id, double final_mass) = 0;
+			virtual void ReportBotKilled(long victim_id, long version_id, long start_frame, long end_frame, long killer_id, double final_mass, double natural_food_consumed, double carrison_food_consumed, double hunted_food_consumed) = 0;
 			virtual void DisableBotVersion(long version_id, std::string errorMessage) = 0;
 
 			virtual void SetupLiveStats(long user_id) = 0;
@@ -63,7 +63,7 @@ namespace db
 			std::vector<int> GetActiveBotIds() override;
 			std::vector<Command> GetActiveCommands() override;
 			void SetCommandCompleted(long commandId, bool result, std::string resultMsg) override;
-			void ReportBotKilled(long victim_id, long version_id, long start_frame, long end_frame, long killer_id, double final_mass) override;
+			void ReportBotKilled(long victim_id, long version_id, long start_frame, long end_frame, long killer_id, double final_mass, double natural_food_consumed, double carrison_food_consumed, double hunted_food_consumed) override;
 			void DisableBotVersion(long version_id, std::string errorMessage) override;
 
 			void SetupLiveStats(long user_id) override;

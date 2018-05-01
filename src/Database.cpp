@@ -33,9 +33,9 @@ void MysqlDatabase::Connect(std::string host, std::string username, std::string 
 
 	_reportBotKilledStmt = makePreparedStatement(
 		"INSERT INTO core_snakegame "
-		" (user_id, snake_version_id, start_frame, end_frame, killer_id, final_mass, end_date) "
+		" (user_id, snake_version_id, start_frame, end_frame, killer_id, final_mass, natural_food_consumed, carrison_food_consumed, hunted_food_consumed, end_date) "
 		"VALUES "
-		" (?, ?, ?, ?, ?, ?, UTC_TIMESTAMP())"
+		" (?, ?, ?, ?, ?, ?, ?, ?, ?, UTC_TIMESTAMP())"
 	);
 
 	_disableBotVersionStmt = makePreparedStatement(
@@ -115,7 +115,7 @@ void MysqlDatabase::SetCommandCompleted(long commandId, bool result, std::string
 	_commandCompletedStmt->execute();
 }
 
-void MysqlDatabase::ReportBotKilled(long victim_id, long version_id, long start_frame, long end_frame, long killer_id, double final_mass)
+void MysqlDatabase::ReportBotKilled(long victim_id, long version_id, long start_frame, long end_frame, long killer_id, double final_mass, double natural_food_consumed, double carrison_food_consumed, double hunted_food_consumed)
 {
 	_reportBotKilledStmt->setInt64(1, victim_id);
 	_reportBotKilledStmt->setInt64(2, version_id);
@@ -124,6 +124,9 @@ void MysqlDatabase::ReportBotKilled(long victim_id, long version_id, long start_
 	_reportBotKilledStmt->setInt64(5, killer_id);
 	if (killer_id<0) { _reportBotKilledStmt->setNull(5, 0); }
 	_reportBotKilledStmt->setDouble(6, final_mass);
+	_reportBotKilledStmt->setDouble(7, natural_food_consumed);
+	_reportBotKilledStmt->setDouble(8, carrison_food_consumed);
+	_reportBotKilledStmt->setDouble(9, hunted_food_consumed);
 	_reportBotKilledStmt->execute();
 }
 
