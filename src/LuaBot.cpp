@@ -119,6 +119,11 @@ sol::environment LuaBot::createEnvironment()
 			"format", "sub", "upper", "lower"
 		}
 	);
+	env["table"] = createFunctionTable(
+		"table", std::vector<std::string> {
+			"getn", "setn", "maxn", "insert", "remove", "sort"
+		}
+	);
 	return env;
 }
 

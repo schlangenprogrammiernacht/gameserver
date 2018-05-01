@@ -2,10 +2,13 @@
 
 #include <cstdint>
 
-// the following suppresses the only warning Eigen3 produces in -pedantic mode
+#ifdef __clang__
+#include <Eigen/Geometry>
+#else
 #pragma GCC diagnostic ignored "-Wint-in-bool-context"
 #include <Eigen/Geometry>
 #pragma GCC diagnostic pop
+#endif
 
 typedef float real_t;
 typedef std::uint64_t guid_t;

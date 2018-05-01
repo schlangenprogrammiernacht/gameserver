@@ -12,16 +12,15 @@ void MysqlDatabase::Connect(std::string host, std::string username, std::string 
 	_connection->setSchema(database);
 
 	_getBotDataStmt = makePreparedStatement(
-		"SELECT u.id, u.username, sv.id, sv.code, IFNULL(up.viewer_key, 0) AS viewer_key "
-		"FROM core_activesnake a "
-		"LEFT JOIN core_snakeversion sv ON (sv.id=a.version_id) "
-		"LEFT JOIN auth_user u ON (u.id=a.user_id) "
-		"LEFT JOIN core_userprofile up ON (up.user_id=a.user_id) "
-		"WHERE a.user_id=?"
+		"SELECT u.id, u.username, sv.id, sv.code, IFNULL(p.viewer_key, 0) AS viewer_key "
+		"FROM core_userprofile p "
+		"LEFT JOIN auth_user u ON (u.id=p.user_id) "
+		"LEFT JOIN core_snakeversion sv ON (sv.id=p.active_snake_id) "
+		"WHERE p.user_id=? AND p.active_snake_id IS NOT NULL"
 	);
 
 	_getActiveBotIdsStmt = makePreparedStatement(
-		"SELECT user_id FROM core_activesnake"
+		"SELECT user_id FROM core_userprofile WHERE active_snake_id IS NOT NULL"
 	);
 
 	_getActiveCommandsStmt = makePreparedStatement(
@@ -40,7 +39,7 @@ void MysqlDatabase::Connect(std::string host, std::string username, std::string 
 	);
 
 	_disableBotVersionStmt = makePreparedStatement(
-		"DELETE FROM core_activesnake WHERE version_id=?"
+		"UPDATE core_userprofile SET active_snake_id=NULL WHERE active_snake_id=?"
 	);
 
 	_saveBotVersionErrorMessageStmt = makePreparedStatement(
