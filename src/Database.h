@@ -47,6 +47,12 @@ namespace db
 			virtual void SetCommandCompleted(long commandId, bool result, std::string resultMsg) = 0;
 			virtual void ReportBotKilled(long victim_id, long version_id, long start_frame, long end_frame, long killer_id, double final_mass) = 0;
 			virtual void DisableBotVersion(long version_id, std::string errorMessage) = 0;
+
+			virtual void SetupLiveStats(long user_id) = 0;
+			virtual void UpdateLiveStats(long user_id, long current_frame, double mass,
+					double natural_food_consumed, double carrison_food_consumed,
+					double hunted_food_consumed) = 0;
+			virtual void RemoveLiveStats(long user_id) = 0;
 	};
 
 	class MysqlDatabase : public IDatabase
@@ -59,6 +65,12 @@ namespace db
 			void SetCommandCompleted(long commandId, bool result, std::string resultMsg) override;
 			void ReportBotKilled(long victim_id, long version_id, long start_frame, long end_frame, long killer_id, double final_mass) override;
 			void DisableBotVersion(long version_id, std::string errorMessage) override;
+
+			void SetupLiveStats(long user_id) override;
+			void UpdateLiveStats(long user_id, long current_frame, double mass,
+					double natural_food_consumed, double carrison_food_consumed,
+					double hunted_food_consumed) override;
+			void RemoveLiveStats(long user_id) override;
 
 		private:
 			enum {
@@ -78,6 +90,9 @@ namespace db
 			std::unique_ptr<sql::PreparedStatement> _reportBotKilledStmt;
 			std::unique_ptr<sql::PreparedStatement> _disableBotVersionStmt;
 			std::unique_ptr<sql::PreparedStatement> _saveBotVersionErrorMessageStmt;
+			std::unique_ptr<sql::PreparedStatement> _setupLiveStatsStmt;
+			std::unique_ptr<sql::PreparedStatement> _updateLiveStatsStmt;
+			std::unique_ptr<sql::PreparedStatement> _removeLiveStatsStmt;
 			std::unique_ptr<sql::PreparedStatement> makePreparedStatement(std::string sql);
 	};
 }

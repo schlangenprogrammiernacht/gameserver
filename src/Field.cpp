@@ -199,7 +199,7 @@ void Field::tick()
 	m_updateTracker->tick(m_currentFrame);
 }
 
-void Field::updateStats(void)
+void Field::sendStatsToStream(void)
 {
 	for(auto &bot: m_bots) {
 		m_updateTracker->botStats(bot);

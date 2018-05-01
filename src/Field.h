@@ -120,7 +120,7 @@ class Field
 		/*!
 		 * Send statistics to the UpdateTracker.
 		 */
-		void updateStats(void);
+		void sendStatsToStream(void);
 
 		/*!
 		 * Get the set of bots.
