@@ -56,7 +56,7 @@ class MsgPackUpdateTracker : public UpdateTracker
 
 		void tick(uint64_t frame_id) override;
 
-		void botStats(const std::shared_ptr<Bot> &bot);
+		void botStats(const std::shared_ptr<Bot> &bot) override;
 
 		std::string serialize(void) override;
 
