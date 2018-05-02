@@ -28,6 +28,8 @@ set(sources
 	src/LuaBot.cpp
 	src/LuaBot.h
 	src/lua/LuaSelfInfo.h src/lua/LuaSelfInfo.cpp
+	src/lua/LuaSegmentInfo.h src/lua/LuaSegmentInfo.cpp
+	src/lua/LuaFoodInfo.h src/lua/LuaFoodInfo.cpp
 	src/config.h
 	src/debug_funcs.h
 	src/Field.cpp

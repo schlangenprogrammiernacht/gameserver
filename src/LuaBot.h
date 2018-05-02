@@ -1,54 +1,9 @@
 #pragma once
-#include <sol.hpp>
-#include "types.h"
 #include "config.h"
 #include "PoolAllocator.h"
 #include "lua/LuaSelfInfo.h"
-
-struct LuaSegmentInfo
-{
-	real_t x, y, r, d, dist;
-	guid_t bot;
-
-	LuaSegmentInfo(real_t aX,real_t aY, real_t aR, real_t aD, real_t aDist, guid_t aBot)
-		: x(aX), y(aY), r(aR), d(aD), dist(aDist), bot(aBot)
-	{
-	}
-
-	static void Register(sol::state& lua)
-	{
-		lua.new_usertype<LuaSegmentInfo>(
-			"SegmentInfo",
-			"x", sol::readonly(&LuaSegmentInfo::x),
-			"y", sol::readonly(&LuaSegmentInfo::y),
-			"r", sol::readonly(&LuaSegmentInfo::r),
-			"d", sol::readonly(&LuaSegmentInfo::d),
-			"dist", sol::readonly(&LuaSegmentInfo::dist),
-			"bot", sol::readonly(&LuaSegmentInfo::bot)
-		);
-	}
-};
-
-struct LuaFoodInfo
-{
-	real_t x, y, v, d, dist;
-	LuaFoodInfo(real_t aX, real_t aY, real_t aV, real_t aD, real_t aDist)
-		: x(aX), y(aY), v(aV), d(aD), dist(aDist)
-	{
-	}
-
-	static void Register(sol::state& lua)
-	{
-		lua.new_usertype<LuaFoodInfo>(
-			"FoodInfo",
-			"x", sol::readonly(&LuaFoodInfo::x),
-			"y", sol::readonly(&LuaFoodInfo::y),
-			"v", sol::readonly(&LuaFoodInfo::v),
-			"d", sol::readonly(&LuaFoodInfo::d),
-			"dist", sol::readonly(&LuaFoodInfo::dist)
-		);
-	}
-};
+#include "lua/LuaFoodInfo.h"
+#include "lua/LuaSegmentInfo.h"
 
 class Bot;
 class LuaBot
