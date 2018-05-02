@@ -17,6 +17,8 @@ find_package(Threads REQUIRED)
 find_package(Eigen3 REQUIRED)
 include_directories(${EIGEN3_INCLUDE_DIR})
 
+include_directories(src)
+
 # put all .cpp and .h files into the sources variable
 set(sources
 	src/Bot.cpp
@@ -25,6 +27,7 @@ set(sources
 	src/BotThreadPool.h
 	src/LuaBot.cpp
 	src/LuaBot.h
+	src/lua/LuaSelfInfo.h src/lua/LuaSelfInfo.cpp
 	src/config.h
 	src/debug_funcs.h
 	src/Field.cpp

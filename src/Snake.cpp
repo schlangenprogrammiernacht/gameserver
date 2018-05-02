@@ -182,7 +182,7 @@ bool Snake::canConsume(const Food &food)
 	const Vector2D &foodPos = food.pos();
 
 	Vector2D unwrappedFoodPos = m_field->unwrapCoords(foodPos, headPos);
-	real_t maxRange = m_segmentRadius * config::SNAKE_CONSUME_RANGE;
+	real_t maxRange = getConsumeRadius();
 
 	// range check
 	return (headPos - unwrappedFoodPos).squaredNorm() < (maxRange*maxRange);
@@ -195,4 +195,9 @@ void Snake::convertToFood(const std::shared_ptr<Bot> &hunter) const
 	for(auto &s: m_segments) {
 		m_field->createDynamicFood(foodPerSegment, s.pos(), m_segmentRadius, hunter);
 	}
+}
+
+real_t Snake::getConsumeRadius()
+{
+	return m_segmentRadius * config::SNAKE_CONSUME_RANGE;
 }

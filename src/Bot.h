@@ -78,9 +78,9 @@ class Bot : public IdentifyableObject
 		LuaBot& getLuaBot() { return *m_lua_bot; }
 		uint32_t getStartFrame() { return m_startFrame; }
 
-		double getConsumedNaturalFood(void) { return m_consumedNaturalFood; }
-		double getConsumedFoodHuntedByOthers(void) { return m_consumedFoodHuntedByOthers; }
-		double getConsumedFoodHuntedBySelf(void) { return m_consumedFoodHuntedBySelf; }
+		real_t getConsumedNaturalFood(void) { return m_consumedNaturalFood; }
+		real_t getConsumedFoodHuntedByOthers(void) { return m_consumedFoodHuntedByOthers; }
+		real_t getConsumedFoodHuntedBySelf(void) { return m_consumedFoodHuntedBySelf; }
 
 		void updateConsumeStats(const Food &food);
 
@@ -92,4 +92,6 @@ class Bot : public IdentifyableObject
 		void clearLogMessages() { m_logMessages.clear(); }
 
 		std::vector<uint32_t> getColors();
+		real_t getSightRadius() const;
+
 };

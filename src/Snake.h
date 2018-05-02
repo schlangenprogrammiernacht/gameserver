@@ -114,4 +114,6 @@ class Snake
 		void convertToFood(const std::shared_ptr<Bot> &hunter) const;
 
 		real_t getMass() { return m_mass; }
+
+		real_t getConsumeRadius();
 };

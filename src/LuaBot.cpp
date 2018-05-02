@@ -10,7 +10,7 @@ LuaBot::LuaBot(Bot &bot, std::string script)
 	: m_bot(bot)
 	, m_allocator(config::LUA_MEM_POOL_SIZE_BYTES, config::LUA_MEM_POOL_BLOCK_SIZE_BYTES)
 	, m_lua_state(sol::default_at_panic, PoolAllocator::lua_allocator, &m_allocator)
-	, m_self(bot.getGUID(), 0)
+	, m_self(bot, bot.getGUID())
 	, m_script(script)
 {
 	LuaFoodInfo::Register(m_lua_state);
@@ -59,7 +59,6 @@ bool LuaBot::step(float &next_heading, bool &boost)
 	next_heading = last_heading;
 	boost = false;
 
-	m_self.r = m_bot.getSnake()->getSegmentRadius();
 	setQuota(1000000, 0.1);
 	sol::protected_function step = m_lua_safe_env["step"];
 	auto result = step();
@@ -144,7 +143,7 @@ std::vector<LuaFoodInfo>& LuaBot::apiFindFood(real_t radius, real_t min_size)
 	auto head_pos = m_bot.getSnake()->getHeadPosition();
 	real_t heading_rad = static_cast<real_t>(2.0 * M_PI * (m_bot.getHeading() / 360.0));
 
-	radius = std::min(radius, getMaxSightRadius());
+	radius = std::min(radius, m_bot.getSightRadius());
 
 	auto field = m_bot.getField();
 	for (auto &food: field->getFoodMap().getRegion(head_pos, radius))
@@ -174,7 +173,7 @@ std::vector<LuaSegmentInfo>& LuaBot::apiFindSegments(real_t radius, bool include
 
 	auto pos = m_bot.getSnake()->getHeadPosition();
 	real_t heading_rad = 2*M_PI * (m_bot.getHeading() / 360.0);
-	radius = std::min(radius, getMaxSightRadius());
+	radius = std::min(radius, m_bot.getSightRadius());
 	auto self_id = m_bot.getGUID();
 
 	auto field = m_bot.getField();
@@ -219,9 +218,4 @@ void LuaBot::apiCallInit()
 		sol::error err = result;
 		throw std::runtime_error(err.what());
 	}
-}
-
-real_t LuaBot::getMaxSightRadius() const
-{
-	return 50.0f + 15.0f * m_bot.getSnake()->getSegmentRadius();
 }

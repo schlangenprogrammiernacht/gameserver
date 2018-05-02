@@ -118,3 +118,8 @@ std::vector<uint32_t> Bot::getColors()
 {
 	return m_lua_bot->getColors();
 }
+
+real_t Bot::getSightRadius() const
+{
+	return 50.0f + 15.0f * getSnake()->getSegmentRadius();
+}
