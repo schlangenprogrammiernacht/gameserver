@@ -138,7 +138,7 @@ void* PoolAllocator::allocate(std::size_t bytes)
 	m_blockMap[startBlock] = blocks;
 
 	// set next search index for faster allocation
-	m_curBlockIdx = startBlock + blocks;
+	m_curBlockIdx = startBlock;
 
 	trackUsage(0, blocks);
 	m_numAllocs++;
@@ -185,6 +185,9 @@ void* PoolAllocator::reallocate(void *ptr, std::size_t bytes)
 			m_blockMap[origStartBlock] = newBlocks;
 
 			trackUsage(oldBlocks, newBlocks);
+
+			// play it safe and prevent growing over the curBlockIdx
+			m_curBlockIdx = 0;
 
 			// block pointer has not changed
 			return ptr;

@@ -2,7 +2,27 @@
 #include <iostream>
 #include <algorithm>
 
+#include <cstdint>
+
 #include "PoolAllocator.h"
+
+void test_issue_6(PoolAllocator *alloc)
+{
+	uint8_t *growing = reinterpret_cast<uint8_t*>(alloc->allocate(100));
+	uint8_t *growing2 = reinterpret_cast<uint8_t*>(alloc->reallocate(growing, 1024));
+
+	assert(growing == growing2); // block should not be moved
+
+	alloc->debugPrint();
+
+	uint8_t *second = reinterpret_cast<uint8_t*>(alloc->allocate(100));
+
+	alloc->debugPrint();
+	assert(second >= growing+1024);
+
+	alloc->deallocate(growing);
+	alloc->deallocate(second);
+}
 
 int main(void)
 {
@@ -11,6 +31,8 @@ int main(void)
 	PoolAllocator alloc(16384, 256);
 
 	alloc.debugPrint();
+
+	test_issue_6(&alloc);
 
 	std::vector<void*> ptrs;
 
@@ -86,7 +108,7 @@ int main(void)
 	alloc.debugPrint();
 
 	// resize it
-	void *testptr2 = alloc.reallocate(testptr, 5*256);
+	void *testptr2 = alloc.reallocate(testptr, 4*256);
 	assert(testptr == testptr2);
 	alloc.debugPrint();
 	testptr = testptr2;
@@ -107,5 +129,5 @@ int main(void)
 		alloc.debugPrint();
 	}
 
-	// 1 Block/Alloc should be remaining
+	std::cerr << "1 Block/Alloc should be remaining." << std::endl;
 }
