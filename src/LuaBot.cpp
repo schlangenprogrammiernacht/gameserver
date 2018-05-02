@@ -105,7 +105,7 @@ sol::environment LuaBot::createEnvironment()
 			"ceil", "cos", "cosh", "deg", "exp",
 			"floor", "fmod", "frexp", "huge",
 			"ldexp", "log", "log10", "max", "min", "modf",
-			"pi", "pow", "rad", "random",
+			"pi", "pow", "rad", "random", "randomseed",
 			"sin", "sinh", "sqrt", "tan", "tanh"
 		}
 	);
