@@ -29,6 +29,10 @@ class Bot : public IdentifyableObject
 		std::vector<std::string> m_logMessages;
 		real_t m_logCredit = config::LOG_INITIAL_CREDITS;
 
+		real_t m_consumedFoodHuntedBySelf = 0;
+		real_t m_consumedFoodHuntedByOthers = 0;
+		real_t m_consumedNaturalFood = 0;
+
 	public:
 		/*!
 		 * Creates a new bot identified by the given name on the given playing
@@ -73,6 +77,13 @@ class Bot : public IdentifyableObject
 		int getDatabaseVersionId() { return m_dbData->version_id; }
 		LuaBot& getLuaBot() { return *m_lua_bot; }
 		uint32_t getStartFrame() { return m_startFrame; }
+
+		double getConsumedNaturalFood(void) { return m_consumedNaturalFood; }
+		double getConsumedFoodHuntedByOthers(void) { return m_consumedFoodHuntedByOthers; }
+		double getConsumedFoodHuntedBySelf(void) { return m_consumedFoodHuntedBySelf; }
+
+		void updateConsumeStats(const Food &food);
+
 		uint64_t getViewerKey() { return m_dbData->viewer_key; }
 
 		bool appendLogMessage(const std::string &data, bool checkCredit);
@@ -81,5 +92,4 @@ class Bot : public IdentifyableObject
 		void clearLogMessages() { m_logMessages.clear(); }
 
 		std::vector<uint32_t> getColors();
-
 };

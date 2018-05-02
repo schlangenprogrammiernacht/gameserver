@@ -121,6 +121,18 @@ void MsgPackUpdateTracker::tick(uint64_t frame_id)
 	appendMessage(buf);
 }
 
+void MsgPackUpdateTracker::botStats(const std::shared_ptr<Bot> &bot)
+{
+	MsgPackProtocol::BotStatsItem item;
+
+	item.bot_id = bot->getGUID();
+	item.natural_food_consumed = bot->getConsumedNaturalFood();
+	item.carrison_food_consumed = bot->getConsumedFoodHuntedByOthers();
+	item.hunted_food_consumed = bot->getConsumedFoodHuntedBySelf();
+
+	m_botStatsMessage->items.push_back(item);
+}
+
 std::string MsgPackUpdateTracker::serialize(void)
 {
 	// decayed food
@@ -151,6 +163,13 @@ std::string MsgPackUpdateTracker::serialize(void)
 		appendMessage(buf);
 	}
 
+	// bot statistics
+	if(!m_botStatsMessage->items.empty()) {
+		msgpack::sbuffer buf;
+		msgpack::pack(buf, m_botStatsMessage);
+		appendMessage(buf);
+	}
+
 	// log messages
 	if (!m_botLogMessage->items.empty()) {
 		msgpack::sbuffer buf;
@@ -169,7 +188,9 @@ void MsgPackUpdateTracker::reset(void)
 	m_foodSpawnMessage = std::make_unique<MsgPackProtocol::FoodSpawnMessage>();
 	m_foodDecayMessage = std::make_unique<MsgPackProtocol::FoodDecayMessage>();
 	m_botMoveMessage = std::make_unique<MsgPackProtocol::BotMoveMessage>();
+	m_botStatsMessage = std::make_unique<MsgPackProtocol::BotStatsMessage>();
 	m_botLogMessage = std::make_unique<MsgPackProtocol::BotLogMessage>();
+
 	m_stream.str("");
 }
 

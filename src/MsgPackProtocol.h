@@ -23,6 +23,7 @@ namespace MsgPackProtocol
 		MESSAGE_TYPE_BOT_KILL = 0x21,
 		MESSAGE_TYPE_BOT_MOVE = 0x22,
 		MESSAGE_TYPE_BOT_LOG = 0x23,
+		MESSAGE_TYPE_BOT_STATS = 0x24,
 
 		MESSAGE_TYPE_FOOD_SPAWN = 0x30,
 		MESSAGE_TYPE_FOOD_CONSUME = 0x31,
@@ -101,6 +102,19 @@ namespace MsgPackProtocol
 		std::vector<guid_t> food_ids; // food is deleted in this frame
 	};
 
+	struct BotStatsItem
+	{
+		guid_t bot_id;
+		double natural_food_consumed;
+		double carrison_food_consumed;
+		double hunted_food_consumed;
+	};
+
+	struct BotStatsMessage
+	{
+		std::vector<BotStatsItem> items;
+	};
+
 	struct BotLogItem
 	{
 		uint64_t viewer_key;
@@ -111,7 +125,6 @@ namespace MsgPackProtocol
 	{
 		std::vector<BotLogItem> items;
 	};
-
 }
 
 namespace msgpack {
@@ -262,6 +275,31 @@ namespace msgpack {
 					o.pack(MsgPackProtocol::PROTOCOL_VERSION);
 					o.pack(static_cast<int>(MsgPackProtocol::MESSAGE_TYPE_FOOD_DECAY));
 					o.pack(v.food_ids);
+					return o;
+				}
+			};
+
+			template <> struct pack<MsgPackProtocol::BotStatsMessage>
+			{
+				template <typename Stream> msgpack::packer<Stream>& operator()(msgpack::packer<Stream>& o, MsgPackProtocol::BotStatsMessage const& v) const
+				{
+					o.pack_array(3);
+					o.pack(MsgPackProtocol::PROTOCOL_VERSION);
+					o.pack(static_cast<int>(MsgPackProtocol::MESSAGE_TYPE_BOT_STATS));
+					o.pack(v.items);
+					return o;
+				}
+			};
+
+			template <> struct pack<MsgPackProtocol::BotStatsItem>
+			{
+				template <typename Stream> msgpack::packer<Stream>& operator()(msgpack::packer<Stream>& o, MsgPackProtocol::BotStatsItem const& v) const
+				{
+					o.pack_array(4);
+					o.pack(v.bot_id);
+					o.pack(v.natural_food_consumed);
+					o.pack(v.carrison_food_consumed);
+					o.pack(v.hunted_food_consumed);
 					return o;
 				}
 			};
