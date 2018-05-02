@@ -5,7 +5,6 @@
 #include "debug_funcs.h"
 #include "MsgPackUpdateTracker.h"
 #include "Game.h"
-#include "LuaBot.h"
 
 Game::Game()
 {

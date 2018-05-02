@@ -9,7 +9,6 @@
 #include "config.h"
 #include "Food.h"
 #include "Bot.h"
-#include "LuaBot.h"
 #include "UpdateTracker.h"
 #include "SpatialMap.h"
 #include "BotThreadPool.h"
