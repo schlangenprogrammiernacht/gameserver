@@ -61,6 +61,16 @@ void MsgPackUpdateTracker::botKilled(
 	msgpack::sbuffer buf;
 	msgpack::pack(buf, msg);
 	appendMessage(buf);
+
+	if (msg.killer_id == msg.victim_id)
+	{
+		botLogMessage(victim->getViewerKey(), std::string("reset."));
+	}
+	else
+	{
+		botLogMessage(killer->getViewerKey(), std::string("you killed ") + victim->getName() + std::string("."));
+		botLogMessage(victim->getViewerKey(), std::string("you were killed by ") + killer->getName() + std::string("."));
+	}
 }
 
 void MsgPackUpdateTracker::botMoved(const std::shared_ptr<Bot> &bot, std::size_t steps)
