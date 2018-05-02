@@ -12,16 +12,15 @@ void MysqlDatabase::Connect(std::string host, std::string username, std::string 
 	_connection->setSchema(database);
 
 	_getBotDataStmt = makePreparedStatement(
-		"SELECT u.id, u.username, sv.id, sv.code, IFNULL(up.viewer_key, 0) AS viewer_key "
-		"FROM core_activesnake a "
-		"LEFT JOIN core_snakeversion sv ON (sv.id=a.version_id) "
-		"LEFT JOIN auth_user u ON (u.id=a.user_id) "
-		"LEFT JOIN core_userprofile up ON (up.user_id=a.user_id) "
-		"WHERE a.user_id=?"
+		"SELECT u.id, u.username, sv.id, sv.code, IFNULL(p.viewer_key, 0) AS viewer_key "
+		"FROM core_userprofile p "
+		"LEFT JOIN auth_user u ON (u.id=p.user_id) "
+		"LEFT JOIN core_snakeversion sv ON (sv.id=p.active_snake_id) "
+		"WHERE p.user_id=? AND p.active_snake_id IS NOT NULL"
 	);
 
 	_getActiveBotIdsStmt = makePreparedStatement(
-		"SELECT user_id FROM core_activesnake"
+		"SELECT user_id FROM core_userprofile WHERE active_snake_id IS NOT NULL"
 	);
 
 	_getActiveCommandsStmt = makePreparedStatement(
@@ -34,17 +33,35 @@ void MysqlDatabase::Connect(std::string host, std::string username, std::string 
 
 	_reportBotKilledStmt = makePreparedStatement(
 		"INSERT INTO core_snakegame "
-		" (user_id, snake_version_id, start_frame, end_frame, killer_id, final_mass, end_date) "
+		" (user_id, snake_version_id, start_frame, end_frame, killer_id, final_mass, natural_food_consumed, carrison_food_consumed, hunted_food_consumed, end_date) "
 		"VALUES "
-		" (?, ?, ?, ?, ?, ?, UTC_TIMESTAMP())"
+		" (?, ?, ?, ?, ?, ?, ?, ?, ?, UTC_TIMESTAMP())"
 	);
 
 	_disableBotVersionStmt = makePreparedStatement(
-		"DELETE FROM core_activesnake WHERE version_id=?"
+		"UPDATE core_userprofile SET active_snake_id=NULL WHERE active_snake_id=?"
 	);
 
 	_saveBotVersionErrorMessageStmt = makePreparedStatement(
 		"UPDATE core_snakeversion SET server_error_message=? WHERE id=?"
+	);
+
+	_setupLiveStatsStmt = makePreparedStatement(
+		"REPLACE INTO core_livestats "
+		" (user_id) "
+		"VALUES"
+		" (?)"
+	);
+
+	_updateLiveStatsStmt = makePreparedStatement(
+		"UPDATE core_livestats "
+		"SET last_update_frame=?, mass=?, natural_food_consumed=?, carrison_food_consumed=?, hunted_food_consumed=? "
+		"WHERE user_id=?"
+	);
+
+	_removeLiveStatsStmt = makePreparedStatement(
+		"DELETE FROM core_livestats "
+		"WHERE user_id=?"
 	);
 }
 
@@ -98,7 +115,7 @@ void MysqlDatabase::SetCommandCompleted(long commandId, bool result, std::string
 	_commandCompletedStmt->execute();
 }
 
-void MysqlDatabase::ReportBotKilled(long victim_id, long version_id, long start_frame, long end_frame, long killer_id, double final_mass)
+void MysqlDatabase::ReportBotKilled(long victim_id, long version_id, long start_frame, long end_frame, long killer_id, double final_mass, double natural_food_consumed, double carrison_food_consumed, double hunted_food_consumed)
 {
 	_reportBotKilledStmt->setInt64(1, victim_id);
 	_reportBotKilledStmt->setInt64(2, version_id);
@@ -107,6 +124,9 @@ void MysqlDatabase::ReportBotKilled(long victim_id, long version_id, long start_
 	_reportBotKilledStmt->setInt64(5, killer_id);
 	if (killer_id<0) { _reportBotKilledStmt->setNull(5, 0); }
 	_reportBotKilledStmt->setDouble(6, final_mass);
+	_reportBotKilledStmt->setDouble(7, natural_food_consumed);
+	_reportBotKilledStmt->setDouble(8, carrison_food_consumed);
+	_reportBotKilledStmt->setDouble(9, hunted_food_consumed);
 	_reportBotKilledStmt->execute();
 }
 
@@ -121,6 +141,31 @@ void MysqlDatabase::DisableBotVersion(long version_id, std::string errorMessage)
 		_saveBotVersionErrorMessageStmt->setInt64(2, version_id);
 		_saveBotVersionErrorMessageStmt->execute();
 	}
+}
+
+void MysqlDatabase::SetupLiveStats(long user_id)
+{
+	_setupLiveStatsStmt->setInt64(1, user_id);
+	_setupLiveStatsStmt->execute();
+}
+
+void MysqlDatabase::UpdateLiveStats(long user_id, long current_frame, double mass,
+		double natural_food_consumed, double carrison_food_consumed,
+		double hunted_food_consumed)
+{
+	_updateLiveStatsStmt->setInt64(1, current_frame);
+	_updateLiveStatsStmt->setDouble(2, mass);
+	_updateLiveStatsStmt->setDouble(3, natural_food_consumed);
+	_updateLiveStatsStmt->setDouble(4, carrison_food_consumed);
+	_updateLiveStatsStmt->setDouble(5, hunted_food_consumed);
+	_updateLiveStatsStmt->setInt64(6, user_id);
+	_updateLiveStatsStmt->execute();
+}
+
+void MysqlDatabase::RemoveLiveStats(long user_id)
+{
+	_removeLiveStatsStmt->setInt64(1, user_id);
+	_removeLiveStatsStmt->execute();
 }
 
 std::unique_ptr<sql::PreparedStatement> MysqlDatabase::makePreparedStatement(std::string sql)
