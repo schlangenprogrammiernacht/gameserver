@@ -1,8 +1,11 @@
 #pragma once
 #include <types.h>
-#include <sol.hpp>
+#include <vector>
+#include <sol_forward.hpp>
 
 class Bot;
+
+namespace sol { class state; }
 
 class LuaSelfInfo
 {

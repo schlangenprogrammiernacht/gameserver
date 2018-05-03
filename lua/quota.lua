@@ -20,3 +20,7 @@ function set_quota(max_num_events, max_time_secs)
 	instruction_counter = 0
 	debug.sethook(check, "", events_per_check)
 end
+
+function clear_quota()
+	debug.sethook()
+end

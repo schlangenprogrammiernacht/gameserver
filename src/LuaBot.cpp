@@ -29,6 +29,9 @@ bool LuaBot::init(std::string& initErrorMessage)
 	{
 		m_lua_state.open_libraries();
 		m_lua_state.script_file("lua/quota.lua");
+
+		m_setQuotaFunc = m_lua_state["set_quota"];
+		m_clearQuotaFunc = m_lua_state["clear_quota"];
 		m_lua_safe_env = createEnvironment();
 
 		std::string chunkName = "bot.lua";
@@ -59,28 +62,46 @@ bool LuaBot::step(float &next_heading, bool &boost)
 	next_heading = last_heading;
 	boost = false;
 
-	setQuota(1000000, 0.1);
-	sol::protected_function step = m_lua_safe_env["step"];
-	auto result = step();
-	if (result.valid())
-	{
-		next_heading = result;
-		next_heading = 180 * (next_heading / M_PI);
-		next_heading += last_heading;
-		return true;
+	bool retval = false;
+
+	try {
+		setQuota(1000000, 0.1);
+		sol::protected_function step = m_lua_safe_env["step"];
+
+		auto result = step();
+		if (result.valid())
+		{
+			next_heading = result;
+			next_heading = 180 * (next_heading / M_PI);
+			next_heading += last_heading;
+			retval = true;
+		}
+		else
+		{
+			sol::error err = result;
+			m_bot.appendLogMessage(err.what(), false);
+		}
+
+		clearQuota();
 	}
-	else
+	catch (std::runtime_error err)
 	{
-		sol::error err = result;
-		//std::cerr << err.what() << std::endl;
+		clearQuota();
 		m_bot.appendLogMessage(err.what(), false);
-		return false;
+		retval = false;
 	}
+
+	return retval;
 }
 
 void LuaBot::setQuota(uint32_t num_instructions, double seconds)
 {
-	m_lua_state["set_quota"](num_instructions, seconds);
+	m_setQuotaFunc(num_instructions, seconds);
+}
+
+void LuaBot::clearQuota()
+{
+	m_clearQuotaFunc();
 }
 
 sol::environment LuaBot::createEnvironment()
@@ -211,11 +232,18 @@ void LuaBot::apiCallInit()
 		return;
 	}
 
-	setQuota(1000000, 0.1);
-	auto result = init_func();
-	if (!result.valid())
+	try {
+		setQuota(1000000, 0.1);
+		auto result = init_func();
+		if (!result.valid())
+		{
+			sol::error err = result;
+			throw std::runtime_error(err.what());
+		}
+		clearQuota();
+	} catch (std::runtime_error err)
 	{
-		sol::error err = result;
-		throw std::runtime_error(err.what());
+		clearQuota();
+		throw;
 	}
 }

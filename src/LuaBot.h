@@ -1,4 +1,5 @@
 #pragma once
+#include <sol.hpp>
 #include "config.h"
 #include "PoolAllocator.h"
 #include "lua/LuaSelfInfo.h"
@@ -21,10 +22,13 @@ class LuaBot
 		sol::environment m_lua_safe_env;
 		std::vector<LuaFoodInfo> m_luaFoodInfoTable;
 		std::vector<LuaSegmentInfo> m_luaSegmentInfoTable;
+		sol::protected_function m_setQuotaFunc;
+		sol::protected_function m_clearQuotaFunc;
 		LuaSelfInfo m_self;
 		std::string m_script;
 
 		void setQuota(uint32_t num_instructions, double seconds);
+		void clearQuota();
 		sol::environment createEnvironment();
 		sol::table createFunctionTable(const std::string& obj, const std::vector<std::string>& items);
 

@@ -1,5 +1,6 @@
 #include "LuaSelfInfo.h"
 #include <map>
+#include <sol.hpp>
 #include <config.h>
 #include <Bot.h>
 #include <Field.h>

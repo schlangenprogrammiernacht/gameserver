@@ -1,4 +1,5 @@
 #include "LuaSegmentInfo.h"
+#include <sol.hpp>
 
 LuaSegmentInfo::LuaSegmentInfo(real_t aX, real_t aY, real_t aR, real_t aD, real_t aDist, guid_t aBot)
 	: x(aX), y(aY), r(aR), d(aD), dist(aDist), bot(aBot)

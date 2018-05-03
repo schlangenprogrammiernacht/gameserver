@@ -1,4 +1,5 @@
 #include "LuaFoodInfo.h"
+#include <sol.hpp>
 
 LuaFoodInfo::LuaFoodInfo(real_t aX, real_t aY, real_t aV, real_t aD, real_t aDist)
 	: x(aX), y(aY), v(aV), d(aD), dist(aDist)

@@ -1,7 +1,9 @@
 #pragma once
 
-#include <sol.hpp>
+#include <sol_forward.hpp>
 #include <types.h>
+
+namespace sol { class state; }
 
 struct LuaFoodInfo
 {
