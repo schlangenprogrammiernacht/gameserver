@@ -74,7 +74,7 @@ class Snake
 		 * \param boost          Whether to apply boost
 		 * \returns              The number of segments created during the operation.
 		 */
-		std::size_t move(real_t targetAngle, bool boost = false);
+		std::size_t move(real_t targetAngle, bool boost);
 
 		/*!
 		 * Get the list of segments.

@@ -42,7 +42,7 @@ std::size_t Bot::move(void)
 		m_heading = new_heading;
 	}
 
-	return m_snake->move(m_heading); // direction in degrees
+	return m_snake->move(m_heading, boost); // direction in degrees
 }
 
 std::shared_ptr<Bot> Bot::checkCollision(void) const
