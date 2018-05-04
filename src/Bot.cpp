@@ -3,7 +3,7 @@
 #include "Bot.h"
 
 #include "Field.h"
-#include "LuaBot.h"
+#include "lua/LuaBot.h"
 
 Bot::Bot(Field *field, uint32_t startFrame, std::unique_ptr<db::BotScript> dbData, const Vector2D &startPos, real_t startHeading)
 	: m_field(field)

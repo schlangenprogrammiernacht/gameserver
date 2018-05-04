@@ -9,5 +9,5 @@ include_directories(
 add_executable(
 	test_poolalloc
 	test_poolalloc.cpp
-	../src/PoolAllocator.cpp
+	../src/lua/PoolAllocator.cpp
 	)

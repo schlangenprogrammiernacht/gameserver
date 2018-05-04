@@ -1,10 +1,9 @@
 #include <cassert>
 #include <iostream>
 #include <algorithm>
-
 #include <cstdint>
 
-#include "PoolAllocator.h"
+#include "lua/PoolAllocator.h"
 
 void test_issue_6(PoolAllocator *alloc)
 {
