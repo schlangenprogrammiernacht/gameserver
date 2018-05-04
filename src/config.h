@@ -27,7 +27,7 @@ namespace config {
 	static const std::size_t FIELD_STATIC_FOOD       = 1000;
 
 	// Steps that a snake moves while boosting (normal speed = 1 step)
-	static const std::size_t SNAKE_BOOST_STEPS       = 3;
+	static const std::size_t SNAKE_BOOST_STEPS       = 2;
 
 	// Distance per normal movement step
 	static const real_t     SNAKE_DISTANCE_PER_STEP = 1.0;
@@ -50,7 +50,7 @@ namespace config {
 	static const real_t     FOOD_SIZE_STDDEV        = 2.0;
 
 	// Food decay value per frame
-	static const real_t     FOOD_DECAY_STEP         = 0.001;
+	static const real_t     FOOD_DECAY_STEP         = 0.002;
 
 	// Lua memory pool configuration
 	static const std::size_t LUA_MEM_POOL_SIZE_BYTES       = 10 * 1024*1024;

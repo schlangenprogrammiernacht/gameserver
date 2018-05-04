@@ -71,7 +71,21 @@ bool LuaBot::step(float &next_heading, bool &boost)
 		auto result = step();
 		if (result.valid())
 		{
-			next_heading = result;
+			next_heading = result.get<real_t>(0);
+
+			if ((result.return_count()<1) || (result.return_count()>2))
+			{
+				throw std::runtime_error("step() must return a direction (as float, in radiens) and optionally if the bot should boost (as bool)");
+			}
+
+			if (!std::isfinite(next_heading))
+			{
+				throw std::runtime_error("step() did not return a finite number. did you divide by zero or return a string?");
+			}
+
+			boost = (result.return_count()>1) && result.get<bool>(1);
+
+			next_heading = result.get<float>(0);
 			next_heading = 180 * (next_heading / M_PI);
 			next_heading += last_heading;
 			retval = true;

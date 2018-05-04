@@ -25,11 +25,6 @@ set(sources
 	src/Bot.h
 	src/BotThreadPool.cpp
 	src/BotThreadPool.h
-	src/LuaBot.cpp
-	src/LuaBot.h
-	src/lua/LuaSelfInfo.h src/lua/LuaSelfInfo.cpp
-	src/lua/LuaSegmentInfo.h src/lua/LuaSegmentInfo.cpp
-	src/lua/LuaFoodInfo.h src/lua/LuaFoodInfo.cpp
 	src/config.h
 	src/debug_funcs.h
 	src/Field.cpp
@@ -47,17 +42,22 @@ set(sources
 	src/MsgPackProtocol.h
 	src/MsgPackUpdateTracker.cpp
 	src/MsgPackUpdateTracker.h
-	src/PoolAllocator.cpp
-	src/PoolAllocator.h
 	src/Semaphore.h
 	src/Snake.cpp
 	src/Snake.h
 	src/SpatialMap.h
 	src/types.h
 	src/UpdateTracker.h
-
 	src/Environment.h
 	src/Database.h src/Database.cpp
+
+	src/lua/LuaBot.cpp
+	src/lua/LuaBot.h
+	src/lua/LuaSelfInfo.h src/lua/LuaSelfInfo.cpp
+	src/lua/LuaSegmentInfo.h src/lua/LuaSegmentInfo.cpp
+	src/lua/LuaFoodInfo.h src/lua/LuaFoodInfo.cpp
+	src/lua/PoolAllocator.cpp
+	src/lua/PoolAllocator.h
 )
 
 include_directories(
