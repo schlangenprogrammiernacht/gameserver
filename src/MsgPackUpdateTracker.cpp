@@ -106,9 +106,14 @@ void MsgPackUpdateTracker::gameInfo(void)
 {
 	MsgPackProtocol::GameInfoMessage msg;
 
-	msg.world_size_x = config::FIELD_SIZE_X;
-	msg.world_size_y = config::FIELD_SIZE_Y;
+	msg.world_size_x         = config::FIELD_SIZE_X;
+	msg.world_size_y         = config::FIELD_SIZE_Y;
 	msg.food_decay_per_frame = config::FOOD_DECAY_STEP;
+
+	msg.snake_distance_per_step         = config::SNAKE_DISTANCE_PER_STEP;
+	msg.snake_segment_distance_factor   = config::SNAKE_SEGMENT_DISTANCE_FACTOR;
+	msg.snake_segment_distance_exponent = config::SNAKE_SEGMENT_DISTANCE_EXPONENT;
+	msg.snake_pull_factor               = config::SNAKE_PULL_FACTOR;
 
 	msgpack::sbuffer buf;
 	msgpack::pack(buf, msg);

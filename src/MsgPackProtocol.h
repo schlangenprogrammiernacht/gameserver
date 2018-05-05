@@ -40,6 +40,11 @@ namespace MsgPackProtocol
 		double world_size_x = 0;
 		double world_size_y = 0;
 		double food_decay_per_frame = 0;
+
+		double snake_distance_per_step = 0;
+		double snake_segment_distance_factor = 0;
+		double snake_segment_distance_exponent = 0;
+		double snake_pull_factor = 0;
 	};
 
 	struct PlayerInfoMessage
@@ -150,12 +155,16 @@ namespace msgpack {
 			{
 				template <typename Stream> msgpack::packer<Stream>& operator()(msgpack::packer<Stream>& o, MsgPackProtocol::GameInfoMessage const& v) const
 				{
-					o.pack_array(5);
+					o.pack_array(9);
 					o.pack(MsgPackProtocol::PROTOCOL_VERSION);
 					o.pack(static_cast<int>(MsgPackProtocol::MESSAGE_TYPE_GAME_INFO));
 					o.pack(v.world_size_x);
 					o.pack(v.world_size_y);
 					o.pack(v.food_decay_per_frame);
+					o.pack(v.snake_distance_per_step);
+					o.pack(v.snake_segment_distance_factor);
+					o.pack(v.snake_segment_distance_exponent);
+					o.pack(v.snake_pull_factor);
 					return o;
 				}
 			};
