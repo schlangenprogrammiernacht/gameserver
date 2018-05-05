@@ -5,11 +5,17 @@
 
 namespace sol { class state; }
 
+class Bot;
 struct LuaSegmentInfo
 {
-	real_t x, y, r, d, dist;
-	guid_t bot;
+	public:
+		real_t x, y, r, d, dist;
+		LuaSegmentInfo(Bot* aBot, real_t aX,real_t aY, real_t aR, real_t aD, real_t aDist);
+		static void Register(sol::state& lua);
 
-	LuaSegmentInfo(real_t aX,real_t aY, real_t aR, real_t aD, real_t aDist, guid_t aBot);
-	static void Register(sol::state& lua);
+		guid_t getBotId();
+		std::string getBotName();
+
+	private:
+		Bot *m_bot;
 };

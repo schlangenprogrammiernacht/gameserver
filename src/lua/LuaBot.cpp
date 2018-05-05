@@ -224,12 +224,12 @@ std::vector<LuaSegmentInfo>& LuaBot::apiFindSegments(real_t radius, bool include
 		while (direction < -M_PI) { direction += 2*M_PI; }
 		while (direction >  M_PI) { direction -= 2*M_PI; }
 		m_luaSegmentInfoTable.emplace_back(
+			segmentInfo.bot.get(),
 			relPos.x(),
 			relPos.y(),
 			segmentInfo.bot->getSnake()->getSegmentRadius(),
 			direction,
-			distance,
-			segmentInfo.bot->getGUID()
+			distance
 		);
 	}
 
