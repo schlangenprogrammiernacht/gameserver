@@ -27,7 +27,9 @@ void LuaSelfInfo::Register(sol::state &lua)
 		"food_consumed_natural", sol::property(&LuaSelfInfo::getConsumedNaturalFood),
 		"food_consumed_hunted_self", sol::property(&LuaSelfInfo::getConsumedFoodHuntedBySelf),
 		"food_consumed_hunted_by_others", sol::property(&LuaSelfInfo::getConsumedFoodHuntedByOthers),
-		"colors", sol::property(&LuaSelfInfo::getColors, &LuaSelfInfo::setColors)
+		"colors", sol::property(&LuaSelfInfo::getColors, &LuaSelfInfo::setColors),
+		"face", sol::property(&LuaSelfInfo::getFace, &LuaSelfInfo::setFace),
+		"logo", sol::property(&LuaSelfInfo::getDogTag, &LuaSelfInfo::setDogTag)
 	);
 }
 
@@ -58,6 +60,22 @@ void LuaSelfInfo::setColors(sol::table v)
 	if (colors.empty())
 	{
 		colors.push_back(0x0000FF00);
+	}
+}
+
+void LuaSelfInfo::setFace()
+{
+	if (colorsLocked)
+	{
+		throw std::runtime_error("faces can only be changed in the init() function");
+	}
+}
+
+void LuaSelfInfo::setDogTag()
+{
+	if (colorsLocked)
+	{
+		throw std::runtime_error("dog tags can only be changed in the init() function");
 	}
 }
 
@@ -113,5 +131,5 @@ real_t LuaSelfInfo::getConsumedFoodHuntedBySelf()
 
 real_t LuaSelfInfo::getMaxStepAngle()
 {
-	return 180 * (m_bot.getSnake()->maxRotationPerStep() / M_PI);
+	return (M_PI * m_bot.getSnake()->maxRotationPerStep()) / 180.0;
 }

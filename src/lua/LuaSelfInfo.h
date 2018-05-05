@@ -13,11 +13,19 @@ class LuaSelfInfo
 		guid_t id;
 		std::vector<uint32_t> colors;
 		bool colorsLocked;
+		uint32_t face = 0;
+		uint32_t dogTag = 0;
 
 		LuaSelfInfo(Bot& bot, guid_t aId);
 
 		std::vector<uint32_t>& getColors() { return colors; }
 		void setColors(sol::table v);
+
+		uint32_t getFace() { return face; }
+		void setFace();
+
+		uint32_t getDogTag() { return dogTag; }
+		void setDogTag();
 
 		real_t getRadius();
 		real_t getMass();
