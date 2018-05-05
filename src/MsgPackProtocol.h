@@ -24,6 +24,7 @@ namespace MsgPackProtocol
 		MESSAGE_TYPE_BOT_MOVE = 0x22,
 		MESSAGE_TYPE_BOT_LOG = 0x23,
 		MESSAGE_TYPE_BOT_STATS = 0x24,
+		MESSAGE_TYPE_BOT_MOVE_HEAD = 0x25,
 
 		MESSAGE_TYPE_FOOD_SPAWN = 0x30,
 		MESSAGE_TYPE_FOOD_CONSUME = 0x31,
@@ -73,6 +74,20 @@ namespace MsgPackProtocol
 	struct BotMoveMessage
 	{
 		std::vector<BotMoveItem> items;
+	};
+
+	struct BotMoveHeadItem
+	{
+		guid_t bot_id;
+		double mass;
+
+		// one head position for each step moved in this frame, in temporal order
+		std::vector< Vector2D > new_head_positions;
+	};
+
+	struct BotMoveHeadMessage
+	{
+		std::vector<BotMoveHeadItem> items;
 	};
 
 	struct BotKillMessage
@@ -219,6 +234,30 @@ namespace msgpack {
 				}
 			};
 
+			template <> struct pack<MsgPackProtocol::BotMoveHeadMessage>
+			{
+				template <typename Stream> msgpack::packer<Stream>& operator()(msgpack::packer<Stream>& o, MsgPackProtocol::BotMoveHeadMessage const& v) const
+				{
+					o.pack_array(3);
+					o.pack(MsgPackProtocol::PROTOCOL_VERSION);
+					o.pack(static_cast<int>(MsgPackProtocol::MESSAGE_TYPE_BOT_MOVE_HEAD));
+					o.pack(v.items);
+					return o;
+				}
+			};
+
+			template <> struct pack<MsgPackProtocol::BotMoveHeadItem>
+			{
+				template <typename Stream> msgpack::packer<Stream>& operator()(msgpack::packer<Stream>& o, MsgPackProtocol::BotMoveHeadItem const& v) const
+				{
+					o.pack_array(3);
+					o.pack(v.bot_id);
+					o.pack(v.mass);
+					o.pack(v.new_head_positions);
+					return o;
+				}
+			};
+
 			template <> struct pack<MsgPackProtocol::BotKillMessage>
 			{
 				template <typename Stream> msgpack::packer<Stream>& operator()(msgpack::packer<Stream>& o, MsgPackProtocol::BotKillMessage const& v) const
@@ -311,6 +350,18 @@ namespace msgpack {
 					o.pack_array(2);
 					o.pack(v.pos().x());
 					o.pack(v.pos().y());
+
+					return o;
+				}
+			};
+
+			template <> struct pack<Vector2D>
+			{
+				template <typename Stream> msgpack::packer<Stream>& operator()(msgpack::packer<Stream>& o, Vector2D const& v) const
+				{
+					o.pack_array(2);
+					o.pack(v.x());
+					o.pack(v.y());
 
 					return o;
 				}

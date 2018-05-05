@@ -75,6 +75,7 @@ void MsgPackUpdateTracker::botKilled(
 
 void MsgPackUpdateTracker::botMoved(const std::shared_ptr<Bot> &bot, std::size_t steps)
 {
+	// Fill BotMoveMessage
 	MsgPackProtocol::BotMoveItem item;
 
 	const Snake::SegmentList &segments = bot->getSnake()->getSegments();
@@ -85,6 +86,15 @@ void MsgPackUpdateTracker::botMoved(const std::shared_ptr<Bot> &bot, std::size_t
 	item.current_length = segments.size();
 
 	m_botMoveMessage->items.push_back(item);
+
+	// Fill BotMoveHeadMessage
+	MsgPackProtocol::BotMoveHeadItem headItem;
+
+	headItem.bot_id = bot->getGUID();
+	headItem.mass = bot->getSnake()->getMass();
+	headItem.new_head_positions = bot->getSnake()->getHeadPositionsDuringLastMove();
+
+	m_botMoveHeadMessage->items.push_back(headItem);
 }
 
 void MsgPackUpdateTracker::botLogMessage(uint64_t viewerKey, const std::string& message)
@@ -173,6 +183,13 @@ std::string MsgPackUpdateTracker::serialize(void)
 		appendMessage(buf);
 	}
 
+	// moved bots (compressed version)
+	if(!m_botMoveHeadMessage->items.empty()) {
+		msgpack::sbuffer buf;
+		msgpack::pack(buf, m_botMoveHeadMessage);
+		appendMessage(buf);
+	}
+
 	// bot statistics
 	if(!m_botStatsMessage->items.empty()) {
 		msgpack::sbuffer buf;
@@ -198,6 +215,7 @@ void MsgPackUpdateTracker::reset(void)
 	m_foodSpawnMessage = std::make_unique<MsgPackProtocol::FoodSpawnMessage>();
 	m_foodDecayMessage = std::make_unique<MsgPackProtocol::FoodDecayMessage>();
 	m_botMoveMessage = std::make_unique<MsgPackProtocol::BotMoveMessage>();
+	m_botMoveHeadMessage = std::make_unique<MsgPackProtocol::BotMoveHeadMessage>();
 	m_botStatsMessage = std::make_unique<MsgPackProtocol::BotStatsMessage>();
 	m_botLogMessage = std::make_unique<MsgPackProtocol::BotLogMessage>();
 

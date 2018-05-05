@@ -21,6 +21,7 @@ class MsgPackUpdateTracker : public UpdateTracker
 		std::unique_ptr<MsgPackProtocol::FoodSpawnMessage> m_foodSpawnMessage;
 		std::unique_ptr<MsgPackProtocol::FoodDecayMessage> m_foodDecayMessage;
 		std::unique_ptr<MsgPackProtocol::BotMoveMessage> m_botMoveMessage;
+		std::unique_ptr<MsgPackProtocol::BotMoveHeadMessage> m_botMoveHeadMessage;
 		std::unique_ptr<MsgPackProtocol::BotStatsMessage> m_botStatsMessage;
 		std::unique_ptr<MsgPackProtocol::BotLogMessage> m_botLogMessage;
 
