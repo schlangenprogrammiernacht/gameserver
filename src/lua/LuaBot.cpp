@@ -212,10 +212,14 @@ std::vector<LuaSegmentInfo>& LuaBot::apiFindSegments(real_t radius, bool include
 	auto self_id = m_bot.getGUID();
 
 	auto field = m_bot.getField();
-	for (auto &segmentInfo: field->getSegmentInfoMap().getRegion(pos, radius))
+	for (auto &segmentInfo: field->getSegmentInfoMap().getRegion(pos, radius + m_bot.getField()->getMaxSegmentRadius()))
 	{
-		if (!include_self && (segmentInfo.bot->getGUID() == self_id)) { continue; }
+		if (!include_self && (segmentInfo.bot->getGUID() == self_id)) { continue; }		
+		real_t segmentRadius = segmentInfo.bot->getSnake()->getSegmentRadius();
 		Vector2D relPos = field->unwrapRelativeCoords(segmentInfo.pos() - pos);
+		real_t distance = relPos.norm();
+		if (distance > (radius+segmentRadius)) { continue; }
+
 		real_t direction = atan2(relPos.y(), relPos.x()) - heading_rad;
 		while (direction<0) { direction += 2*M_PI; }
 		while (direction>2*M_PI) { direction -= 2*M_PI; }
@@ -224,7 +228,7 @@ std::vector<LuaSegmentInfo>& LuaBot::apiFindSegments(real_t radius, bool include
 			relPos.y(),
 			segmentInfo.bot->getSnake()->getSegmentRadius(),
 			direction,
-			relPos.norm(),
+			distance,
 			segmentInfo.bot->getGUID()
 		);
 	}
