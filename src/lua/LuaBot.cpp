@@ -199,6 +199,12 @@ std::vector<LuaFoodInfo>& LuaBot::apiFindFood(real_t radius, real_t min_size)
 		}
 	}
 
+	std::sort(
+		m_luaFoodInfoTable.begin(),
+		m_luaFoodInfoTable.end(),
+		[](const LuaFoodInfo& a, const LuaFoodInfo& b) { return a.v > b.v; }
+	);
+
 	return m_luaFoodInfoTable;
 }
 
@@ -227,11 +233,17 @@ std::vector<LuaSegmentInfo>& LuaBot::apiFindSegments(real_t radius, bool include
 			segmentInfo.bot.get(),
 			relPos.x(),
 			relPos.y(),
-			segmentInfo.bot->getSnake()->getSegmentRadius(),
+			segmentRadius,
 			direction,
 			distance
 		);
 	}
+
+	std::sort(
+		m_luaSegmentInfoTable.begin(),
+		m_luaSegmentInfoTable.end(),
+		[](const LuaSegmentInfo& a, const LuaSegmentInfo& b) { return a.dist < b.dist; }
+	);
 
 	return m_luaSegmentInfoTable;
 }
