@@ -20,6 +20,7 @@ void LuaSelfInfo::Register(sol::state &lua)
 		"mass", sol::property(&LuaSelfInfo::getMass),
 		"sight_radius", sol::property(&LuaSelfInfo::getSightRadius),
 		"consume_radius", sol::property(&LuaSelfInfo::getConsumeRadius),
+		"max_step_angle", sol::property(&LuaSelfInfo::getMaxStepAngle),
 		"start_frame", sol::property(&LuaSelfInfo::getStartFrame),
 		"current_frame", sol::property(&LuaSelfInfo::getCurrentFrame),
 		"speed", sol::property(&LuaSelfInfo::getSpeed),
@@ -108,4 +109,9 @@ real_t LuaSelfInfo::getConsumedFoodHuntedByOthers()
 real_t LuaSelfInfo::getConsumedFoodHuntedBySelf()
 {
 	return m_bot.getConsumedFoodHuntedBySelf();
+}
+
+real_t LuaSelfInfo::getMaxStepAngle()
+{
+	return 180 * (m_bot.getSnake()->maxRotationPerStep() / M_PI);
 }

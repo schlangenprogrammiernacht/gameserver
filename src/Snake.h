@@ -46,8 +46,6 @@ class Snake
 
 		real_t m_movedSinceLastSpawn = 0; //!< Distance the head has moved since the last spawned segment
 
-		real_t maxRotationPerStep(void);
-
 		/*!
 		 * Updates the length of m_segments and calculates the current m_segmentRadius
 		 */
@@ -113,7 +111,10 @@ class Snake
 		 */
 		void convertToFood(const std::shared_ptr<Bot> &hunter) const;
 
-		real_t getMass() { return m_mass; }
+		real_t getMass(void) { return m_mass; }
 
-		real_t getConsumeRadius();
+		real_t getConsumeRadius(void);
+
+		real_t maxRotationPerStep(void);
+
 };

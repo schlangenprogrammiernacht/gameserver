@@ -29,6 +29,7 @@ class LuaSelfInfo
 		real_t getConsumedNaturalFood();
 		real_t getConsumedFoodHuntedByOthers();
 		real_t getConsumedFoodHuntedBySelf();
+		real_t getMaxStepAngle();
 
 		static void Register(sol::state& lua);
 
