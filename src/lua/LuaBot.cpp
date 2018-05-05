@@ -187,6 +187,8 @@ std::vector<LuaFoodInfo>& LuaBot::apiFindFood(real_t radius, real_t min_size)
 		{
 			Vector2D relPos = field->unwrapRelativeCoords(food.pos() - head_pos);
 			real_t direction = static_cast<real_t>(atan2(relPos.y(), relPos.x())) - heading_rad;
+			while (direction < -M_PI) { direction += 2*M_PI; }
+			while (direction >  M_PI) { direction -= 2*M_PI; }
 			m_luaFoodInfoTable.emplace_back(
 				relPos.x(),
 				relPos.y(),
@@ -219,6 +221,8 @@ std::vector<LuaSegmentInfo>& LuaBot::apiFindSegments(real_t radius, bool include
 		if (distance > (radius+segmentRadius)) { continue; }
 
 		real_t direction = atan2(relPos.y(), relPos.x()) - heading_rad;
+		while (direction < -M_PI) { direction += 2*M_PI; }
+		while (direction >  M_PI) { direction -= 2*M_PI; }
 		m_luaSegmentInfoTable.emplace_back(
 			relPos.x(),
 			relPos.y(),
