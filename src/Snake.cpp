@@ -106,6 +106,8 @@ std::size_t Snake::move(real_t targetAngle, bool boost)
 		steps = config::SNAKE_BOOST_STEPS;
 	}
 
+	m_headPositionsDuringLastMove.clear();
+
 	// create new segments at head
 	for(std::size_t i = 0; i < steps; i++) {
 		// calculate new segment offset
@@ -116,6 +118,8 @@ std::size_t Snake::move(real_t targetAngle, bool boost)
 		movementVector2D *= config::SNAKE_DISTANCE_PER_STEP;
 
 		headSegment.setPos(headSegment.pos() + movementVector2D);
+
+		m_headPositionsDuringLastMove.push_back(headSegment.pos());
 
 		m_movedSinceLastSpawn += config::SNAKE_DISTANCE_PER_STEP;
 
