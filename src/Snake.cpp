@@ -204,7 +204,12 @@ void Snake::dropFood(float_t value)
 	Vector2D dropOffset = (m_segments.end() - 1)->pos() - (m_segments.end() - 2)->pos();
 	Vector2D dropPos = (m_segments.end() - 1)->pos() + dropOffset.normalized() * 5;
 
-	m_field->createDynamicFood(value * config::SNAKE_CONVERSION_FACTOR, dropPos, m_segmentRadius, nullptr);
+	m_foodToDrop += value * config::SNAKE_CONVERSION_FACTOR;
+	if(m_foodToDrop >= config::FOOD_SIZE_MEAN) {
+		m_field->createDynamicFood(m_foodToDrop, dropPos, m_segmentRadius, nullptr);
+		m_foodToDrop = 0;
+	}
+
 	m_mass -= value;
 
 	if(m_mass < 1e-6) {
