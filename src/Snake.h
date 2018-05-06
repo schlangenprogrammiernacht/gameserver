@@ -46,6 +46,8 @@ class Snake
 
 		real_t m_movedSinceLastSpawn = 0; //!< Distance the head has moved since the last spawned segment
 
+		real_t m_boostedLastMove = false; //!< Track if the snake boosted during the last move
+
 		/*!
 		 * Updates the length of m_segments and calculates the current m_segmentRadius
 		 */
@@ -111,10 +113,20 @@ class Snake
 		 */
 		void convertToFood(const std::shared_ptr<Bot> &hunter) const;
 
+		/*!
+		 * Drop food at the end of the Snake. Primarily used for mass loss during boost.
+		 *
+		 * The Snake's mass is reduced by the given amount. The dropped mass is the
+		 * given amount multiplied with SNAKE_CONVERSION_FACTOR.
+		 */
+		void dropFood(float_t value);
+
 		real_t getMass(void) { return m_mass; }
 
 		real_t getConsumeRadius(void);
 
 		real_t maxRotationPerStep(void);
+
+		bool boostedLastMove(void) const { return m_boostedLastMove; }
 
 };

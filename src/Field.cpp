@@ -193,6 +193,18 @@ void Field::moveAllBots(void)
 		} else {
 			// no collision, bot still alive
 			m_updateTracker->botMoved(victim, steps);
+
+			if(victim->getSnake()->boostedLastMove()) {
+				real_t lossValue =
+					config::SNAKE_BOOST_LOSS_FACTOR * victim->getSnake()->getMass();
+
+				victim->getSnake()->dropFood(lossValue);
+
+				if(victim->getSnake()->getMass() < config::SNAKE_SELF_KILL_MASS_THESHOLD) {
+					// Bot is now too small, so it dies
+					killBot(victim, victim);
+				}
+			}
 		}
 	}
 
@@ -249,7 +261,12 @@ void Field::createDynamicFood(real_t totalValue, const Vector2D &center, real_t 
 	std::size_t count = 1 + totalValue / config::FOOD_SIZE_MEAN;
 
 	for(std::size_t i = 0; i < count; i++) {
-		real_t value = (*m_foodSizeDistribution)(*m_rndGen);
+		real_t value;
+		if(totalValue >= config::FOOD_SIZE_MEAN) {
+			value = (*m_foodSizeDistribution)(*m_rndGen);
+		} else {
+			value = totalValue;
+		}
 
 		real_t rndRadius = radius * (*m_simple0To1Distribution)(*m_rndGen);
 		real_t rndAngle = (*m_angleRadDistribution)(*m_rndGen);

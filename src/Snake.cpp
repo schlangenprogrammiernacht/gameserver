@@ -158,6 +158,8 @@ std::size_t Snake::move(real_t targetAngle, bool boost)
 		m_segments[i].setPos(m_field->wrapCoords(m_segments[i].pos()));
 	}
 
+	m_boostedLastMove = boost;
+
 	return m_segments.size(); // == number of new segments at head
 }
 
@@ -195,6 +197,21 @@ void Snake::convertToFood(const std::shared_ptr<Bot> &hunter) const
 	for(auto &s: m_segments) {
 		m_field->createDynamicFood(foodPerSegment, s.pos(), m_segmentRadius, hunter);
 	}
+}
+
+void Snake::dropFood(float_t value)
+{
+	Vector2D dropOffset = (m_segments.end() - 1)->pos() - (m_segments.end() - 2)->pos();
+	Vector2D dropPos = (m_segments.end() - 1)->pos() + dropOffset.normalized() * 5;
+
+	m_field->createDynamicFood(value * config::SNAKE_CONVERSION_FACTOR, dropPos, m_segmentRadius, nullptr);
+	m_mass -= value;
+
+	if(m_mass < 1e-6) {
+		m_mass = 1e-6;
+	}
+
+	ensureSizeMatchesMass();
 }
 
 real_t Snake::getConsumeRadius()
