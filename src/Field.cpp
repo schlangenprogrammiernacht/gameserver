@@ -153,20 +153,38 @@ void Field::consumeFood(void)
 
 void Field::moveAllBots(void)
 {
+	// first round: move all bots
 	for(auto &b : m_bots) {
-		std::unique_ptr<BotThreadPool::Job> job(new BotThreadPool::Job{b, 0});
+		std::unique_ptr<BotThreadPool::Job> job(new BotThreadPool::Job(BotThreadPool::Move, b));
 		m_threadPool.addJob(std::move(job));
 	}
 
 	m_threadPool.waitForCompletion();
 
-	// collision check for all bots
+	// FIXME: make this work without temporary vector
+	std::vector< std::unique_ptr<BotThreadPool::Job> > tmpJobs;
+	tmpJobs.reserve(m_bots.size());
+
 	std::unique_ptr<BotThreadPool::Job> job;
+	while((job = m_threadPool.getProcessedJob()) != NULL) {
+		tmpJobs.push_back(std::move(job));
+	}
+
+	// second round: collision check
+	for(auto &j : tmpJobs) {
+		j->jobType = BotThreadPool::CollisionCheck;
+		m_threadPool.addJob(std::move(j));
+	}
+
+	m_threadPool.waitForCompletion();
+
+
+	// collision check for all bots
 	while((job = m_threadPool.getProcessedJob()) != NULL) {
 		std::shared_ptr<Bot> victim = job->bot;
 		std::size_t steps = job->steps;
 
-		std::shared_ptr<Bot> killer = victim->checkCollision();
+		std::shared_ptr<Bot> killer = job->killer;
 
 		if (killer)
 		{
@@ -175,6 +193,18 @@ void Field::moveAllBots(void)
 		} else {
 			// no collision, bot still alive
 			m_updateTracker->botMoved(victim, steps);
+
+			if(victim->getSnake()->boostedLastMove()) {
+				real_t lossValue =
+					config::SNAKE_BOOST_LOSS_FACTOR * victim->getSnake()->getMass();
+
+				victim->getSnake()->dropFood(lossValue);
+
+				if(victim->getSnake()->getMass() < config::SNAKE_SELF_KILL_MASS_THESHOLD) {
+					// Bot is now too small, so it dies
+					killBot(victim, victim);
+				}
+			}
 		}
 	}
 
@@ -231,7 +261,12 @@ void Field::createDynamicFood(real_t totalValue, const Vector2D &center, real_t 
 	std::size_t count = 1 + totalValue / config::FOOD_SIZE_MEAN;
 
 	for(std::size_t i = 0; i < count; i++) {
-		real_t value = (*m_foodSizeDistribution)(*m_rndGen);
+		real_t value;
+		if(totalValue >= config::FOOD_SIZE_MEAN) {
+			value = (*m_foodSizeDistribution)(*m_rndGen);
+		} else {
+			value = totalValue;
+		}
 
 		real_t rndRadius = radius * (*m_simple0To1Distribution)(*m_rndGen);
 		real_t rndAngle = (*m_angleRadDistribution)(*m_rndGen);

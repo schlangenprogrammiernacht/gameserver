@@ -45,6 +45,12 @@ namespace config {
 	// the Snake’s segment radius.
 	static const real_t     SNAKE_CONSUME_RANGE     = 2.0;
 
+	// Part of Snake's mass to drop in every frame the boost is on.
+	static const real_t     SNAKE_BOOST_LOSS_FACTOR = 1e-3;
+
+	// Mass below which Snake dies through starvation
+	static const real_t     SNAKE_SELF_KILL_MASS_THESHOLD = 1.0;
+
 	// Food particle size log-normal distribution parameters
 	static const real_t     FOOD_SIZE_MEAN          = 3.5;
 	static const real_t     FOOD_SIZE_STDDEV        = 2.0;
