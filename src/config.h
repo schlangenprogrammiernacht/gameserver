@@ -46,7 +46,7 @@ namespace config {
 	static const real_t     SNAKE_CONSUME_RANGE     = 2.0;
 
 	// Part of Snake's mass to drop in every frame the boost is on.
-	static const real_t     SNAKE_BOOST_LOSS_FACTOR = 1e-3;
+	static const real_t     SNAKE_BOOST_LOSS_FACTOR = 5e-3;
 
 	// Mass below which Snake dies through starvation
 	static const real_t     SNAKE_SELF_KILL_MASS_THESHOLD = 1.0;

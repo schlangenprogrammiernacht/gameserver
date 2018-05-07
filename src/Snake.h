@@ -51,6 +51,8 @@ class Snake
 
 		real_t m_boostedLastMove = false; //!< Track if the snake boosted during the last move
 
+		real_t m_foodToDrop = 0;
+
 		/*!
 		 * Updates the length of m_segments and calculates the current m_segmentRadius
 		 */
