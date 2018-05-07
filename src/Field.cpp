@@ -186,10 +186,16 @@ void Field::moveAllBots(void)
 
 		std::shared_ptr<Bot> killer = job->killer;
 
-		if (killer)
-		{
-			// collision detected, convert the colliding bot to food
-			killBot(victim, killer);
+		if (killer) {
+			// size check on killer
+			double killerMass = killer->getSnake()->getMass();
+			double victimMass = victim->getSnake()->getMass();
+
+			if(killerMass > (victimMass * config::KILLER_MIN_MASS_RATIO)) {
+				// collision detected and killer is large enough
+				// -> convert the colliding bot to food
+				killBot(victim, killer);
+			}
 		} else {
 			// no collision, bot still alive
 			m_updateTracker->botMoved(victim, steps);
