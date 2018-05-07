@@ -78,6 +78,8 @@ bool Game::OnConnectionEstablished(TcpSocket &socket)
 	initTracker.worldState(*m_field);
 	socket.Write(initTracker.serialize());
 
+	socket.SetWriteBlocking(false);
+
 	return true;
 }
 
