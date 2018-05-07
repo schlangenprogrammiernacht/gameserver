@@ -154,6 +154,7 @@ void MsgPackUpdateTracker::botStats(const std::shared_ptr<Bot> &bot)
 	item.natural_food_consumed = bot->getConsumedNaturalFood();
 	item.carrison_food_consumed = bot->getConsumedFoodHuntedByOthers();
 	item.hunted_food_consumed = bot->getConsumedFoodHuntedBySelf();
+	item.mass = bot->getSnake()->getMass();
 
 	m_botStatsMessage->items.push_back(item);
 }

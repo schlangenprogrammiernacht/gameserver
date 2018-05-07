@@ -128,6 +128,7 @@ namespace MsgPackProtocol
 		double natural_food_consumed;
 		double carrison_food_consumed;
 		double hunted_food_consumed;
+		double mass;
 	};
 
 	struct BotStatsMessage
@@ -348,6 +349,7 @@ namespace msgpack {
 					o.pack(v.natural_food_consumed);
 					o.pack(v.carrison_food_consumed);
 					o.pack(v.hunted_food_consumed);
+					o.pack(v.mass);
 					return o;
 				}
 			};
