@@ -344,7 +344,7 @@ namespace msgpack {
 			{
 				template <typename Stream> msgpack::packer<Stream>& operator()(msgpack::packer<Stream>& o, MsgPackProtocol::BotStatsItem const& v) const
 				{
-					o.pack_array(4);
+					o.pack_array(5);
 					o.pack(v.bot_id);
 					o.pack(v.natural_food_consumed);
 					o.pack(v.carrison_food_consumed);
