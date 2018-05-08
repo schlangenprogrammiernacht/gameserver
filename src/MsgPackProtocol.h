@@ -402,17 +402,20 @@ namespace msgpack {
 				}
 			};
 
-			template <> struct pack< std::shared_ptr<Bot> >
+			template <> struct pack< std::shared_ptr<Bot>>
 			{
 				template <typename Stream> msgpack::packer<Stream>& operator()(msgpack::packer<Stream>& o, std::shared_ptr<Bot> const& v) const
 				{
-					o.pack_array(6);
+					o.pack_array(9);
 					o.pack(v->getGUID());
 					o.pack(v->getName());
+					o.pack(v->getDatabaseVersionId());
+					o.pack(v->getFace());
+					o.pack(v->getDogTag());
+					o.pack(v->getColors());
+					o.pack(v->getSnake()->getMass());
 					o.pack(v->getSnake()->getSegmentRadius());
 					o.pack(v->getSnake()->getSegments());
-					o.pack(v->getColors());
-					o.pack(v->getDatabaseVersionId());
 					return o;
 				}
 			};
