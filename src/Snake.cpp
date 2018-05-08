@@ -53,7 +53,8 @@ void Snake::ensureSizeMatchesMass(void)
 	}
 
 	// update segment radius
-	m_segmentRadius = std::sqrt(m_mass) / 2;
+	m_segmentRadius = std::pow((20*m_mass+100), 0.3) - 3.9810717055349722;
+	//                                    100**0.3 --------^
 }
 
 real_t Snake::maxRotationPerStep(void)
