@@ -59,10 +59,6 @@ Game::Game()
 				victim->getConsumedFoodHuntedBySelf()
 			);
 
-			m_database->RemoveLiveStats(
-				victim->getDatabaseId()
-			);
-
 			createBot(victim->getDatabaseId());
 		}
 	);
@@ -113,11 +109,6 @@ bool Game::OnTimerInterval()
 	if(++m_streamStatsUpdateCounter >= STREAM_STATS_UPDATE_INTERVAL) {
 		m_field->sendStatsToStream();
 		m_streamStatsUpdateCounter = 0;
-	}
-
-	if(++m_dbStatsUpdateCounter >= DB_STATS_UPDATE_INTERVAL) {
-		updateStatsInDB();
-		m_dbStatsUpdateCounter = 0;
 	}
 
 	m_field->processLog();
@@ -222,18 +213,6 @@ void Game::queryDB()
 	}
 }
 
-void Game::updateStatsInDB(void)
-{
-	for(auto &b: m_field->getBots()) {
-		m_database->UpdateLiveStats(b->getDatabaseId(),
-				m_field->getCurrentFrame(),
-				b->getSnake()->getMass(),
-				b->getConsumedNaturalFood(),
-				b->getConsumedFoodHuntedByOthers(),
-				b->getConsumedFoodHuntedBySelf());
-	}
-}
-
 void Game::createBot(int bot_id)
 {
 	auto data = m_database->GetBotData(bot_id);
@@ -248,7 +227,5 @@ void Game::createBot(int bot_id)
 	{
 		m_database->DisableBotVersion(newBot->getDatabaseVersionId(), initErrorMessage);
 		// TODO save error message, maybe lock version in inactive state
-	} else {
-		m_database->SetupLiveStats(newBot->getDatabaseId());
 	}
 }

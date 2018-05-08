@@ -45,24 +45,6 @@ void MysqlDatabase::Connect(std::string host, std::string username, std::string 
 	_saveBotVersionErrorMessageStmt = makePreparedStatement(
 		"UPDATE core_snakeversion SET server_error_message=? WHERE id=?"
 	);
-
-	_setupLiveStatsStmt = makePreparedStatement(
-		"REPLACE INTO core_livestats "
-		" (user_id) "
-		"VALUES"
-		" (?)"
-	);
-
-	_updateLiveStatsStmt = makePreparedStatement(
-		"UPDATE core_livestats "
-		"SET last_update_frame=?, mass=?, natural_food_consumed=?, carrison_food_consumed=?, hunted_food_consumed=? "
-		"WHERE user_id=?"
-	);
-
-	_removeLiveStatsStmt = makePreparedStatement(
-		"DELETE FROM core_livestats "
-		"WHERE user_id=?"
-	);
 }
 
 std::unique_ptr<BotScript> MysqlDatabase::GetBotData(int bot_id)
@@ -141,31 +123,6 @@ void MysqlDatabase::DisableBotVersion(long version_id, std::string errorMessage)
 		_saveBotVersionErrorMessageStmt->setInt64(2, version_id);
 		_saveBotVersionErrorMessageStmt->execute();
 	}
-}
-
-void MysqlDatabase::SetupLiveStats(long user_id)
-{
-	_setupLiveStatsStmt->setInt64(1, user_id);
-	_setupLiveStatsStmt->execute();
-}
-
-void MysqlDatabase::UpdateLiveStats(long user_id, long current_frame, double mass,
-		double natural_food_consumed, double carrison_food_consumed,
-		double hunted_food_consumed)
-{
-	_updateLiveStatsStmt->setInt64(1, current_frame);
-	_updateLiveStatsStmt->setDouble(2, mass);
-	_updateLiveStatsStmt->setDouble(3, natural_food_consumed);
-	_updateLiveStatsStmt->setDouble(4, carrison_food_consumed);
-	_updateLiveStatsStmt->setDouble(5, hunted_food_consumed);
-	_updateLiveStatsStmt->setInt64(6, user_id);
-	_updateLiveStatsStmt->execute();
-}
-
-void MysqlDatabase::RemoveLiveStats(long user_id)
-{
-	_removeLiveStatsStmt->setInt64(1, user_id);
-	_removeLiveStatsStmt->execute();
 }
 
 std::unique_ptr<sql::PreparedStatement> MysqlDatabase::makePreparedStatement(std::string sql)
