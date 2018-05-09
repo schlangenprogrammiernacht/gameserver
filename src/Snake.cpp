@@ -65,7 +65,6 @@ real_t Snake::maxRotationPerStep(void)
 void Snake::consume(const Food& food)
 {
 	m_mass += food.getValue();
-	ensureSizeMatchesMass();
 }
 
 std::size_t Snake::move(real_t targetAngle, bool boost)
@@ -212,8 +211,6 @@ void Snake::dropFood(real_t value)
 	if(m_mass < 1e-6) {
 		m_mass = 1e-6;
 	}
-
-	ensureSizeMatchesMass();
 }
 
 real_t Snake::getConsumeRadius()

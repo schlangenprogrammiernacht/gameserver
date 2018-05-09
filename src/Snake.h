@@ -48,11 +48,6 @@ class Snake
 
 		real_t m_boostedLastMove = false; //!< Track if the snake boosted during the last move
 
-		/*!
-		 * Updates the length of m_segments and calculates the current m_segmentRadius
-		 */
-		void ensureSizeMatchesMass(void);
-
 	public:
 		/*!
 		 * Construct a unit snake (1 segment at 0/0, heading 0°).
@@ -61,6 +56,11 @@ class Snake
 
 		Snake(Field *field, const Vector2D &start_pos, real_t start_mass,
 				real_t start_heading);
+
+		/*!
+		 * Updates the length of m_segments and calculates the current m_segmentRadius
+		 */
+		void ensureSizeMatchesMass(void);
 
 		/*!
 		 * Consume the given food piece.

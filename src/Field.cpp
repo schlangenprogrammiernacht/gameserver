@@ -146,6 +146,8 @@ void Field::consumeFood(void)
 				}
 			}
 		}
+
+		b->getSnake()->ensureSizeMatchesMass();
 	}
 	createStaticFood(newStaticFood);
 	updateMaxSegmentRadius();
@@ -205,6 +207,9 @@ void Field::moveAllBots(void)
 					killBot(victim, victim);
 				}
 			}
+
+			// adjust size to new mass
+			victim->getSnake()->ensureSizeMatchesMass();
 		}
 	}
 
