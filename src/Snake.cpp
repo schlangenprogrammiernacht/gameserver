@@ -160,6 +160,8 @@ std::size_t Snake::move(real_t targetAngle, bool boost)
 
 	m_boostedLastMove = boost;
 
+	m_mass *= (1.0 - config::SNAKE_SURVIVAL_LOSS_FACTOR);
+
 	return m_segments.size(); // == number of new segments at head
 }
 
@@ -199,7 +201,7 @@ void Snake::convertToFood(const std::shared_ptr<Bot> &hunter) const
 	}
 }
 
-void Snake::dropFood(float_t value)
+void Snake::dropFood(real_t value)
 {
 	Vector2D dropOffset = (m_segments.end() - 1)->pos() - (m_segments.end() - 2)->pos();
 	Vector2D dropPos = (m_segments.end() - 1)->pos() + dropOffset.normalized() * 5;
