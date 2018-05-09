@@ -66,7 +66,6 @@ real_t Snake::maxRotationPerStep(void)
 void Snake::consume(const Food& food)
 {
 	m_mass += food.getValue();
-	ensureSizeMatchesMass();
 }
 
 std::size_t Snake::move(real_t targetAngle, bool boost)
@@ -165,6 +164,8 @@ std::size_t Snake::move(real_t targetAngle, bool boost)
 
 	m_boostedLastMove = boost;
 
+	m_mass *= (1.0 - config::SNAKE_SURVIVAL_LOSS_FACTOR);
+
 	return m_segments.size(); // == number of new segments at head
 }
 
@@ -204,7 +205,7 @@ void Snake::convertToFood(const std::shared_ptr<Bot> &hunter) const
 	}
 }
 
-void Snake::dropFood(float_t value)
+void Snake::dropFood(real_t value)
 {
 	Vector2D dropOffset = (m_segments.end() - 1)->pos() - (m_segments.end() - 2)->pos();
 	Vector2D dropPos = (m_segments.end() - 1)->pos() + dropOffset.normalized() * 5;
@@ -220,8 +221,6 @@ void Snake::dropFood(float_t value)
 	if(m_mass < 1e-6) {
 		m_mass = 1e-6;
 	}
-
-	ensureSizeMatchesMass();
 }
 
 real_t Snake::getConsumeRadius()

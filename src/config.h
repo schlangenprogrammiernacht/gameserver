@@ -48,6 +48,12 @@ namespace config {
 	// Part of Snake's mass to drop in every frame the boost is on.
 	static const real_t     SNAKE_BOOST_LOSS_FACTOR = 5e-3;
 
+	// Snakes continuously loose mass. This parameter adjust the part of mass
+	// lost every movement (==frame). The mass is not dropped, but simply lost.
+	// 1e-5 means that a mass 100k-Snake has to eat food of value 1 on average every
+	// frame to keep its mass.
+	static const real_t     SNAKE_SURVIVAL_LOSS_FACTOR = 1e-5;
+
 	// Mass below which Snake dies through starvation
 	static const real_t     SNAKE_SELF_KILL_MASS_THESHOLD = 1.0;
 
