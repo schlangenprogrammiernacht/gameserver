@@ -123,3 +123,13 @@ real_t Bot::getSightRadius() const
 {
 	return 50.0f + 15.0f * getSnake()->getSegmentRadius();
 }
+
+uint32_t Bot::getFace()
+{
+	return m_lua_bot->getFace();
+}
+
+uint32_t Bot::getDogTag()
+{
+	return m_lua_bot->getDogTag();
+}

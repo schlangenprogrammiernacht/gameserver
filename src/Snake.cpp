@@ -53,7 +53,8 @@ void Snake::ensureSizeMatchesMass(void)
 	}
 
 	// update segment radius
-	m_segmentRadius = std::sqrt(m_mass) / 2;
+	m_segmentRadius = std::pow((20*m_mass+100), 0.3) - 3.9810717055349722;
+	//                                    100**0.3 --------^
 }
 
 real_t Snake::maxRotationPerStep(void)
@@ -105,6 +106,8 @@ std::size_t Snake::move(real_t targetAngle, bool boost)
 		steps = config::SNAKE_BOOST_STEPS;
 	}
 
+	m_headPositionsDuringLastMove.clear();
+
 	// create new segments at head
 	for(std::size_t i = 0; i < steps; i++) {
 		// calculate new segment offset
@@ -115,6 +118,8 @@ std::size_t Snake::move(real_t targetAngle, bool boost)
 		movementVector2D *= config::SNAKE_DISTANCE_PER_STEP;
 
 		headSegment.setPos(headSegment.pos() + movementVector2D);
+
+		m_headPositionsDuringLastMove.push_back(headSegment.pos());
 
 		m_movedSinceLastSpawn += config::SNAKE_DISTANCE_PER_STEP;
 
@@ -205,7 +210,12 @@ void Snake::dropFood(real_t value)
 	Vector2D dropOffset = (m_segments.end() - 1)->pos() - (m_segments.end() - 2)->pos();
 	Vector2D dropPos = (m_segments.end() - 1)->pos() + dropOffset.normalized() * 5;
 
-	m_field->createDynamicFood(value * config::SNAKE_CONVERSION_FACTOR, dropPos, m_segmentRadius, nullptr);
+	m_foodToDrop += value * config::SNAKE_CONVERSION_FACTOR;
+	if(m_foodToDrop >= config::FOOD_SIZE_MEAN) {
+		m_field->createDynamicFood(m_foodToDrop, dropPos, m_segmentRadius, nullptr);
+		m_foodToDrop = 0;
+	}
+
 	m_mass -= value;
 
 	if(m_mass < 1e-6) {

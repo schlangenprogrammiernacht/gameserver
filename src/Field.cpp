@@ -188,10 +188,16 @@ void Field::moveAllBots(void)
 
 		std::shared_ptr<Bot> killer = job->killer;
 
-		if (killer)
-		{
-			// collision detected, convert the colliding bot to food
-			killBot(victim, killer);
+		if (killer) {
+			// size check on killer
+			double killerMass = killer->getSnake()->getMass();
+			double victimMass = victim->getSnake()->getMass();
+
+			if(killerMass > (victimMass * config::KILLER_MIN_MASS_RATIO)) {
+				// collision detected and killer is large enough
+				// -> convert the colliding bot to food
+				killBot(victim, killer);
+			}
 		} else {
 			// no collision, bot still alive
 			m_updateTracker->botMoved(victim, steps);
@@ -262,15 +268,14 @@ std::shared_ptr<Bot> Field::getBotByDatabaseId(int id)
 void Field::createDynamicFood(real_t totalValue, const Vector2D &center, real_t radius,
 		const std::shared_ptr<Bot> &hunter)
 {
-	// create at least 1 food item
-	std::size_t count = 1 + totalValue / config::FOOD_SIZE_MEAN;
+	real_t remainingValue = totalValue;
 
-	for(std::size_t i = 0; i < count; i++) {
+	while(remainingValue > 0) {
 		real_t value;
-		if(totalValue >= config::FOOD_SIZE_MEAN) {
+		if(remainingValue > config::FOOD_SIZE_MEAN) {
 			value = (*m_foodSizeDistribution)(*m_rndGen);
 		} else {
-			value = totalValue;
+			value = remainingValue;
 		}
 
 		real_t rndRadius = radius * (*m_simple0To1Distribution)(*m_rndGen);
@@ -284,6 +289,8 @@ void Field::createDynamicFood(real_t totalValue, const Vector2D &center, real_t 
 		Food food {false, pos, value, hunter};
 		m_updateTracker->foodSpawned(food);
 		m_foodMap.addElement(food);
+
+		remainingValue -= value;
 	}
 }
 

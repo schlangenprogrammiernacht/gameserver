@@ -46,7 +46,7 @@ namespace config {
 	static const real_t     SNAKE_CONSUME_RANGE     = 2.0;
 
 	// Part of Snake's mass to drop in every frame the boost is on.
-	static const real_t     SNAKE_BOOST_LOSS_FACTOR = 1e-3;
+	static const real_t     SNAKE_BOOST_LOSS_FACTOR = 5e-3;
 
 	// Snakes continuously loose mass. This parameter adjust the part of mass
 	// lost every movement (==frame). The mass is not dropped, but simply lost.
@@ -63,6 +63,12 @@ namespace config {
 
 	// Food decay value per frame
 	static const real_t     FOOD_DECAY_STEP         = 0.002;
+
+	// Minimum mass ratio required that a bot can kill another bot. This prevents
+	// that very small/newly spawned snakes can kill large snakes.
+	// Example: 0.01 means that the killer has to have at least 1% of the victims
+	// mass to be successful.
+	static const real_t     KILLER_MIN_MASS_RATIO   = 0.001;
 
 	// Lua memory pool configuration
 	static const std::size_t LUA_MEM_POOL_SIZE_BYTES       = 10 * 1024*1024;

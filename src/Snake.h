@@ -28,12 +28,15 @@ class Snake
 		};
 
 		typedef std::deque< Segment > SegmentList;
+		typedef std::vector< Vector2D > PositionList;
 
 	private:
 		/*!
 		 * Definition: m_segments[0] is the head of the snake.
 		 */
 		SegmentList m_segments;
+
+		PositionList m_headPositionsDuringLastMove;
 
 		Field *m_field;
 
@@ -48,6 +51,7 @@ class Snake
 
 		real_t m_boostedLastMove = false; //!< Track if the snake boosted during the last move
 
+		real_t m_foodToDrop = 0;
 	public:
 		/*!
 		 * Construct a unit snake (1 segment at 0/0, heading 0°).
@@ -129,4 +133,8 @@ class Snake
 
 		bool boostedLastMove(void) const { return m_boostedLastMove; }
 
+		/*!
+		 * Get a list of head positions that were used during the last call to move().
+		 */
+		const PositionList& getHeadPositionsDuringLastMove(void) const { return m_headPositionsDuringLastMove; };
 };

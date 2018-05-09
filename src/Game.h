@@ -20,11 +20,9 @@ class Game
 		std::unique_ptr<db::IDatabase> m_database;
 		int m_dbQueryCounter = 0;
 		int m_streamStatsUpdateCounter = 0;
-		int m_dbStatsUpdateCounter = 0;
 
 		bool connectDB();
 		void queryDB();
-		void updateStatsInDB();
 		void createBot(int bot_id);
 
 	public:

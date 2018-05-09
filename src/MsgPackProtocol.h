@@ -24,6 +24,7 @@ namespace MsgPackProtocol
 		MESSAGE_TYPE_BOT_MOVE = 0x22,
 		MESSAGE_TYPE_BOT_LOG = 0x23,
 		MESSAGE_TYPE_BOT_STATS = 0x24,
+		MESSAGE_TYPE_BOT_MOVE_HEAD = 0x25,
 
 		MESSAGE_TYPE_FOOD_SPAWN = 0x30,
 		MESSAGE_TYPE_FOOD_CONSUME = 0x31,
@@ -39,6 +40,11 @@ namespace MsgPackProtocol
 		double world_size_x = 0;
 		double world_size_y = 0;
 		double food_decay_per_frame = 0;
+
+		double snake_distance_per_step = 0;
+		double snake_segment_distance_factor = 0;
+		double snake_segment_distance_exponent = 0;
+		double snake_pull_factor = 0;
 	};
 
 	struct PlayerInfoMessage
@@ -75,6 +81,20 @@ namespace MsgPackProtocol
 		std::vector<BotMoveItem> items;
 	};
 
+	struct BotMoveHeadItem
+	{
+		guid_t bot_id;
+		double mass;
+
+		// one head position for each step moved in this frame, in temporal order
+		std::vector< Vector2D > new_head_positions;
+	};
+
+	struct BotMoveHeadMessage
+	{
+		std::vector<BotMoveHeadItem> items;
+	};
+
 	struct BotKillMessage
 	{
 		guid_t killer_id;
@@ -108,6 +128,7 @@ namespace MsgPackProtocol
 		double natural_food_consumed;
 		double carrison_food_consumed;
 		double hunted_food_consumed;
+		double mass;
 	};
 
 	struct BotStatsMessage
@@ -135,12 +156,16 @@ namespace msgpack {
 			{
 				template <typename Stream> msgpack::packer<Stream>& operator()(msgpack::packer<Stream>& o, MsgPackProtocol::GameInfoMessage const& v) const
 				{
-					o.pack_array(5);
+					o.pack_array(9);
 					o.pack(MsgPackProtocol::PROTOCOL_VERSION);
 					o.pack(static_cast<int>(MsgPackProtocol::MESSAGE_TYPE_GAME_INFO));
 					o.pack(v.world_size_x);
 					o.pack(v.world_size_y);
 					o.pack(v.food_decay_per_frame);
+					o.pack(v.snake_distance_per_step);
+					o.pack(v.snake_segment_distance_factor);
+					o.pack(v.snake_segment_distance_exponent);
+					o.pack(v.snake_pull_factor);
 					return o;
 				}
 			};
@@ -215,6 +240,30 @@ namespace msgpack {
 					o.pack(v.new_segments);
 					o.pack(v.current_length);
 					o.pack(v.current_segment_radius);
+					return o;
+				}
+			};
+
+			template <> struct pack<MsgPackProtocol::BotMoveHeadMessage>
+			{
+				template <typename Stream> msgpack::packer<Stream>& operator()(msgpack::packer<Stream>& o, MsgPackProtocol::BotMoveHeadMessage const& v) const
+				{
+					o.pack_array(3);
+					o.pack(MsgPackProtocol::PROTOCOL_VERSION);
+					o.pack(static_cast<int>(MsgPackProtocol::MESSAGE_TYPE_BOT_MOVE_HEAD));
+					o.pack(v.items);
+					return o;
+				}
+			};
+
+			template <> struct pack<MsgPackProtocol::BotMoveHeadItem>
+			{
+				template <typename Stream> msgpack::packer<Stream>& operator()(msgpack::packer<Stream>& o, MsgPackProtocol::BotMoveHeadItem const& v) const
+				{
+					o.pack_array(3);
+					o.pack(v.bot_id);
+					o.pack(v.mass);
+					o.pack(v.new_head_positions);
 					return o;
 				}
 			};
@@ -295,11 +344,12 @@ namespace msgpack {
 			{
 				template <typename Stream> msgpack::packer<Stream>& operator()(msgpack::packer<Stream>& o, MsgPackProtocol::BotStatsItem const& v) const
 				{
-					o.pack_array(4);
+					o.pack_array(5);
 					o.pack(v.bot_id);
 					o.pack(v.natural_food_consumed);
 					o.pack(v.carrison_food_consumed);
 					o.pack(v.hunted_food_consumed);
+					o.pack(v.mass);
 					return o;
 				}
 			};
@@ -311,6 +361,18 @@ namespace msgpack {
 					o.pack_array(2);
 					o.pack(v.pos().x());
 					o.pack(v.pos().y());
+
+					return o;
+				}
+			};
+
+			template <> struct pack<Vector2D>
+			{
+				template <typename Stream> msgpack::packer<Stream>& operator()(msgpack::packer<Stream>& o, Vector2D const& v) const
+				{
+					o.pack_array(2);
+					o.pack(v.x());
+					o.pack(v.y());
 
 					return o;
 				}
@@ -342,17 +404,20 @@ namespace msgpack {
 				}
 			};
 
-			template <> struct pack< std::shared_ptr<Bot> >
+			template <> struct pack< std::shared_ptr<Bot>>
 			{
 				template <typename Stream> msgpack::packer<Stream>& operator()(msgpack::packer<Stream>& o, std::shared_ptr<Bot> const& v) const
 				{
-					o.pack_array(6);
+					o.pack_array(9);
 					o.pack(v->getGUID());
 					o.pack(v->getName());
+					o.pack(v->getDatabaseVersionId());
+					o.pack(v->getFace());
+					o.pack(v->getDogTag());
+					o.pack(v->getColors());
+					o.pack(v->getSnake()->getMass());
 					o.pack(v->getSnake()->getSegmentRadius());
 					o.pack(v->getSnake()->getSegments());
-					o.pack(v->getColors());
-					o.pack(v->getDatabaseVersionId());
 					return o;
 				}
 			};

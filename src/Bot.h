@@ -93,5 +93,9 @@ class Bot : public IdentifyableObject
 
 		std::vector<uint32_t> getColors();
 		real_t getSightRadius() const;
+		uint32_t getFace();
+		uint32_t getDogTag();
+
+
 
 };
