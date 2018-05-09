@@ -12,7 +12,7 @@ class LuaBot
 	public:
 		LuaBot(Bot &bot, std::string script);
 		bool init(std::string &initErrorMessage);
-		bool step(float &next_heading, bool &boost);
+		bool step(float &directionChange, bool &boost);
 		std::vector<uint32_t> getColors() { return m_self.colors; }
 		uint32_t getFace() { return m_self.getFace(); }
 		uint32_t getDogTag() { return m_self.getDogTag(); }

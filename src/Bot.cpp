@@ -11,7 +11,6 @@ Bot::Bot(Field *field, uint32_t startFrame, std::unique_ptr<db::BotScript> dbDat
 	, m_dbData(std::move(dbData))
 {
 	m_snake = std::make_shared<Snake>(field, startPos, 5, startHeading);
-	m_heading = rand() * 360.0f / RAND_MAX;
 	m_lua_bot = std::make_unique<LuaBot>(*this, m_dbData->code);
 }
 
@@ -31,18 +30,13 @@ bool Bot::init(std::string& initErrorMessage)
 std::size_t Bot::move(void)
 {
 	bool boost;
-	float new_heading;
-	if (m_lua_bot->step(new_heading, boost))
+	real_t directionChange;
+	if (!m_lua_bot->step(directionChange, boost))
 	{
-		new_heading = fmod(new_heading, 360);
-		if (new_heading<0)
-		{
-			new_heading += 360;
-		}
-		m_heading = new_heading;
+		boost = false;
+		directionChange = 0;
 	}
-
-	return m_snake->move(m_heading, boost); // direction in degrees
+	return m_snake->move(directionChange, boost);
 }
 
 std::shared_ptr<Bot> Bot::checkCollision(void) const

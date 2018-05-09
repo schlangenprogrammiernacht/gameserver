@@ -131,5 +131,5 @@ real_t LuaSelfInfo::getConsumedFoodHuntedBySelf()
 
 real_t LuaSelfInfo::getMaxStepAngle()
 {
-	return (M_PI * m_bot.getSnake()->maxRotationPerStep()) / 180.0;
+	return m_bot.getSnake()->maxRotationPerStep();
 }

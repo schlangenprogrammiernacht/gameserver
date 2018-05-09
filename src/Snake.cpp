@@ -59,8 +59,7 @@ void Snake::ensureSizeMatchesMass(void)
 
 real_t Snake::maxRotationPerStep(void)
 {
-	// TODO: make this better?
-	return 10.0 / (m_segmentRadius/3.0 + 1);
+	return (10.0*M_PI/180.0) / (m_segmentRadius/3.0 + 1);
 }
 
 void Snake::consume(const Food& food)
@@ -68,25 +67,11 @@ void Snake::consume(const Food& food)
 	m_mass += food.getValue();
 }
 
-std::size_t Snake::move(real_t targetAngle, bool boost)
+std::size_t Snake::move(real_t deltaAngle, bool boost)
 {
-	// calculate delta angle
-	real_t deltaAngle = targetAngle - m_heading;
-
-	// normalize delta angle
-	if(deltaAngle > 180) {
-		deltaAngle -= 360;
-	} else if(deltaAngle < -180) {
-		deltaAngle += 360;
-	}
-
-	// limit rotation rate
 	real_t maxDelta = maxRotationPerStep();
-	if(deltaAngle > maxDelta) {
-		deltaAngle = maxDelta;
-	} else if(deltaAngle < -maxDelta) {
-		deltaAngle = -maxDelta;
-	}
+	deltaAngle = std::min(deltaAngle, maxDelta);
+	deltaAngle = std::max(deltaAngle, -maxDelta);
 
 	std::size_t oldSize = m_segments.size();
 
@@ -113,8 +98,7 @@ std::size_t Snake::move(real_t targetAngle, bool boost)
 		// calculate new segment offset
 		m_heading += deltaAngle;
 
-		real_t headingRad = m_heading * M_PI / 180;
-		Vector2D movementVector2D(cos(headingRad), sin(headingRad));
+		Vector2D movementVector2D(cos(m_heading), sin(m_heading));
 		movementVector2D *= config::SNAKE_DISTANCE_PER_STEP;
 
 		headSegment.setPos(headSegment.pos() + movementVector2D);
@@ -140,10 +124,10 @@ std::size_t Snake::move(real_t targetAngle, bool boost)
 	m_segments.push_front(headSegment);
 
 	// normalize heading
-	if(m_heading > 180) {
-		m_heading -= 360;
-	} else if(m_heading < -180) {
-		m_heading += 360;
+	if(m_heading > M_PI) {
+		m_heading -= 2*M_PI;
+	} else if(m_heading < -M_PI) {
+		m_heading += 2*M_PI;
 	}
 
 	// force size to previous size (removes end segments)

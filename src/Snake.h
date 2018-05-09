@@ -42,7 +42,7 @@ class Snake
 
 		real_t m_mass; //!< Mass (length) of the snake
 
-		real_t m_heading; //!< Heading of the snake in degrees (-180°..180°) from x axis
+		real_t m_heading; //!< Heading of the snake in radians from x axis
 
 		real_t m_segmentRadius; //!< Segment radius (calculated from m_mass; cached)
 		real_t m_targetSegmentDistance; //!< Distance between the segments
@@ -78,7 +78,7 @@ class Snake
 		 * \param boost          Whether to apply boost
 		 * \returns              The number of segments created during the operation.
 		 */
-		std::size_t move(real_t targetAngle, bool boost);
+		std::size_t move(real_t deltaAngle, bool boost);
 
 		/*!
 		 * Get the list of segments.
@@ -124,6 +124,8 @@ class Snake
 		 * given amount multiplied with SNAKE_CONVERSION_FACTOR.
 		 */
 		void dropFood(float_t value);
+
+		real_t getHeading(void) { return m_heading; }
 
 		real_t getMass(void) { return m_mass; }
 

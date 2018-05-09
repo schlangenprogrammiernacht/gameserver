@@ -39,11 +39,10 @@ void Field::setupRandomness(void)
 
 	m_positionXDistribution =
 		std::make_unique< std::uniform_real_distribution<real_t> >(0, m_width);
+
 	m_positionYDistribution =
 		std::make_unique< std::uniform_real_distribution<real_t> >(0, m_height);
 
-	m_angleDegreesDistribution =
-		std::make_unique< std::uniform_real_distribution<real_t> >(-180, 180);
 	m_angleRadDistribution =
 		std::make_unique< std::uniform_real_distribution<real_t> >(-M_PI, M_PI);
 
@@ -80,7 +79,7 @@ std::shared_ptr<Bot> Field::newBot(std::unique_ptr<db::BotScript> data, std::str
 {
 	real_t x = (*m_positionXDistribution)(*m_rndGen);
 	real_t y = (*m_positionYDistribution)(*m_rndGen);
-	real_t heading = (*m_angleDegreesDistribution)(*m_rndGen);
+	real_t heading = (*m_angleRadDistribution)(*m_rndGen);
 
 	std::shared_ptr<Bot> bot = std::make_shared<Bot>(
 		this,

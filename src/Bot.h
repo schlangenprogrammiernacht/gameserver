@@ -25,7 +25,6 @@ class Bot : public IdentifyableObject
 		std::unique_ptr<db::BotScript> m_dbData;
 		std::shared_ptr<Snake> m_snake;
 		std::unique_ptr<LuaBot> m_lua_bot;
-		real_t m_heading;
 		std::vector<std::string> m_logMessages;
 		real_t m_logCredit = config::LOG_INITIAL_CREDITS;
 
@@ -71,7 +70,7 @@ class Bot : public IdentifyableObject
 
 		std::shared_ptr<Snake> getSnake(void) const { return m_snake; }
 		const std::string &getName(void) const { return m_dbData->bot_name; }
-		real_t getHeading() { return m_heading; }
+		real_t getHeading() { return m_snake->getHeading(); }
 		Field* getField() { return m_field; }
 		int getDatabaseId() { return m_dbData->bot_id; }
 		int getDatabaseVersionId() { return m_dbData->version_id; }

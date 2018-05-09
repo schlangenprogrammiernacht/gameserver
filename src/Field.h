@@ -53,7 +53,6 @@ class Field
 		std::unique_ptr< std::normal_distribution<real_t> >       m_foodSizeDistribution;
 		std::unique_ptr< std::uniform_real_distribution<real_t> > m_positionXDistribution;
 		std::unique_ptr< std::uniform_real_distribution<real_t> > m_positionYDistribution;
-		std::unique_ptr< std::uniform_real_distribution<real_t> > m_angleDegreesDistribution;
 		std::unique_ptr< std::uniform_real_distribution<real_t> > m_angleRadDistribution;
 		std::unique_ptr< std::uniform_real_distribution<real_t> > m_simple0To1Distribution;
 
