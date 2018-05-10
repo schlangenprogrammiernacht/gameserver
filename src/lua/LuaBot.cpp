@@ -20,7 +20,6 @@ LuaBot::LuaBot(Bot &bot, std::string script)
 	m_luaSegmentInfoTable.reserve(1000);
 
 	LuaSelfInfo::Register(m_lua_state);
-	m_self.colors.push_back(0x0000FF);
 }
 
 bool LuaBot::init(std::string& initErrorMessage)
@@ -32,6 +31,8 @@ bool LuaBot::init(std::string& initErrorMessage)
 
 		m_setQuotaFunc = m_lua_state["set_quota"];
 		m_clearQuotaFunc = m_lua_state["clear_quota"];
+		m_self.setColorTable(m_lua_state["colors"]);
+
 		m_lua_safe_env = createEnvironment();
 
 		std::string chunkName = "bot.lua";
@@ -97,6 +98,11 @@ bool LuaBot::step(float &directionChange, bool &boost)
 	}
 
 	return retval;
+}
+
+std::vector<uint32_t>& LuaBot::getColors()
+{
+	return m_self.getCachedColors();
 }
 
 void LuaBot::setQuota(uint32_t num_instructions, double seconds)

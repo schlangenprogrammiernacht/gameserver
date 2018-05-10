@@ -1,4 +1,5 @@
 local instruction_counter = 0
+colors = { 0x0000FF }
 
 function set_quota(max_num_events, max_time_secs)
 	local events_per_check = 1000

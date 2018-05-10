@@ -1,7 +1,7 @@
 #pragma once
 #include <types.h>
 #include <vector>
-#include <sol_forward.hpp>
+#include <sol.hpp>
 
 class Bot;
 
@@ -11,15 +11,14 @@ class LuaSelfInfo
 {
 	public:
 		guid_t id;
-		std::vector<uint32_t> colors;
 		bool colorsLocked;
 		uint32_t face = 0;
 		uint32_t dogTag = 0;
 
 		LuaSelfInfo(Bot& bot, guid_t aId);
 
-		std::vector<uint32_t>& getColors() { return colors; }
-		void setColors(sol::table v);
+		sol::table getColorTable() { return m_colorTable; }
+		void setColorTable(sol::table v);
 
 		uint32_t getFace() { return face; }
 		void setFace();
@@ -39,9 +38,15 @@ class LuaSelfInfo
 		real_t getConsumedFoodHuntedBySelf();
 		real_t getMaxStepAngle();
 
+		void registerColorTable(sol::table colorTable);
+
 		static void Register(sol::state& lua);
+
+		std::vector<uint32_t>& getCachedColors() { return m_cachedColors; }
 
 	private:
 		Bot &m_bot;
+		sol::table m_colorTable;
+		std::vector<uint32_t> m_cachedColors;
 };
 
