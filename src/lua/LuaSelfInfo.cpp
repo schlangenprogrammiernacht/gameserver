@@ -13,6 +13,10 @@ LuaSelfInfo::LuaSelfInfo(Bot &bot, guid_t aId)
 
 void LuaSelfInfo::setColorTable(sol::table v)
 {
+	if(v == sol::nil) {
+		return;
+	}
+
 	m_colorTable = v;
 	m_cachedColors.clear();
 	for (auto kvp: v)
