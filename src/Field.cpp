@@ -92,7 +92,7 @@ std::shared_ptr<Bot> Field::newBot(std::unique_ptr<db::BotScript> data, std::str
 	initErrorMessage = "";
 	if (bot->init(initErrorMessage))
 	{
-		std::cerr << "Created Bot with ID " << bot->getGUID() << std::endl;
+		std::cerr << "Created Bot with ID " << bot->getGUID() << ", DB-ID " << bot->getDatabaseId() << ", Name: " << bot->getName() << std::endl;
 		m_updateTracker->botLogMessage(bot->getViewerKey(), "starting bot");
 		m_updateTracker->botSpawned(bot);
 		m_bots.insert(bot);
