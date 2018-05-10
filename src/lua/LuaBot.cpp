@@ -61,7 +61,7 @@ bool LuaBot::step(float &directionChange, bool &boost)
 {
 	bool retval = false;
 	try {
-		setQuota(1000000, 0.1);
+		setQuota(1000000, 0.5);
 		sol::protected_function step = m_lua_safe_env["step"];
 
 		auto result = step();
@@ -260,7 +260,7 @@ void LuaBot::apiCallInit()
 	}
 
 	try {
-		setQuota(1000000, 0.1);
+		setQuota(100000, 0.5);
 		auto result = init_func();
 		if (!result.valid())
 		{
