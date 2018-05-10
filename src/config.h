@@ -15,8 +15,8 @@
 namespace config {
 
 	// Field size
-	static const real_t     FIELD_SIZE_X            = 1920;
-	static const real_t     FIELD_SIZE_Y            = 1080;
+	static const real_t     FIELD_SIZE_X            = 8192;
+	static const real_t     FIELD_SIZE_Y            = 4096;
 
 	// Spatial Map size
 	static constexpr const size_t SPATIAL_MAP_TILES_X = 128;
@@ -24,7 +24,7 @@ namespace config {
 	static constexpr const size_t SPATIAL_MAP_RESERVE_COUNT = 10;
 
 	// Items of static food on field
-	static const std::size_t FIELD_STATIC_FOOD       = 1000;
+	static const std::size_t FIELD_STATIC_FOOD       = 12000;
 
 	// Steps that a snake moves while boosting (normal speed = 1 step)
 	static const std::size_t SNAKE_BOOST_STEPS       = 2;
@@ -62,7 +62,7 @@ namespace config {
 	static const real_t     FOOD_SIZE_STDDEV        = 2.0;
 
 	// Food decay value per frame
-	static const real_t     FOOD_DECAY_STEP         = 0.002;
+	static const real_t     FOOD_DECAY_STEP         = 0.0001;
 
 	// Minimum mass ratio required that a bot can kill another bot. This prevents
 	// that very small/newly spawned snakes can kill large snakes.
