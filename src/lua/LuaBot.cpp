@@ -185,12 +185,15 @@ std::vector<LuaFoodInfo>& LuaBot::apiFindFood(real_t radius, real_t min_size)
 			real_t direction = static_cast<real_t>(atan2(relPos.y(), relPos.x())) - heading;
 			while (direction < -M_PI) { direction += 2*M_PI; }
 			while (direction >  M_PI) { direction -= 2*M_PI; }
+			auto distance = relPos.norm();
+			if (distance>radius) { continue; }
+
 			m_luaFoodInfoTable.emplace_back(
 				relPos.x(),
 				relPos.y(),
 				food.getValue(),
 				direction,
-				relPos.norm()
+				distance
 			);
 		}
 	}
