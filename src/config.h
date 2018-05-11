@@ -33,8 +33,8 @@
 namespace config {
 
 	// Field size
-	static const real_t     FIELD_SIZE_X            = 8192;
-	static const real_t     FIELD_SIZE_Y            = 4096;
+	static const real_t     FIELD_SIZE_X            = 10240;
+	static const real_t     FIELD_SIZE_Y            = 5760;
 
 	// Spatial Map size
 	static constexpr const size_t SPATIAL_MAP_TILES_X = 128;
