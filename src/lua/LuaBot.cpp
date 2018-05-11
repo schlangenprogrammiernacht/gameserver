@@ -32,7 +32,6 @@ bool LuaBot::init(std::string& initErrorMessage)
 		m_setQuotaFunc = m_lua_state["set_quota"];
 		m_clearQuotaFunc = m_lua_state["clear_quota"];
 		m_self.setColorTable(m_lua_state["colors"]);
-
 		m_lua_safe_env = createEnvironment();
 
 		std::string chunkName = "bot.lua";
@@ -119,8 +118,8 @@ sol::environment LuaBot::createEnvironment()
 {
 	auto env = sol::environment(m_lua_state, sol::create);
 	env["self"] = &m_self;
-	env["findFood"] = [this](real_t radius, real_t min_size) { return apiFindFood(radius, min_size); };
-	env["findSegments"] = [this](real_t radius, bool include_self) { return apiFindSegments(radius, include_self); };
+	env["findFood"] = [this](real_t radius, real_t min_size) { return sol::as_table(apiFindFood(radius, min_size)); };
+	env["findSegments"] = [this](real_t radius, bool include_self) { return sol::as_table(apiFindSegments(radius, include_self)); };
 	env["log"] = [this](std::string v) { return apiLog(v); };
 
 	for (auto& func: std::vector<std::string>{
