@@ -17,6 +17,7 @@
  */
 
 #include <iostream>
+#include <chrono>
 
 #include "config.h"
 #include "Environment.h"
@@ -110,29 +111,70 @@ bool Game::OnDataAvailable(TcpSocket &socket)
 void Game::ProcessOneFrame()
 {
 	// do all the game logic here and send updates to clients
+	auto tBeginFrame = std::chrono::steady_clock::now();
 
+	auto frame = m_field->getCurrentFrame();
+
+	auto tBeginDecayFood = std::chrono::steady_clock::now();
 	m_field->decayFood();
-	m_field->consumeFood();
-	m_field->removeFood();
-	m_field->moveAllBots();
+	auto tEndDecayFood = std::chrono::steady_clock::now();
 
+	auto tBeginConsumeFood = std::chrono::steady_clock::now();
+	m_field->consumeFood();
+	auto tEndConsumeFood = std::chrono::steady_clock::now();
+
+	auto tBeginRemoveFood = std::chrono::steady_clock::now();
+	m_field->removeFood();
+	auto tEndRemoveFood = std::chrono::steady_clock::now();
+
+	auto tBeginMoveAllBots = std::chrono::steady_clock::now();
+	m_field->moveAllBots();
+	auto tEndMoveAllBots = std::chrono::steady_clock::now();
+
+	auto tBeginProcessStats = std::chrono::steady_clock::now();
 	if(++m_streamStatsUpdateCounter >= STREAM_STATS_UPDATE_INTERVAL) {
 		m_field->sendStatsToStream();
 		m_streamStatsUpdateCounter = 0;
 	}
+	auto tEndProcessStats = std::chrono::steady_clock::now();
 
+	auto tBeginProcessLog = std::chrono::steady_clock::now();
 	m_field->processLog();
-	m_field->tick();
+	auto tEndProcessLog = std::chrono::steady_clock::now();
 
+	auto tBeginProcessTick = std::chrono::steady_clock::now();
+	m_field->tick();
+	auto tEndProcessTick = std::chrono::steady_clock::now();
+
+	auto tBeginSendUpdate = std::chrono::steady_clock::now();
 	// send differential update to all connected clients
 	std::string update = m_field->getUpdateTracker().serialize();
 	server.Broadcast(update);
+	auto tEndSendUpdate = std::chrono::steady_clock::now();
 
+	auto tBeginQueryDB = std::chrono::steady_clock::now();
 	if (++m_dbQueryCounter >= DB_QUERY_INTERVAL)
 	{
 		queryDB();
 		m_dbQueryCounter = 0;
 	}
+	auto tEndQueryDB = std::chrono::steady_clock::now();
+
+	auto tEndFrame = std::chrono::steady_clock::now();
+
+	std::cout << std::endl;
+	std::cout << "Frame " << frame << " timings: " << std::endl;
+	std::cout << "DecayFood    " << std::chrono::duration_cast<std::chrono::microseconds>(tEndDecayFood - tBeginDecayFood).count() << std::endl;
+	std::cout << "ConsumeFood  " << std::chrono::duration_cast<std::chrono::microseconds>(tEndConsumeFood - tBeginConsumeFood).count() << std::endl;
+	std::cout << "RemoveFood   " << std::chrono::duration_cast<std::chrono::microseconds>(tEndRemoveFood - tBeginRemoveFood).count() << std::endl;
+	std::cout << "MoveAllBots  " << std::chrono::duration_cast<std::chrono::microseconds>(tEndMoveAllBots - tBeginMoveAllBots).count() << std::endl;
+	std::cout << "ProcessStats " << std::chrono::duration_cast<std::chrono::microseconds>(tEndProcessStats - tBeginProcessStats).count() << std::endl;
+	std::cout << "ProcessLog   " << std::chrono::duration_cast<std::chrono::microseconds>(tEndProcessLog - tBeginProcessLog).count() << std::endl;
+	std::cout << "ProcessTick  " << std::chrono::duration_cast<std::chrono::microseconds>(tEndProcessTick- tBeginProcessTick).count() << std::endl;
+	std::cout << "SendUpdate   " << std::chrono::duration_cast<std::chrono::microseconds>(tEndSendUpdate - tBeginSendUpdate).count() << std::endl;
+	std::cout << "QueryDB      " << std::chrono::duration_cast<std::chrono::microseconds>(tEndQueryDB - tBeginQueryDB).count() << std::endl;
+	std::cout << "Whole Frame  " << std::chrono::duration_cast<std::chrono::microseconds>(tEndFrame - tBeginFrame).count() << std::endl;
+	std::cout << std::endl;
 }
 
 int Game::Main()
