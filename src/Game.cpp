@@ -53,14 +53,6 @@ Game::Game()
 		}
 	);
 
-	server.AddTimerListener(
-		[this](int, uint64_t expirationCount)
-		{
-			OnTimerInterval();
-			return true;
-		}
-	);
-
 	m_field->addBotKilledCallback(
 		[this](std::shared_ptr<Bot> victim, std::shared_ptr<Bot> killer)
 		{
@@ -115,7 +107,7 @@ bool Game::OnDataAvailable(TcpSocket &socket)
 	return true;
 }
 
-bool Game::OnTimerInterval()
+void Game::ProcessOneFrame()
 {
 	// do all the game logic here and send updates to clients
 
@@ -141,8 +133,6 @@ bool Game::OnTimerInterval()
 		queryDB();
 		m_dbQueryCounter = 0;
 	}
-
-	return true;
 }
 
 int Game::Main()
@@ -162,12 +152,10 @@ int Game::Main()
 		createBot(id);
 	}
 
-	server.AddIntervalTimer(16666); // 60 fps
-	//server.AddIntervalTimer(50000); // 20 fps
-	//server.AddIntervalTimer(1000000); // 1 fps
-
-	while(true) {
-		server.Poll(1000);
+	while(true)
+	{
+		ProcessOneFrame();
+		server.Poll(0);
 	}
 }
 
