@@ -17,13 +17,13 @@
  */
 
 #include <iostream>
-#include <chrono>
 
+#include "Game.h"
 #include "config.h"
 #include "Environment.h"
 #include "debug_funcs.h"
 #include "MsgPackUpdateTracker.h"
-#include "Game.h"
+#include "Stopwatch.h"
 
 Game::Game()
 {
@@ -111,69 +111,69 @@ bool Game::OnDataAvailable(TcpSocket &socket)
 void Game::ProcessOneFrame()
 {
 	// do all the game logic here and send updates to clients
-	auto tBeginFrame = std::chrono::steady_clock::now();
-
 	auto frame = m_field->getCurrentFrame();
 
-	auto tBeginDecayFood = std::chrono::steady_clock::now();
+	Stopwatch swProcessFrame("ProcessFrame");
+
+	Stopwatch swDecayFood("DecayFood");
 	m_field->decayFood();
-	auto tEndDecayFood = std::chrono::steady_clock::now();
+	swDecayFood.Stop();
 
-	auto tBeginConsumeFood = std::chrono::steady_clock::now();
+	Stopwatch swConsumeFood("ConsumeFood");
 	m_field->consumeFood();
-	auto tEndConsumeFood = std::chrono::steady_clock::now();
+	swConsumeFood.Stop();
 
-	auto tBeginRemoveFood = std::chrono::steady_clock::now();
+	Stopwatch swRemoveFood("RemoveFood");
 	m_field->removeFood();
-	auto tEndRemoveFood = std::chrono::steady_clock::now();
+	swRemoveFood.Stop();
 
-	auto tBeginMoveAllBots = std::chrono::steady_clock::now();
+	Stopwatch swMoveAllBots("MoveAllBots");
 	m_field->moveAllBots();
-	auto tEndMoveAllBots = std::chrono::steady_clock::now();
+	swMoveAllBots.Stop();
 
-	auto tBeginProcessStats = std::chrono::steady_clock::now();
+	Stopwatch swProcessStats("ProcessStats");
 	if(++m_streamStatsUpdateCounter >= STREAM_STATS_UPDATE_INTERVAL) {
 		m_field->sendStatsToStream();
 		m_streamStatsUpdateCounter = 0;
 	}
-	auto tEndProcessStats = std::chrono::steady_clock::now();
+	swProcessStats.Stop();
 
-	auto tBeginProcessLog = std::chrono::steady_clock::now();
+	Stopwatch swProcessLog("ProcessLog");
 	m_field->processLog();
-	auto tEndProcessLog = std::chrono::steady_clock::now();
+	swProcessLog.Stop();
 
-	auto tBeginProcessTick = std::chrono::steady_clock::now();
+	Stopwatch swProcessTick("ProcessTick");
 	m_field->tick();
-	auto tEndProcessTick = std::chrono::steady_clock::now();
+	swProcessTick.Stop();
 
-	auto tBeginSendUpdate = std::chrono::steady_clock::now();
+	Stopwatch swSendUpdate("SendUpdate");
 	// send differential update to all connected clients
 	std::string update = m_field->getUpdateTracker().serialize();
 	server.Broadcast(update);
-	auto tEndSendUpdate = std::chrono::steady_clock::now();
+	swSendUpdate.Stop();
 
-	auto tBeginQueryDB = std::chrono::steady_clock::now();
+	Stopwatch swQueryDB("QueryDB");
 	if (++m_dbQueryCounter >= DB_QUERY_INTERVAL)
 	{
 		queryDB();
 		m_dbQueryCounter = 0;
 	}
-	auto tEndQueryDB = std::chrono::steady_clock::now();
+	swQueryDB.Stop();
 
-	auto tEndFrame = std::chrono::steady_clock::now();
+	swProcessFrame.Stop();
 
 	std::cout << std::endl;
 	std::cout << "Frame " << frame << " timings: " << std::endl;
-	std::cout << "DecayFood    " << std::chrono::duration_cast<std::chrono::microseconds>(tEndDecayFood - tBeginDecayFood).count() << std::endl;
-	std::cout << "ConsumeFood  " << std::chrono::duration_cast<std::chrono::microseconds>(tEndConsumeFood - tBeginConsumeFood).count() << std::endl;
-	std::cout << "RemoveFood   " << std::chrono::duration_cast<std::chrono::microseconds>(tEndRemoveFood - tBeginRemoveFood).count() << std::endl;
-	std::cout << "MoveAllBots  " << std::chrono::duration_cast<std::chrono::microseconds>(tEndMoveAllBots - tBeginMoveAllBots).count() << std::endl;
-	std::cout << "ProcessStats " << std::chrono::duration_cast<std::chrono::microseconds>(tEndProcessStats - tBeginProcessStats).count() << std::endl;
-	std::cout << "ProcessLog   " << std::chrono::duration_cast<std::chrono::microseconds>(tEndProcessLog - tBeginProcessLog).count() << std::endl;
-	std::cout << "ProcessTick  " << std::chrono::duration_cast<std::chrono::microseconds>(tEndProcessTick- tBeginProcessTick).count() << std::endl;
-	std::cout << "SendUpdate   " << std::chrono::duration_cast<std::chrono::microseconds>(tEndSendUpdate - tBeginSendUpdate).count() << std::endl;
-	std::cout << "QueryDB      " << std::chrono::duration_cast<std::chrono::microseconds>(tEndQueryDB - tBeginQueryDB).count() << std::endl;
-	std::cout << "Whole Frame  " << std::chrono::duration_cast<std::chrono::microseconds>(tEndFrame - tBeginFrame).count() << std::endl;
+	swDecayFood.Print();
+	swConsumeFood.Print();
+	swRemoveFood.Print();
+	swMoveAllBots.Print();
+	swProcessStats.Print();
+	swProcessLog.Print();
+	swProcessTick.Print();
+	swSendUpdate.Print();
+	swQueryDB.Print();
+	swProcessFrame.Print();
 	std::cout << std::endl;
 }
 

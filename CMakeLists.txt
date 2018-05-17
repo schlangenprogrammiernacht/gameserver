@@ -50,6 +50,7 @@ set(sources
 	src/UpdateTracker.h
 	src/Environment.h
 	src/Database.h src/Database.cpp
+	src/Stopwatch.h src/Stopwatch.cpp
 
 	src/lua/LuaBot.cpp
 	src/lua/LuaBot.h
