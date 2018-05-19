@@ -27,6 +27,7 @@ Bot::Bot(Field *field, uint32_t startFrame, std::unique_ptr<db::BotScript> dbDat
 	: m_field(field)
 	, m_startFrame(startFrame)
 	, m_dbData(std::move(dbData))
+	, m_swMove("move")
 {
 	m_snake = std::make_shared<Snake>(field, startPos, 5, startHeading);
 	m_lua_bot = std::make_unique<LuaBot>(*this, m_dbData->code);
@@ -47,6 +48,9 @@ bool Bot::init(std::string& initErrorMessage)
 
 std::size_t Bot::move(void)
 {
+	m_swMove.Reset();
+	m_swMove.Start();
+
 	bool boost;
 	real_t directionChange;
 	if (!m_lua_bot->step(directionChange, boost))
@@ -54,7 +58,10 @@ std::size_t Bot::move(void)
 		boost = false;
 		directionChange = 0;
 	}
-	return m_snake->move(directionChange, boost);
+	auto retval = m_snake->move(directionChange, boost);
+
+	m_swMove.Stop();
+	return retval;
 }
 
 std::shared_ptr<Bot> Bot::checkCollision(void) const
@@ -144,4 +151,9 @@ uint32_t Bot::getFace()
 uint32_t Bot::getDogTag()
 {
 	return m_lua_bot->getDogTag();
+}
+
+long Bot::getApiTimeNs()
+{
+	return m_lua_bot->getApiTimeNs();
 }

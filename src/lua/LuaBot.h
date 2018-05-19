@@ -23,6 +23,7 @@
 #include "lua/LuaSelfInfo.h"
 #include "lua/LuaFoodInfo.h"
 #include "lua/LuaSegmentInfo.h"
+#include "Stopwatch.h"
 
 class Bot;
 class LuaBot
@@ -34,6 +35,7 @@ class LuaBot
 		std::vector<uint32_t> &getColors();
 		uint32_t getFace() { return m_self.getFace(); }
 		uint32_t getDogTag() { return m_self.getDogTag(); }
+		long getApiTimeNs();
 
 	private:
 		Bot& m_bot;
@@ -46,6 +48,7 @@ class LuaBot
 		sol::protected_function m_clearQuotaFunc;
 		LuaSelfInfo m_self;
 		std::string m_script;
+		Stopwatch m_swAPI;
 
 		void setQuota(uint32_t num_instructions, double seconds);
 		void clearQuota();

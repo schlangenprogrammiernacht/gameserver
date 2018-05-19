@@ -27,6 +27,7 @@
 #include "IdentifyableObject.h"
 #include "Snake.h"
 #include "types.h"
+#include "Stopwatch.h"
 
 class Field;
 class LuaBot;
@@ -49,6 +50,8 @@ class Bot : public IdentifyableObject
 		real_t m_consumedFoodHuntedBySelf = 0;
 		real_t m_consumedFoodHuntedByOthers = 0;
 		real_t m_consumedNaturalFood = 0;
+
+		Stopwatch m_swMove;
 
 	public:
 		/*!
@@ -113,6 +116,6 @@ class Bot : public IdentifyableObject
 		uint32_t getFace();
 		uint32_t getDogTag();
 
-
-
+		long getLastMoveTimeNs() { return m_swMove.GetThreadTimeNs(); }
+		long getApiTimeNs();
 };

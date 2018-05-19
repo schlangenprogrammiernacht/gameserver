@@ -26,7 +26,12 @@ class Stopwatch
 		Stopwatch(std::string name);
 		void Start();
 		void Stop();
+		void Reset();
 		void Print();
+
+		long GetMonotonicTimeNs() { return m_tMonotonic; }
+		long GetProcessTimeNs() { return m_tProcess; }
+		long GetThreadTimeNs() { return m_tThread; }
 
 	private:
 		std::string m_name;

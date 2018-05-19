@@ -40,9 +40,16 @@ void Stopwatch::Stop()
 	clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &m_tStopProcess);
 	clock_gettime(CLOCK_THREAD_CPUTIME_ID, &m_tStopThread);
 
-	m_tMonotonic = timespecDiffToNano(m_tStartMonotonic, m_tStopMonotonic);
-	m_tProcess = timespecDiffToNano(m_tStartProcess, m_tStopProcess);
-	m_tThread = timespecDiffToNano(m_tStartThread, m_tStopThread);
+	m_tMonotonic += timespecDiffToNano(m_tStartMonotonic, m_tStopMonotonic);
+	m_tProcess += timespecDiffToNano(m_tStartProcess, m_tStopProcess);
+	m_tThread += timespecDiffToNano(m_tStartThread, m_tStopThread);
+}
+
+void Stopwatch::Reset()
+{
+	m_tMonotonic = 0;
+	m_tProcess = 0;
+	m_tThread = 0;
 }
 
 void Stopwatch::Print()

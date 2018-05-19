@@ -21,6 +21,7 @@
 #include <algorithm>
 
 #include "Field.h"
+#include "Stopwatch.h"
 
 Field::Field(real_t w, real_t h, std::size_t food_parts, std::unique_ptr<UpdateTracker> update_tracker)
 	: m_width(w)
@@ -173,6 +174,8 @@ void Field::consumeFood(void)
 
 void Field::moveAllBots(void)
 {
+	Stopwatch swAll("all");
+	Stopwatch swMove("move");
 	// first round: move all bots
 	for(auto &b : m_bots) {
 		std::unique_ptr<BotThreadPool::Job> job(new BotThreadPool::Job(BotThreadPool::Move, b));
@@ -180,6 +183,7 @@ void Field::moveAllBots(void)
 	}
 
 	m_threadPool.waitForCompletion();
+	swMove.Stop();
 
 	// FIXME: make this work without temporary vector
 	std::vector< std::unique_ptr<BotThreadPool::Job> > tmpJobs;
@@ -190,6 +194,7 @@ void Field::moveAllBots(void)
 		tmpJobs.push_back(std::move(job));
 	}
 
+	Stopwatch swCollisionCheck("collision check");
 	// second round: collision check
 	for(auto &j : tmpJobs) {
 		j->jobType = BotThreadPool::CollisionCheck;
@@ -197,6 +202,7 @@ void Field::moveAllBots(void)
 	}
 
 	m_threadPool.waitForCompletion();
+	swCollisionCheck.Stop();
 
 
 	// collision check for all bots
@@ -237,7 +243,28 @@ void Field::moveAllBots(void)
 		}
 	}
 
+	Stopwatch swSegmentMap("segment map");
 	updateSnakeSegmentMap();
+	swSegmentMap.Stop();
+	swAll.Stop();
+
+	std::cout << std::endl << "Field::moveAllBots() timings:" << std::endl;
+	swMove.Print();
+	swCollisionCheck.Print();
+	swSegmentMap.Print();
+	swAll.Print();
+
+	long actualMoveTime = 0;
+	long apiTime = 0;
+	for(auto &b : m_bots)
+	{
+		actualMoveTime += b->getLastMoveTimeNs();
+		apiTime += b->getApiTimeNs();
+	}
+	std::cout << "actual move time in threads: " << actualMoveTime/1000l << std::endl;
+	std::cout << "time spent in api functions: " << apiTime/1000l << std::endl;
+
+	std::cout << std::endl;
 }
 
 void Field::processLog()

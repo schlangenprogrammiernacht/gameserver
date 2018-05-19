@@ -30,6 +30,7 @@ LuaBot::LuaBot(Bot &bot, std::string script)
 	, m_lua_state(sol::default_at_panic, PoolAllocator::lua_allocator, &m_allocator)
 	, m_self(bot, bot.getGUID())
 	, m_script(script)
+	, m_swAPI("lua api functions")
 {
 	LuaFoodInfo::Register(m_lua_state);
 	m_luaFoodInfoTable.reserve(1000);
@@ -122,6 +123,13 @@ std::vector<uint32_t>& LuaBot::getColors()
 	return m_self.getCachedColors();
 }
 
+long LuaBot::getApiTimeNs()
+{
+	auto retval = m_swAPI.GetThreadTimeNs();
+	m_swAPI.Reset();
+	return retval;
+}
+
 void LuaBot::setQuota(uint32_t num_instructions, double seconds)
 {
 	m_setQuotaFunc(num_instructions, seconds);
@@ -187,6 +195,7 @@ sol::table LuaBot::createFunctionTable(const std::string &obj, const std::vector
 
 std::vector<LuaFoodInfo>& LuaBot::apiFindFood(real_t radius, real_t min_size)
 {
+	m_swAPI.Start();
 	m_luaFoodInfoTable.clear();
 
 	auto head_pos = m_bot.getSnake()->getHeadPosition();
@@ -222,11 +231,13 @@ std::vector<LuaFoodInfo>& LuaBot::apiFindFood(real_t radius, real_t min_size)
 		[](const LuaFoodInfo& a, const LuaFoodInfo& b) { return a.v > b.v; }
 	);
 
+	m_swAPI.Stop();
 	return m_luaFoodInfoTable;
 }
 
 std::vector<LuaSegmentInfo>& LuaBot::apiFindSegments(real_t radius, bool include_self)
 {
+	m_swAPI.Start();
 	m_luaSegmentInfoTable.clear();
 
 	auto pos = m_bot.getSnake()->getHeadPosition();
@@ -262,12 +273,16 @@ std::vector<LuaSegmentInfo>& LuaBot::apiFindSegments(real_t radius, bool include
 		[](const LuaSegmentInfo& a, const LuaSegmentInfo& b) { return a.dist < b.dist; }
 	);
 
+	m_swAPI.Stop();
 	return m_luaSegmentInfoTable;
 }
 
 bool LuaBot::apiLog(std::string data)
 {
-	return m_bot.appendLogMessage(data, true);
+	m_swAPI.Start();
+	auto retval = m_bot.appendLogMessage(data, true);
+	m_swAPI.Stop();
+	return retval;
 }
 
 void LuaBot::apiCallInit()
