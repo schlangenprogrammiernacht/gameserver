@@ -7,5 +7,6 @@ RUN useradd -d /spnbot -m spnbot
 ADD bot_wrapper.sh /
 
 ADD spn_cpp_framework/ /spnbot/spn_cpp_framework
+RUN chown -R spnbot /spnbot
 
 ENTRYPOINT ["/bot_wrapper.sh"]
