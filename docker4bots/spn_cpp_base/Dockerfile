@@ -2,7 +2,7 @@ FROM ubuntu:18.04
 
 RUN apt update && apt install -y g++ cmake
 
-RUN useradd -d /spnbot -m spnbot
+RUN useradd -u 1337 -U -d /spnbot -m spnbot
 
 ADD bot_wrapper.sh /
 
