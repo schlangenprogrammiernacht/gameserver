@@ -100,4 +100,12 @@ namespace config {
 
 	// maximum number of colors a bot can have
 	static constexpr const size_t MAX_COLORS = 100;
+
+	// bot IPC directory location
+	static const char *BOT_IPC_DIRECTORY = "/mnt/spn_shm/";
+
+	// Timeout configuration (all times in seconds)
+	static const real_t BOT_CONNECT_TIMEOUT = 5.000;
+	static const real_t BOT_INIT_TIMEOUT   = 0.050;
+	static const real_t BOT_STEP_TIMEOUT   = 0.010;
 }
