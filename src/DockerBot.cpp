@@ -23,9 +23,11 @@
 
 #include <sys/mman.h>
 #include <sys/socket.h>
+#include <sys/select.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/un.h>
+#include <sys/wait.h>
 
 #include <fcntl.h>
 #include <unistd.h>
@@ -39,14 +41,14 @@
 #include "DockerBot.h"
 
 DockerBot::DockerBot(Bot &bot, std::string botCode)
-	: m_botCode(botCode)
-	, m_bot(bot)
+	: m_bot(bot)
+	, m_botCode(botCode)
 	, m_shm(NULL)
 	, m_listenSocket(-1)
 	, m_botSocket(-1)
 {
 	std::regex cleanup_re("[^a-zA-Z0-9+_-]+");
-	std::regex_replace(m_cleanName.begin(), bot.getName().begin(), bot.getName.end(),
+	std::regex_replace(m_cleanName.begin(), bot.getName().begin(), bot.getName().end(),
 			cleanup_re, "_");
 
 	m_cleanName = m_cleanName.substr(0, 32);
@@ -60,7 +62,7 @@ DockerBot::~DockerBot()
 
 void DockerBot::createSharedMemory(void)
 {
-	std::string shm_path = BOT_IPC_DIRECTORY + m_cleanName + "/shm";
+	std::string shm_path = config::BOT_IPC_DIRECTORY + m_cleanName + "/shm";
 
 	int shm_fd = open(shm_path.c_str(), O_RDWR, 0666);
 	if(shm_fd == -1) {
@@ -68,7 +70,7 @@ void DockerBot::createSharedMemory(void)
 		throw std::runtime_error("Failed set up shared memory.");
 	}
 
-	void *shared_mem = mmap(NULL, IPC_SHARED_MEMORY_BYTES, PROT_READ, MAP_SHARED, *fd, 0);
+	void *shared_mem = mmap(NULL, IPC_SHARED_MEMORY_BYTES, PROT_READ, MAP_SHARED, shm_fd, 0);
 	if(shared_mem == (void*)-1) {
 		std::cerr << "mmap() failed: " << strerror(errno) << std::endl;
 		close(shm_fd);
@@ -106,7 +108,7 @@ void DockerBot::createSocket(void)
 	struct sockaddr_un sa;
 
 	sa.sun_family = AF_UNIX;
-	snprintf(sa.sun_path, sizeof(sa.sun_path), "%s%s/socket", BOT_IPC_DIRECTORY, m_cleanName.c_str());
+	snprintf(sa.sun_path, sizeof(sa.sun_path), "%s%s/socket", config::BOT_IPC_DIRECTORY, m_cleanName.c_str());
 
 	m_listenSockPath = sa.sun_path;
 
@@ -151,10 +153,26 @@ void DockerBot::destroySocket(void)
 
 void DockerBot::startBot(void)
 {
-	// TODO: start the bot process
+	int pid = fork();
+	if(pid == 0) {
+		// child process
+		execl(config::BOT_LAUNCHER_SCRIPT, config::BOT_LAUNCHER_SCRIPT,
+				m_cleanName.c_str(), (char*)NULL);
+
+		// we only get here if execl failed
+		std::cerr << "execl() failed: " << strerror(errno) << std::endl;
+		exit(99);
+	} else if(pid == -1) {
+		// error
+		std::cerr << "fork() failed: " << strerror(errno) << std::endl;
+		throw std::runtime_error("Error while starting bot process.");
+	}
+
+	// parent process continues
+	m_dockerPID = pid;
 
 	// wait for a connection
-	int ret = waitForReadEvent(m_listenSocket, BOT_CONNECT_TIMEOUT);
+	int ret = waitForReadEvent(m_listenSocket, config::BOT_CONNECT_TIMEOUT);
 	if(ret <= 0) {
 		forceBotShutdown();
 	}
@@ -166,12 +184,79 @@ void DockerBot::startBot(void)
 	}
 
 	// bot connected in time
-	int ret = accept(m_listenSocket);
+	ret = accept(m_listenSocket, NULL, NULL);
 	if(ret == -1) {
 		std::cerr << "accept() failed: " << strerror(errno) << std::endl;
-		close(s);
 		throw std::runtime_error("Failed set up IPC socket.");
 	}
+}
+
+int DockerBot::forceBotShutdown(void)
+{
+	pid_t pid = fork();
+	if(pid == 0) {
+		// child process
+		execl("docker", "docker", "stop", "--time=3",
+				("spnbot:" + m_cleanName).c_str(), (char*)NULL);
+
+		// we only get here if execl failed
+		std::cerr << "execl() failed: " << strerror(errno) << std::endl;
+		exit(99);
+	} else if(pid == -1) {
+		// error
+		std::cerr << "fork() failed: " << strerror(errno) << std::endl;
+		throw std::runtime_error("Error while stopping bot process.");
+	}
+
+	int status;
+	int exitpid = waitpid(pid, &status, 0);
+
+	if(exitpid == -1) {
+		std::cerr << "waitpid() failed: " << strerror(errno) << std::endl;
+		throw std::runtime_error("Error while stopping bot process.");
+	}
+
+	if(WIFEXITED(status) && (WEXITSTATUS(status) == 0)) {
+		std::cerr << "Bot " << m_cleanName << " shut down successfully forced." << std::endl;
+		cleanupSubprocess();
+		return 0;
+	} else {
+		std::cerr << "'docker stop' terminated with unexpected status information: " << status << std::endl;
+		return -1;
+	}
+
+	return 0;
+}
+
+int DockerBot::cleanupSubprocess(void)
+{
+	// this function expects that the bot was shut down before, but if it’s still
+	// running, the shutdown is forced.
+
+	if(m_dockerPID == -1) {
+		// nothing to do
+		return 0;
+	}
+
+	int status;
+	int exitpid = waitpid(m_dockerPID, &status, WNOHANG);
+
+	if(exitpid == 0) {
+		// bot still running -> force shutdown
+		forceBotShutdown();
+		// wait for exit (blocking this time)
+		exitpid = waitpid(m_dockerPID, &status, 0);
+	}
+
+	if(WIFEXITED(status)) {
+		std::cerr << "Bot exited normally with code " << WEXITSTATUS(status) << std::endl;
+	} else if(WIFSIGNALED(status)) {
+		std::cerr << "Bot terminated by signal " << WSTOPSIG(status) << std::endl;
+	} else {
+		std::cerr << "Bot terminated with unexpected exit status: " << status << std::endl;
+	}
+
+	return 0;
 }
 
 int DockerBot::waitForReadEvent(int fd, real_t timeout)
@@ -179,7 +264,7 @@ int DockerBot::waitForReadEvent(int fd, real_t timeout)
 	fd_set rfds;
 
 	FD_ZERO(&rfds);
-	FD_SET(&rfds, fd);
+	FD_SET(fd, &rfds);
 
 	struct timeval tv;
 	tv.tv_sec = static_cast<long>(timeout);
@@ -188,7 +273,6 @@ int DockerBot::waitForReadEvent(int fd, real_t timeout)
 	int ret = select(fd+1, &rfds, NULL, NULL, &tv);
 	if(ret == -1) {
 		std::cerr << "select() failed: " << strerror(errno) << std::endl;
-		close(s);
 		return -1;
 	}
 

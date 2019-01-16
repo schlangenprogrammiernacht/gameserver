@@ -24,10 +24,11 @@
 #include "Stopwatch.h"
 
 class Bot;
-class LuaBot
+class DockerBot
 {
 	public:
-		LuaBot(Bot &bot, std::string botCode);
+		DockerBot(Bot &bot, std::string botCode);
+		~DockerBot();
 
 		bool buildDockerContainer(std::string &errorMessage);
 
@@ -42,16 +43,26 @@ class LuaBot
 	private:
 		Bot&        m_bot;
 		std::string m_cleanName;
+		std::string m_botCode;
 
 		IpcSharedMemory *m_shm;
 		int              m_shmFd;
+		int              m_dockerPID;
 		int              m_listenSocket;
+		std::string      m_listenSockPath;
 		int              m_botSocket;
 
 		void createSharedMemory(void);
+		void destroySharedMemory(void);
+
 		void fillSharedMemory(void);
 
+		void createSocket(void);
+		void destroySocket(void);
+
 		void startBot(void);
+		int  forceBotShutdown(void);
+		int  cleanupSubprocess(void);
 
 		int waitForReadEvent(int fd, real_t timeout);
 };

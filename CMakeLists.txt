@@ -27,6 +27,8 @@ set(sources
 	src/BotThreadPool.h
 	src/config.h
 	src/debug_funcs.h
+	src/DockerBot.cpp
+	src/DockerBot.h
 	src/Field.cpp
 	src/Field.h
 	src/Food.cpp
@@ -67,6 +69,7 @@ include_directories(
 	lib/TcpServer/TcpServer/include/
 	lib/sol2
 	${LUA_INCLUDE_DIR}
+	docker4bots/spn_cpp_base/spn_cpp_framework/src/
 	)
 
 add_executable(
