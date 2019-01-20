@@ -421,7 +421,7 @@ bool DockerBot::sendMessageToBot(void *data, size_t length)
 	if(ret == -1) {
 		std::cerr << "send() failed: " << strerror(errno) << std::endl;
 		return false;
-	} else if(ret != length) {
+	} else if(static_cast<size_t>(ret) != length) {
 		std::cerr << "Sent only " << ret << " of " << length << " bytes to bot." << std::endl;
 		return false;
 	}
@@ -443,7 +443,7 @@ bool DockerBot::readMessageFromBot(void *data, size_t length, real_t timeout)
 	if(ret == -1) {
 		std::cerr << "recv() failed: " << strerror(errno) << std::endl;
 		return false;
-	} else if(ret != length) {
+	} else if(static_cast<size_t>(ret) != length) {
 		std::cerr << "Received only " << ret << " of " << length << " bytes from bot." << std::endl;
 		return false;
 	}

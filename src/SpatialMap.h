@@ -131,12 +131,12 @@ template <class T, size_t TILES_X, size_t TILES_Y> class SpatialMap
 
 		static bool needsWrapX(int unwrapped)
 		{
-			return (unwrapped<0) || (unwrapped>=TILES_X);
+			return (unwrapped<0) || (static_cast<size_t>(unwrapped) >= TILES_X);
 		}
 
 		static bool needsWrapY(int unwrapped)
 		{
-			return (unwrapped<0) || (unwrapped>=TILES_Y);
+			return (unwrapped<0) || (static_cast<size_t>(unwrapped) >= TILES_Y);
 		}
 
 };
