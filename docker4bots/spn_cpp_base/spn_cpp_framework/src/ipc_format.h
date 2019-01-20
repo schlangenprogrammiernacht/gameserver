@@ -25,6 +25,7 @@ struct IpcSegmentInfo {
 	ipc_real_t d;       //!< Direction angle
 	ipc_real_t dist;    //!< Distance
 	ipc_guid_t bot_id;  //!< Bot ID
+	bool       is_self; //!< True if this segment belongs to ones own snake
 };
 
 struct IpcColor {

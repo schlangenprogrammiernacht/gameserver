@@ -100,6 +100,109 @@ void DockerBot::destroySharedMemory(void)
 
 void DockerBot::fillSharedMemory(void)
 {
+	// Step 1: food
+
+	auto head_pos = m_bot.getSnake()->getHeadPosition();
+	real_t heading = m_bot.getHeading();
+
+	real_t radius = m_bot.getSightRadius();
+
+	real_t min_size = 1.0f; // FIXME
+
+	auto field = m_bot.getField();
+
+	size_t idx = 0;
+	for (auto &food: field->getFoodMap().getRegion(head_pos, radius))
+	{
+		if(idx >= IPC_FOOD_MAX_COUNT) {
+			// maximum amount of food written
+			break;
+		}
+
+		if (food.getValue()>=min_size)
+		{
+			Vector2D relPos = field->unwrapRelativeCoords(food.pos() - head_pos);
+			real_t direction = static_cast<real_t>(atan2(relPos.y(), relPos.x())) - heading;
+			while (direction < -M_PI) { direction += 2*M_PI; }
+			while (direction >  M_PI) { direction -= 2*M_PI; }
+			auto distance = relPos.norm();
+			if (distance>radius) { continue; }
+
+			m_shm->foodInfo[idx].x = relPos.x();
+			m_shm->foodInfo[idx].y = relPos.y();
+			m_shm->foodInfo[idx].v = food.getValue();
+			m_shm->foodInfo[idx].d = direction;
+			m_shm->foodInfo[idx].dist = distance;
+
+			idx++;
+		}
+	}
+
+	m_shm->foodCount = idx;
+
+	std::sort(
+		std::begin(m_shm->foodInfo),
+		std::end(m_shm->foodInfo),
+		[](const IpcFoodInfo& a, const IpcFoodInfo& b) { return a.dist > b.dist; }
+	);
+
+	// Step 2: segments
+
+	auto self_id = m_bot.getGUID();
+
+	std::set< std::shared_ptr<Bot> > usedBots;
+
+	idx = 0;
+	for (auto &segmentInfo: field->getSegmentInfoMap().getRegion(head_pos, radius + m_bot.getField()->getMaxSegmentRadius()))
+	{
+		if(idx >= IPC_FOOD_MAX_COUNT) {
+			// maximum number of segments written
+			break;
+		}
+
+		guid_t segmentBotID = segmentInfo.bot->getGUID();
+
+		real_t segmentRadius = segmentInfo.bot->getSnake()->getSegmentRadius();
+		Vector2D relPos = field->unwrapRelativeCoords(segmentInfo.pos() - head_pos);
+		real_t distance = relPos.norm();
+		if (distance > (radius+segmentRadius)) { continue; }
+
+		real_t direction = atan2(relPos.y(), relPos.x()) - heading;
+		if (direction < -M_PI) { direction += 2*M_PI; }
+		if (direction >  M_PI) { direction -= 2*M_PI; }
+
+		m_shm->segmentInfo[idx].x = relPos.x();
+		m_shm->segmentInfo[idx].y = relPos.y();
+		m_shm->segmentInfo[idx].d = segmentRadius;
+		m_shm->segmentInfo[idx].d = direction;
+		m_shm->segmentInfo[idx].dist = distance;
+		m_shm->segmentInfo[idx].bot_id = segmentBotID;
+		m_shm->segmentInfo[idx].is_self = (segmentBotID == self_id);
+
+		usedBots.insert(segmentInfo.bot);
+
+		idx++;
+	}
+
+	m_shm->segmentCount = idx;
+
+	std::sort(
+		std::begin(m_shm->segmentInfo),
+		std::end(m_shm->segmentInfo),
+		[](const IpcSegmentInfo& a, const IpcSegmentInfo& b) { return a.dist > b.dist; }
+	);
+
+	// Step 3: bots
+
+	idx = 0;
+	for(auto bot: usedBots) {
+		m_shm->botInfo[idx].bot_id = bot->getGUID();
+		strncpy(m_shm->botInfo[idx].bot_name, bot->getName().c_str(), sizeof(m_shm->botInfo[idx].bot_name));
+
+		idx++;
+	}
+
+	m_shm->botCount = idx;
 }
 
 void DockerBot::createSocket(void)
