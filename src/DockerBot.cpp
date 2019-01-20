@@ -56,6 +56,7 @@ DockerBot::DockerBot(Bot &bot, std::string botCode)
 
 DockerBot::~DockerBot()
 {
+	cleanupSubprocess();
 	destroySocket();
 	destroySharedMemory();
 }
@@ -95,6 +96,10 @@ void DockerBot::destroySharedMemory(void)
 	close(m_shmFd);
 
 	m_shm = NULL;
+}
+
+void DockerBot::fillSharedMemory(void)
+{
 }
 
 void DockerBot::createSocket(void)
@@ -277,4 +282,123 @@ int DockerBot::waitForReadEvent(int fd, real_t timeout)
 	}
 
 	return ret;
+}
+
+int DockerBot::checkIfSocketIsWriteable(int fd)
+{
+	fd_set wfds;
+
+	FD_ZERO(&wfds);
+	FD_SET(fd, &wfds);
+
+	struct timeval tv;
+	tv.tv_sec = 0;
+	tv.tv_usec = 0;
+
+	int ret = select(fd+1, NULL, &wfds, NULL, &tv);
+	if(ret == -1) {
+		std::cerr << "select() failed: " << strerror(errno) << std::endl;
+		return -1;
+	}
+
+	return ret;
+}
+
+bool DockerBot::sendMessageToBot(void *data, size_t length)
+{
+	int ret = checkIfSocketIsWriteable(m_botSocket);
+	if(ret == -1) {
+		return false;
+	} else if(ret == 0) {
+		std::cerr << "Bot socket is not ready for write." << std::endl;
+		return false;
+	}
+
+	ret = send(m_botSocket, data, length, 0);
+	if(ret == -1) {
+		std::cerr << "send() failed: " << strerror(errno) << std::endl;
+		return false;
+	} else if(ret != length) {
+		std::cerr << "Sent only " << ret << " of " << length << " bytes to bot." << std::endl;
+		return false;
+	}
+
+	return true;
+}
+
+bool DockerBot::readMessageFromBot(void *data, size_t length, real_t timeout)
+{
+	int ret = waitForReadEvent(m_botSocket, timeout);
+	if(ret == -1) {
+		return false;
+	} else if(ret == 0) {
+		std::cerr << "Read timed out." << std::endl;
+		return false;
+	}
+
+	ret = recv(m_botSocket, data, length, 0);
+	if(ret == -1) {
+		std::cerr << "recv() failed: " << strerror(errno) << std::endl;
+		return false;
+	} else if(ret != length) {
+		std::cerr << "Received only " << ret << " of " << length << " bytes from bot." << std::endl;
+		return false;
+	}
+
+	return true;
+}
+
+bool DockerBot::init(std::string &initErrorMessage)
+{
+	if(m_botSocket == -1 || m_dockerPID == -1 || m_shm == NULL) {
+		std::cerr << "Bot is not initialized properly." << std::endl;
+		return false;
+	}
+
+	IpcRequest request = {REQ_INIT};
+
+	if(!sendMessageToBot(&request, sizeof(request))) {
+		return false;
+	}
+
+	IpcResponse response;
+
+	if(!readMessageFromBot(&response, sizeof(response), config::BOT_INIT_TIMEOUT)) {
+		return false;
+	}
+
+	// TODO: read colors here
+
+	return true;
+}
+
+bool DockerBot::step(float &directionChange, bool &boost)
+{
+	if(m_botSocket == -1 || m_dockerPID == -1 || m_shm == NULL) {
+		std::cerr << "Bot is not initialized properly." << std::endl;
+		return false;
+	}
+
+	fillSharedMemory();
+
+	IpcRequest request = {REQ_STEP};
+
+	if(!sendMessageToBot(&request, sizeof(request))) {
+		return false;
+	}
+
+	IpcResponse response;
+
+	if(!readMessageFromBot(&response, sizeof(response), config::BOT_STEP_TIMEOUT)) {
+		return false;
+	}
+
+	if(response.type != RES_OK) {
+		std::cerr << "Bot sent an error status: " << response.type << std::endl;
+		return false;
+	}
+
+	// TODO: read shared memory here
+
+	return true;
 }

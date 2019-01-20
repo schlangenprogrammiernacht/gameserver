@@ -66,3 +66,32 @@ struct IpcSharedMemory {
 };
 
 const size_t IPC_SHARED_MEMORY_BYTES = sizeof(struct IpcSharedMemory);
+
+/*
+ * Communication structures.
+ */
+
+enum IpcRequestType {
+	REQ_INIT,
+	REQ_STEP
+};
+
+struct IpcRequest {
+	enum IpcRequestType type;
+};
+
+enum IpcResponseType {
+	RES_OK,
+	RES_ERROR
+};
+
+struct IpcResponse {
+	enum IpcResponseType type;
+
+	union {
+		struct {
+			ipc_real_t deltaAngle;
+			bool       boost;
+		} step;
+	};
+};

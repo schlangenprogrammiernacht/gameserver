@@ -65,4 +65,8 @@ class DockerBot
 		int  cleanupSubprocess(void);
 
 		int waitForReadEvent(int fd, real_t timeout);
+		int checkIfSocketIsWriteable(int fd);
+
+		bool sendMessageToBot(void *data, size_t length);
+		bool readMessageFromBot(void *data, size_t length, real_t timeout);
 };
