@@ -21,7 +21,7 @@
 #include "Bot.h"
 
 #include "Field.h"
-#include "lua/LuaBot.h"
+#include "DockerBot.h"
 
 Bot::Bot(Field *field, uint32_t startFrame, std::unique_ptr<db::BotScript> dbData, const Vector2D &startPos, real_t startHeading)
 	: m_field(field)
@@ -30,7 +30,7 @@ Bot::Bot(Field *field, uint32_t startFrame, std::unique_ptr<db::BotScript> dbDat
 	, m_swMove("move")
 {
 	m_snake = std::make_shared<Snake>(field, startPos, 5, startHeading);
-	m_lua_bot = std::make_unique<LuaBot>(*this, m_dbData->code);
+	m_docker_bot = std::make_unique<DockerBot>(*this, m_dbData->code);
 }
 
 Bot::~Bot()
@@ -43,7 +43,7 @@ Bot::~Bot()
 
 bool Bot::init(std::string& initErrorMessage)
 {
-	return m_lua_bot->init(initErrorMessage);
+	return m_docker_bot->init(initErrorMessage);
 }
 
 std::size_t Bot::move(void)
@@ -53,7 +53,7 @@ std::size_t Bot::move(void)
 
 	bool boost;
 	real_t directionChange;
-	if (!m_lua_bot->step(directionChange, boost))
+	if (!m_docker_bot->step(directionChange, boost))
 	{
 		boost = false;
 		directionChange = 0;
@@ -135,7 +135,7 @@ bool Bot::appendLogMessage(const std::string& data, bool checkCredit)
 
 std::vector<uint32_t> Bot::getColors()
 {
-	return m_lua_bot->getColors();
+	return m_docker_bot->getColors();
 }
 
 real_t Bot::getSightRadius() const
@@ -145,15 +145,15 @@ real_t Bot::getSightRadius() const
 
 uint32_t Bot::getFace()
 {
-	return m_lua_bot->getFace();
+	return m_docker_bot->getFace();
 }
 
 uint32_t Bot::getDogTag()
 {
-	return m_lua_bot->getDogTag();
+	return m_docker_bot->getDogTag();
 }
 
 long Bot::getApiTimeNs()
 {
-	return m_lua_bot->getApiTimeNs();
+	return m_docker_bot->getApiTimeNs();
 }

@@ -43,6 +43,7 @@
 DockerBot::DockerBot(Bot &bot, std::string botCode)
 	: m_bot(bot)
 	, m_botCode(botCode)
+	, m_swAPI("api")
 	, m_shm(NULL)
 	, m_listenSocket(-1)
 	, m_botSocket(-1)
@@ -454,7 +455,7 @@ bool DockerBot::readMessageFromBot(void *data, size_t length, real_t timeout)
 bool DockerBot::init(std::string &initErrorMessage)
 {
 	if(m_botSocket == -1 || m_dockerPID == -1 || m_shm == NULL) {
-		std::cerr << "Bot is not initialized properly." << std::endl;
+		std::cerr << "Bot is properly prepared to run." << std::endl;
 		return false;
 	}
 
@@ -470,7 +471,24 @@ bool DockerBot::init(std::string &initErrorMessage)
 		return false;
 	}
 
-	// TODO: read colors here
+	if(response.type != RES_OK) {
+		std::cerr << "Bot could not initialize successfully." << std::endl;
+		return false;
+	}
+
+	if(m_shm->colorCount > IPC_COLOR_MAX_COUNT) {
+		std::cerr << "Excessive number of colors returned." << std::endl;
+		return false;
+	}
+
+	m_colors.resize(m_shm->colorCount);
+	for(size_t i = 0; i < m_shm->colorCount; i++) {
+		uint8_t &r = m_shm->colors[i].r;
+		uint8_t &g = m_shm->colors[i].g;
+		uint8_t &b = m_shm->colors[i].b;
+
+		m_colors[i] = (r << 16) | (b << 8) | (g << 0);
+	}
 
 	return true;
 }
@@ -484,17 +502,24 @@ bool DockerBot::step(float &directionChange, bool &boost)
 
 	fillSharedMemory();
 
+	m_swAPI.Reset();
+	m_swAPI.Start();
+
 	IpcRequest request = {REQ_STEP};
 
 	if(!sendMessageToBot(&request, sizeof(request))) {
+		m_swAPI.Stop();
 		return false;
 	}
 
 	IpcResponse response;
 
 	if(!readMessageFromBot(&response, sizeof(response), config::BOT_STEP_TIMEOUT)) {
+		m_swAPI.Stop();
 		return false;
 	}
+
+	m_swAPI.Stop();
 
 	if(response.type != RES_OK) {
 		std::cerr << "Bot sent an error status: " << response.type << std::endl;

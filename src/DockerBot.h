@@ -35,15 +35,19 @@ class DockerBot
 		bool init(std::string &initErrorMessage);
 		bool step(float &directionChange, bool &boost);
 
-		std::vector<uint32_t> &getColors();
+		const std::vector<uint32_t> &getColors() { return m_colors; }
 
-		uint32_t getFace(void);
-		uint32_t getDogTag(void);
+		uint32_t getFace(void) { return m_shm->faceID; }
+		uint32_t getDogTag(void) { return m_shm->dogTagID; }
+
+		long getApiTimeNs(void) { return m_swAPI.GetThreadTimeNs(); }
 
 	private:
 		Bot&        m_bot;
 		std::string m_cleanName;
 		std::string m_botCode;
+
+		Stopwatch   m_swAPI;
 
 		IpcSharedMemory *m_shm;
 		int              m_shmFd;
@@ -51,6 +55,8 @@ class DockerBot
 		int              m_listenSocket;
 		std::string      m_listenSockPath;
 		int              m_botSocket;
+
+		std::vector<uint32_t> m_colors;
 
 		void createSharedMemory(void);
 		void destroySharedMemory(void);

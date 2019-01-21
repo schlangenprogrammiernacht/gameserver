@@ -30,7 +30,7 @@
 #include "Stopwatch.h"
 
 class Field;
-class LuaBot;
+class DockerBot;
 class GlobalView;
 
 /*!
@@ -43,7 +43,7 @@ class Bot : public IdentifyableObject
 		uint32_t m_startFrame;
 		std::unique_ptr<db::BotScript> m_dbData;
 		std::shared_ptr<Snake> m_snake;
-		std::unique_ptr<LuaBot> m_lua_bot;
+		std::unique_ptr<DockerBot> m_docker_bot;
 		std::vector<std::string> m_logMessages;
 		real_t m_logCredit = config::LOG_INITIAL_CREDITS;
 
@@ -95,7 +95,6 @@ class Bot : public IdentifyableObject
 		Field* getField() { return m_field; }
 		int getDatabaseId() { return m_dbData->bot_id; }
 		int getDatabaseVersionId() { return m_dbData->version_id; }
-		LuaBot& getLuaBot() { return *m_lua_bot; }
 		uint32_t getStartFrame() { return m_startFrame; }
 
 		real_t getConsumedNaturalFood(void) { return m_consumedNaturalFood; }

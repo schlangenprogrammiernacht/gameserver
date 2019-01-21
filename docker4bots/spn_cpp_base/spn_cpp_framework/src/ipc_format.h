@@ -64,6 +64,9 @@ struct IpcSharedMemory {
 
 	uint32_t colorCount;
 	struct IpcColor colors[IPC_COLOR_MAX_COUNT];
+
+	uint32_t faceID;
+	uint32_t dogTagID;
 };
 
 const size_t IPC_SHARED_MEMORY_BYTES = sizeof(struct IpcSharedMemory);
