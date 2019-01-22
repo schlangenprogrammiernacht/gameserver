@@ -32,6 +32,9 @@ class DockerBot
 
 		bool buildDockerContainer(std::string &errorMessage);
 
+		void startup(void);
+		void shutdown(void);
+
 		bool init(std::string &initErrorMessage);
 		bool step(float &directionChange, bool &boost);
 

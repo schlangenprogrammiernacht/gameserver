@@ -48,14 +48,25 @@ DockerBot::DockerBot(Bot &bot, std::string botCode)
 	, m_listenSocket(-1)
 	, m_botSocket(-1)
 {
-	std::regex cleanup_re("[^a-zA-Z0-9+_-]+");
-	std::regex_replace(m_cleanName.begin(), bot.getName().begin(), bot.getName().end(),
-			cleanup_re, "_");
+	std::regex cleanup_re(R"([^a-z0-9+_-]+)", std::regex_constants::icase);
+	m_cleanName = std::regex_replace(bot.getName(), cleanup_re, "_");
 
 	m_cleanName = m_cleanName.substr(0, 32);
 }
 
 DockerBot::~DockerBot()
+{
+	shutdown();
+}
+
+void DockerBot::startup()
+{
+	createSharedMemory();
+	createSocket();
+	startBot();
+}
+
+void DockerBot::shutdown(void)
 {
 	cleanupSubprocess();
 	destroySocket();
@@ -64,11 +75,24 @@ DockerBot::~DockerBot()
 
 void DockerBot::createSharedMemory(void)
 {
-	std::string shm_path = config::BOT_IPC_DIRECTORY + m_cleanName + "/shm";
+	std::string bot_dir = config::BOT_IPC_DIRECTORY + m_cleanName;
+	std::string shm_path = bot_dir + "/shm";
 
-	int shm_fd = open(shm_path.c_str(), O_RDWR, 0666);
+	int ret = mkdir(bot_dir.c_str(), 0700);
+	if(ret == -1 && (errno != EEXIST)) {
+		std::cerr << "mkdir() failed: " << strerror(errno) << std::endl;
+		throw std::runtime_error("Failed set up bot directory.");
+	}
+
+	int shm_fd = open(shm_path.c_str(), O_RDWR | O_CREAT, 0666);
 	if(shm_fd == -1) {
 		std::cerr << "shm_open() failed: " << strerror(errno) << std::endl;
+		throw std::runtime_error("Failed set up shared memory.");
+	}
+
+	ret = ftruncate(shm_fd, IPC_SHARED_MEMORY_BYTES);
+	if(ret == -1) {
+		std::cerr << "ftruncate() failed: " << strerror(errno) << std::endl;
 		throw std::runtime_error("Failed set up shared memory.");
 	}
 
@@ -305,11 +329,11 @@ int DockerBot::forceBotShutdown(void)
 	pid_t pid = fork();
 	if(pid == 0) {
 		// child process
-		execl("docker", "docker", "stop", "--time=3",
+		execlp("docker", "docker", "stop", "--time=3",
 				("spnbot:" + m_cleanName).c_str(), (char*)NULL);
 
-		// we only get here if execl failed
-		std::cerr << "execl() failed: " << strerror(errno) << std::endl;
+		// we only get here if execlp failed
+		std::cerr << "execlp() failed: " << strerror(errno) << std::endl;
 		exit(99);
 	} else if(pid == -1) {
 		// error

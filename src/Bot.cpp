@@ -31,6 +31,8 @@ Bot::Bot(Field *field, uint32_t startFrame, std::unique_ptr<db::BotScript> dbDat
 {
 	m_snake = std::make_shared<Snake>(field, startPos, 5, startHeading);
 	m_docker_bot = std::make_unique<DockerBot>(*this, m_dbData->code);
+
+	m_docker_bot->startup();
 }
 
 Bot::~Bot()
