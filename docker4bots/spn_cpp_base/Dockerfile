@@ -1,6 +1,6 @@
 FROM ubuntu:18.04
 
-RUN apt update && apt install -y g++ cmake
+RUN apt update && apt install -y g++ cmake strace
 
 RUN useradd -u 1337 -U -d /spnbot -m spnbot
 

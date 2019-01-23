@@ -78,7 +78,7 @@ void DockerBot::createSharedMemory(void)
 	std::string bot_dir = config::BOT_IPC_DIRECTORY + m_cleanName;
 	std::string shm_path = bot_dir + "/shm";
 
-	int ret = mkdir(bot_dir.c_str(), 0700);
+	int ret = mkdir(bot_dir.c_str(), 0777);
 	if(ret == -1 && (errno != EEXIST)) {
 		std::cerr << "mkdir() failed: " << strerror(errno) << std::endl;
 		throw std::runtime_error("Failed set up bot directory.");
@@ -96,7 +96,7 @@ void DockerBot::createSharedMemory(void)
 		throw std::runtime_error("Failed set up shared memory.");
 	}
 
-	void *shared_mem = mmap(NULL, IPC_SHARED_MEMORY_BYTES, PROT_READ, MAP_SHARED, shm_fd, 0);
+	void *shared_mem = mmap(NULL, IPC_SHARED_MEMORY_BYTES, PROT_READ | PROT_WRITE, MAP_SHARED, shm_fd, 0);
 	if(shared_mem == (void*)-1) {
 		std::cerr << "mmap() failed: " << strerror(errno) << std::endl;
 		close(shm_fd);
@@ -105,6 +105,9 @@ void DockerBot::createSharedMemory(void)
 
 	m_shm = reinterpret_cast<struct IpcSharedMemory*>(shared_mem);
 	m_shmFd = shm_fd;
+
+	std::cerr << "Set up shared memory at address 0x" << std::hex << m_shm
+		<< " with size of " << std::dec << IPC_SHARED_MEMORY_BYTES << " bytes." << std::endl;
 }
 
 void DockerBot::destroySharedMemory(void)
@@ -313,12 +316,12 @@ void DockerBot::startBot(void)
 	int ret = waitForReadEvent(m_listenSocket, config::BOT_CONNECT_TIMEOUT);
 	if(ret <= 0) {
 		forceBotShutdown();
-	}
 
-	if(ret == -1) {
-		throw std::runtime_error("Error while waiting for bot process to connect.");
-	} else {
-		throw std::runtime_error("Timeout while waiting for bot process to connect.");
+		if(ret == -1) {
+			throw std::runtime_error("Error while waiting for bot process to connect.");
+		} else {
+			throw std::runtime_error("Timeout while waiting for bot process to connect.");
+		}
 	}
 
 	// bot connected in time
@@ -327,6 +330,8 @@ void DockerBot::startBot(void)
 		std::cerr << "accept() failed: " << strerror(errno) << std::endl;
 		throw std::runtime_error("Failed set up IPC socket.");
 	}
+
+	m_botSocket = ret;
 }
 
 int DockerBot::forceBotShutdown(void)
@@ -483,8 +488,14 @@ bool DockerBot::readMessageFromBot(void *data, size_t length, real_t timeout)
 
 bool DockerBot::init(std::string &initErrorMessage)
 {
-	if(m_botSocket == -1 || m_dockerPID == -1 || m_shm == NULL) {
-		std::cerr << "Bot is properly prepared to run." << std::endl;
+	if(m_botSocket == -1) {
+		std::cerr << "Bot is not properly prepared to run: socket not set up." << std::endl;
+		return false;
+	} else if(m_dockerPID == -1) {
+		std::cerr << "Bot is not properly prepared to run: docker process not running." << std::endl;
+		return false;
+	} else if(m_shm == NULL) {
+		std::cerr << "Bot is not properly prepared to run: shared memory not set up." << std::endl;
 		return false;
 	}
 
@@ -524,8 +535,14 @@ bool DockerBot::init(std::string &initErrorMessage)
 
 bool DockerBot::step(float &directionChange, bool &boost)
 {
-	if(m_botSocket == -1 || m_dockerPID == -1 || m_shm == NULL) {
-		std::cerr << "Bot is not initialized properly." << std::endl;
+	if(m_botSocket == -1) {
+		std::cerr << "Bot is not properly prepared: socket not set up." << std::endl;
+		return false;
+	} else if(m_dockerPID == -1) {
+		std::cerr << "Bot is not properly prepared: docker process not running." << std::endl;
+		return false;
+	} else if(m_shm == NULL) {
+		std::cerr << "Bot is not properly prepared: shared memory not set up." << std::endl;
 		return false;
 	}
 

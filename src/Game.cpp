@@ -18,6 +18,9 @@
 
 #include <iostream>
 
+#include <sys/types.h>
+#include <sys/stat.h>
+
 #include "Game.h"
 #include "config.h"
 #include "Environment.h"
@@ -179,6 +182,9 @@ void Game::ProcessOneFrame()
 
 int Game::Main()
 {
+	// set up umask so we can create shared files for the bots
+	umask(0000);
+
 	if (!server.Listen(9010)) 
 	{
 		return -1;
