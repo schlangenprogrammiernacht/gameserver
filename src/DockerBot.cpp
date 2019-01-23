@@ -286,11 +286,16 @@ void DockerBot::destroySocket(void)
 
 void DockerBot::startBot(void)
 {
+	// build container name
+	std::ostringstream oss;
+	oss << "spnbot_" << m_cleanName << "_" << m_bot.getGUID();
+	m_dockerContainerName = oss.str();
+
 	int pid = fork();
 	if(pid == 0) {
 		// child process
 		execl(config::BOT_LAUNCHER_SCRIPT, config::BOT_LAUNCHER_SCRIPT,
-				m_cleanName.c_str(), (char*)NULL);
+				m_cleanName.c_str(), m_dockerContainerName.c_str(), (char*)NULL);
 
 		// we only get here if execl failed
 		std::cerr << "execl() failed: " << strerror(errno) << std::endl;
@@ -330,7 +335,7 @@ int DockerBot::forceBotShutdown(void)
 	if(pid == 0) {
 		// child process
 		execlp("docker", "docker", "stop", "--time=3",
-				("spnbot:" + m_cleanName).c_str(), (char*)NULL);
+				m_dockerContainerName.c_str(), (char*)NULL);
 
 		// we only get here if execlp failed
 		std::cerr << "execlp() failed: " << strerror(errno) << std::endl;

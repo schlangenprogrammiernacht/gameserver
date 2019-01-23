@@ -55,6 +55,7 @@ class DockerBot
 		IpcSharedMemory *m_shm;
 		int              m_shmFd;
 		int              m_dockerPID;
+		std::string      m_dockerContainerName;
 		int              m_listenSocket;
 		std::string      m_listenSockPath;
 		int              m_botSocket;
