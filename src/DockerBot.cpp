@@ -81,26 +81,26 @@ void DockerBot::createSharedMemory(void)
 	int ret = mkdir(bot_dir.c_str(), 0777);
 	if(ret == -1 && (errno != EEXIST)) {
 		std::cerr << "mkdir() failed: " << strerror(errno) << std::endl;
-		throw std::runtime_error("Failed set up bot directory.");
+		throw std::runtime_error("Failed to set up bot directory.");
 	}
 
 	int shm_fd = open(shm_path.c_str(), O_RDWR | O_CREAT, 0666);
 	if(shm_fd == -1) {
 		std::cerr << "shm_open() failed: " << strerror(errno) << std::endl;
-		throw std::runtime_error("Failed set up shared memory.");
+		throw std::runtime_error("Failed to set up shared memory.");
 	}
 
 	ret = ftruncate(shm_fd, IPC_SHARED_MEMORY_BYTES);
 	if(ret == -1) {
 		std::cerr << "ftruncate() failed: " << strerror(errno) << std::endl;
-		throw std::runtime_error("Failed set up shared memory.");
+		throw std::runtime_error("Failed to set up shared memory.");
 	}
 
 	void *shared_mem = mmap(NULL, IPC_SHARED_MEMORY_BYTES, PROT_READ | PROT_WRITE, MAP_SHARED, shm_fd, 0);
 	if(shared_mem == (void*)-1) {
 		std::cerr << "mmap() failed: " << strerror(errno) << std::endl;
 		close(shm_fd);
-		throw std::runtime_error("Failed set up shared memory.");
+		throw std::runtime_error("Failed to set up shared memory.");
 	}
 
 	m_shm = reinterpret_cast<struct IpcSharedMemory*>(shared_mem);
@@ -238,7 +238,7 @@ void DockerBot::createSocket(void)
 	int s = socket(AF_UNIX, SOCK_SEQPACKET, 0);
 	if(s == -1) {
 		std::cerr << "socket() failed: " << strerror(errno) << std::endl;
-		throw std::runtime_error("Failed set up IPC socket.");
+		throw std::runtime_error("Failed to set up IPC socket.");
 	}
 
 	struct sockaddr_un sa;
@@ -253,7 +253,7 @@ void DockerBot::createSocket(void)
 	if(ret == -1) {
 		std::cerr << "bind() failed: " << strerror(errno) << std::endl;
 		close(s);
-		throw std::runtime_error("Failed set up IPC socket.");
+		throw std::runtime_error("Failed to set up IPC socket.");
 	}
 
 	// start listening
@@ -261,7 +261,7 @@ void DockerBot::createSocket(void)
 	if(ret == -1) {
 		std::cerr << "listen() failed: " << strerror(errno) << std::endl;
 		close(s);
-		throw std::runtime_error("Failed set up IPC socket.");
+		throw std::runtime_error("Failed to set up IPC socket.");
 	}
 
 	// success!
@@ -328,7 +328,7 @@ void DockerBot::startBot(void)
 	ret = accept(m_listenSocket, NULL, NULL);
 	if(ret == -1) {
 		std::cerr << "accept() failed: " << strerror(errno) << std::endl;
-		throw std::runtime_error("Failed set up IPC socket.");
+		throw std::runtime_error("Failed to set up IPC socket.");
 	}
 
 	m_botSocket = ret;
