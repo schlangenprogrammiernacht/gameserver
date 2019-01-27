@@ -51,7 +51,13 @@ DockerBot::DockerBot(Bot &bot, std::string botCode)
 	std::regex cleanup_re(R"([^a-z0-9+_-]+)", std::regex_constants::icase);
 	m_cleanName = std::regex_replace(bot.getName(), cleanup_re, "_");
 
+	if(m_cleanName.empty()) {
+		m_cleanName = "unnamed";
+	}
+
 	m_cleanName = m_cleanName.substr(0, 32);
+
+	std::cerr << "DockerBot constructed: " << bot.getName() << " [" << m_cleanName << "]" << std::endl;
 }
 
 DockerBot::~DockerBot()
@@ -106,7 +112,7 @@ void DockerBot::createSharedMemory(void)
 	m_shm = reinterpret_cast<struct IpcSharedMemory*>(shared_mem);
 	m_shmFd = shm_fd;
 
-	std::cerr << "Set up shared memory at address 0x" << std::hex << m_shm
+	std::cerr << "Set up shared memory at address " << std::hex << m_shm
 		<< " with size of " << std::dec << IPC_SHARED_MEMORY_BYTES << " bytes." << std::endl;
 }
 
@@ -235,11 +241,6 @@ void DockerBot::fillSharedMemory(void)
 
 void DockerBot::createSocket(void)
 {
-	int s = socket(AF_UNIX, SOCK_SEQPACKET, 0);
-	if(s == -1) {
-		std::cerr << "socket() failed: " << strerror(errno) << std::endl;
-		throw std::runtime_error("Failed to set up IPC socket.");
-	}
 
 	struct sockaddr_un sa;
 
@@ -247,6 +248,16 @@ void DockerBot::createSocket(void)
 	snprintf(sa.sun_path, sizeof(sa.sun_path), "%s%s/socket", config::BOT_IPC_DIRECTORY, m_cleanName.c_str());
 
 	m_listenSockPath = sa.sun_path;
+
+	if(unlink(m_listenSockPath.c_str()) == 0) {
+		std::cerr << "WARNING: removed " << m_listenSockPath << " before recreating it." << std::endl;
+	}
+
+	int s = socket(AF_UNIX, SOCK_SEQPACKET, 0);
+	if(s == -1) {
+		std::cerr << "socket() failed: " << strerror(errno) << std::endl;
+		throw std::runtime_error("Failed to set up IPC socket.");
+	}
 
 	// bind to the address
 	int ret = bind(s, reinterpret_cast<sockaddr*>(&sa), sizeof(sa));
@@ -291,7 +302,7 @@ void DockerBot::startBot(void)
 {
 	// build container name
 	std::ostringstream oss;
-	oss << "spnbot_" << m_cleanName << "_" << m_bot.getGUID();
+	oss << "spnbot_" << m_cleanName << "_" << m_bot.getGUID() << rand();
 	m_dockerContainerName = oss.str();
 
 	int pid = fork();
@@ -489,13 +500,13 @@ bool DockerBot::readMessageFromBot(void *data, size_t length, real_t timeout)
 bool DockerBot::init(std::string &initErrorMessage)
 {
 	if(m_botSocket == -1) {
-		std::cerr << "Bot is not properly prepared to run: socket not set up." << std::endl;
+		initErrorMessage = "Bot is not properly prepared to run: socket not set up.";
 		return false;
 	} else if(m_dockerPID == -1) {
-		std::cerr << "Bot is not properly prepared to run: docker process not running." << std::endl;
+		initErrorMessage = "Bot is not properly prepared to run: docker process not running.";
 		return false;
 	} else if(m_shm == NULL) {
-		std::cerr << "Bot is not properly prepared to run: shared memory not set up." << std::endl;
+		initErrorMessage = "Bot is not properly prepared to run: shared memory not set up.";
 		return false;
 	}
 
@@ -512,12 +523,12 @@ bool DockerBot::init(std::string &initErrorMessage)
 	}
 
 	if(response.type != RES_OK) {
-		std::cerr << "Bot could not initialize successfully." << std::endl;
+		initErrorMessage = "Bot could not initialize successfully.";
 		return false;
 	}
 
 	if(m_shm->colorCount > IPC_COLOR_MAX_COUNT) {
-		std::cerr << "Excessive number of colors returned." << std::endl;
+		initErrorMessage = "Excessive number of colors returned.";
 		return false;
 	}
 
@@ -572,7 +583,8 @@ bool DockerBot::step(float &directionChange, bool &boost)
 		return false;
 	}
 
-	// TODO: read shared memory here
+	directionChange = response.step.deltaAngle;
+	boost = response.step.boost;
 
 	return true;
 }
