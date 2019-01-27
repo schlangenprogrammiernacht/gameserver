@@ -10,6 +10,8 @@
 #include <fcntl.h>
 #include <unistd.h>
 
+#include <math.h>
+
 #include "ipc_format.h"
 
 const char IPC_SOCKET_NAME[] = "/spnshm/socket";
@@ -91,7 +93,10 @@ int mainloop(struct IpcSharedMemory *shm, int sock_fd)
 		// send response
 		struct IpcResponse response;
 		response.type = RES_OK;
-		response.step.deltaAngle = 1;
+
+		static uint64_t frame = 0;
+
+		response.step.deltaAngle = 0.01 * sin(0.003 * frame++);
 		response.step.boost = false;
 
 		ret = send(sock_fd, &response, sizeof(response), 0);
