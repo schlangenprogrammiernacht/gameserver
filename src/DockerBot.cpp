@@ -189,7 +189,7 @@ void DockerBot::fillSharedMemory(void)
 	idx = 0;
 	for (auto &segmentInfo: field->getSegmentInfoMap().getRegion(head_pos, radius + m_bot.getField()->getMaxSegmentRadius()))
 	{
-		if(idx >= IPC_FOOD_MAX_COUNT) {
+		if(idx >= IPC_SEGMENT_MAX_COUNT) {
 			// maximum number of segments written
 			break;
 		}
@@ -230,6 +230,11 @@ void DockerBot::fillSharedMemory(void)
 
 	idx = 0;
 	for(auto bot: usedBots) {
+		if(idx >= IPC_BOT_MAX_COUNT) {
+			// maximum number of bots written
+			break;
+		}
+
 		m_shm->botInfo[idx].bot_id = bot->getGUID();
 		strncpy(m_shm->botInfo[idx].bot_name, bot->getName().c_str(), sizeof(m_shm->botInfo[idx].bot_name));
 
