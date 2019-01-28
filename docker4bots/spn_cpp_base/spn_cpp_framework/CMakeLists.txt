@@ -9,6 +9,9 @@ include_directories(src)
 # put all .cpp and .h files into the sources variable
 set(sources
 	src/main.cpp
+	src/bot_api.h
+	src/usercode.cpp
+	src/usercode.h
 )
 
 include_directories(

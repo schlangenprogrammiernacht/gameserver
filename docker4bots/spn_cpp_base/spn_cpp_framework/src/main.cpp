@@ -14,6 +14,8 @@
 
 #include "ipc_format.h"
 
+#include "usercode.h"
+
 const char IPC_SOCKET_NAME[] = "/spnshm/socket";
 
 static std::ostream& log(void)
@@ -78,6 +80,8 @@ int mainloop(struct IpcSharedMemory *shm, int sock_fd)
 {
 	bool running = true;
 
+	Api api(shm);
+
 	while(running) {
 		// receive request
 		struct IpcRequest request;
@@ -90,14 +94,26 @@ int mainloop(struct IpcSharedMemory *shm, int sock_fd)
 			break;
 		}
 
+		bool result = false;
+		switch(request.type) {
+			case REQ_INIT:
+				result = init(&api);
+				break;
+
+			case REQ_STEP:
+				result = step(&api);
+				break;
+
+			default:
+				break;
+		};
+
 		// send response
 		struct IpcResponse response;
-		response.type = RES_OK;
+		response.type = result ? RES_OK : RES_ERROR;
 
-		static uint64_t frame = 0;
-
-		response.step.deltaAngle = 0.01 * sin(0.003 * frame++);
-		response.step.boost = false;
+		response.step.deltaAngle = api.angle;
+		response.step.boost      = api.boost;
 
 		ret = send(sock_fd, &response, sizeof(response), 0);
 		if(ret == -1) {
