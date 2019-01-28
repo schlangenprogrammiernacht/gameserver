@@ -114,6 +114,12 @@ void DockerBot::createSharedMemory(void)
 
 	std::cerr << "Set up shared memory at address " << std::hex << m_shm
 		<< " with size of " << std::dec << IPC_SHARED_MEMORY_BYTES << " bytes." << std::endl;
+
+	// set default color
+	m_shm->colorCount = 1;
+	m_shm->colors[0].r = 0x80;
+	m_shm->colors[0].g = 0x80;
+	m_shm->colors[0].b = 0x80;
 }
 
 void DockerBot::destroySharedMemory(void)
