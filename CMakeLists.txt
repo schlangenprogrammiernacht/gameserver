@@ -2,15 +2,10 @@ cmake_minimum_required (VERSION 3.2)
 project (GameServer VERSION 0.1 LANGUAGES CXX)
 
 add_subdirectory(lib/TcpServer/TcpServer)
-add_subdirectory(test)
+#add_subdirectory(test)
 
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_FLAGS "-Wall -pedantic")
-
-#set(LUA_INCLUDE_DIR "/usr/include/luajit-2.0")
-#set(LUA_LIB "luajit-5.1")
-set(LUA_INCLUDE_DIR "/usr/include/lua5.3")
-set(LUA_LIB "lua5.3")
 
 find_package(Threads REQUIRED)
 
@@ -53,22 +48,12 @@ set(sources
 	src/Environment.h
 	src/Database.h src/Database.cpp
 	src/Stopwatch.h src/Stopwatch.cpp
-
-	src/lua/LuaBot.cpp
-	src/lua/LuaBot.h
-	src/lua/LuaSelfInfo.h src/lua/LuaSelfInfo.cpp
-	src/lua/LuaSegmentInfo.h src/lua/LuaSegmentInfo.cpp
-	src/lua/LuaFoodInfo.h src/lua/LuaFoodInfo.cpp
-	src/lua/PoolAllocator.cpp
-	src/lua/PoolAllocator.h
 )
 
 include_directories(
 	${CMAKE_PROJECT_NAME}
 	lib/msgpack-c/include/
 	lib/TcpServer/TcpServer/include/
-	lib/sol2
-	${LUA_INCLUDE_DIR}
 	docker4bots/spn_cpp_base/spn_cpp_framework/src/
 	)
 
@@ -80,10 +65,6 @@ add_executable(
 target_link_libraries(
 	${CMAKE_PROJECT_NAME}
 	tcpserver
-	${LUA_LIB}
 	Threads::Threads
 	mysqlcppconn
 )
-
-configure_file("lua/demobot.lua" "lua/demobot.lua" COPYONLY)
-configure_file("lua/quota.lua" "lua/quota.lua" COPYONLY)
