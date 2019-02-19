@@ -30,6 +30,7 @@
 #include "UpdateTracker.h"
 #include "SpatialMap.h"
 #include "BotThreadPool.h"
+#include "BotUpDownThread.h"
 
 /*!
  * Representation of the playing field.
@@ -66,6 +67,8 @@ class Field
 
 		BotSet  m_bots;
 
+		BotUpDownThread m_limbo;
+
 		std::unique_ptr<std::mt19937> m_rndGen;
 
 		std::unique_ptr< std::normal_distribution<real_t> >       m_foodSizeDistribution;
@@ -91,10 +94,20 @@ class Field
 		Field(real_t w, real_t h, std::size_t food_parts, std::unique_ptr<UpdateTracker> update_tracker);
 
 		/*!
-		 * Create a new Bot on this field.
+		 * Create a new Bot for this field.
+		 *
+		 * Note that the bot will be spawned in "Limbo", that is, not really alive
+		 * (on the Field), but also not completely gone. It must be initialized
+		 * before it appears on the Field, which may take some time.
+		 *
 		 * @return shared_ptr to the new bot; non-empty initErrorMessage if initialization failed
 		 */
 		std::shared_ptr<Bot> newBot(std::unique_ptr<db::BotScript> data, std::string &initErrorMessage);
+
+		/*!
+		 * Handle asynchronously started and stopped bots.
+		 */
+		void updateLimbo(void);
 
 		/*!
 		 * Decay all food.
@@ -143,6 +156,11 @@ class Field
 		 */
 		const BotSet& getBots(void) const;
 		std::shared_ptr<Bot> getBotByDatabaseId(int id);
+
+		/*!
+		 * Check if the given database ID is active on the Field or in Limbo.
+		 */
+		bool isDatabaseIdActive(int id);
 
 		/*!
 		 * Add dynamic food equally distributed in the given circle.

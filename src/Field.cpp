@@ -108,20 +108,52 @@ std::shared_ptr<Bot> Field::newBot(std::unique_ptr<db::BotScript> data, std::str
 		heading
 	);
 
-	std::cerr << "Initializing Bot with ID " << bot->getGUID() << ", DB-ID " << bot->getDatabaseId() << ", Name: " << bot->getName() << std::endl;
+	m_limbo.addStartupBot(bot);
 
-	initErrorMessage = "";
-	if (bot->init(initErrorMessage))
-	{
-		m_updateTracker->botLogMessage(bot->getViewerKey(), "starting bot");
-		m_updateTracker->botSpawned(bot);
-		m_bots.insert(bot);
-	}
-	else
-	{
-		m_updateTracker->botLogMessage(bot->getViewerKey(), "cannot start bot: " + initErrorMessage);
-	}
 	return bot;
+}
+
+void Field::updateLimbo(void)
+{
+	std::unique_ptr<BotUpDownThread::Result> result(m_limbo.getStartupResult());
+
+	if(result != nullptr) {
+		std::shared_ptr<Bot> bot = result->bot;
+
+		if(!result->success) {
+			std::cerr << "Internal bot startup failed for ID " << bot->getGUID() << ", DB-ID " << bot->getDatabaseId() << ", Name: " << bot->getName() << std::endl;
+			std::cerr << "    Error message: " << result->message << std::endl;
+			m_updateTracker->botLogMessage(bot->getViewerKey(), "bot startup failed: " + result->message);
+		} else {
+			std::cerr << "Initializing Bot with ID " << bot->getGUID() << ", DB-ID " << bot->getDatabaseId() << ", Name: " << bot->getName() << std::endl;
+
+			std::string initErrorMessage;
+			if (bot->init(initErrorMessage))
+			{
+				m_updateTracker->botLogMessage(bot->getViewerKey(), "starting bot");
+				m_updateTracker->botSpawned(bot);
+				m_bots.insert(bot);
+			}
+			else
+			{
+				m_updateTracker->botLogMessage(bot->getViewerKey(), "cannot start bot: " + initErrorMessage);
+			}
+		}
+	}
+
+	result = m_limbo.getShutDownResult();
+
+	if(result != nullptr) {
+		std::shared_ptr<Bot> bot = result->bot;
+
+		if(!result->success) {
+			std::cerr << "Internal bot shutdown failed for ID " << bot->getGUID() << ", DB-ID " << bot->getDatabaseId() << ", Name: " << bot->getName() << std::endl;
+			std::cerr << "    Error message: " << result->message << std::endl;
+			m_updateTracker->botLogMessage(bot->getViewerKey(), "bot shutdown failed: " + result->message);
+		}
+
+		// nothing more to do in success case, simply forget about the bot
+	}
 }
 
 void Field::decayFood(void)
@@ -308,6 +340,19 @@ std::shared_ptr<Bot> Field::getBotByDatabaseId(int id)
 		}
 	}
 	return nullptr;
+}
+
+bool Field::isDatabaseIdActive(int id)
+{
+	if(m_limbo.containsDatabaseId(id)) {
+		return true;
+	}
+
+	if(getBotByDatabaseId(id) != nullptr) {
+		return true;
+	}
+
+	return false;
 }
 
 void Field::createDynamicFood(real_t totalValue, const Vector2D &center, real_t radius,

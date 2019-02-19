@@ -62,8 +62,20 @@ class Bot : public IdentifyableObject
 		~Bot();
 
 		/*!
+		 * \brief Internal startup routine. May take some time to execute.
+		 *
+		 * This does things like parsing Lua scripts, starting Docker processes etc.
+		 */
+		void internalStartup(void);
+
+		/*!
+		 * \brief Internal shutdown routine. May take some time to execute.
+		 */
+		void internalShutdown(void);
+
+		/*!
 		 * \brief init
-		 * initialize the bot, e.g. parse the lua script
+		 * initialize the bot, e.g. request colors from the bot
 		 * \return true if init successful, false if failed
 		 */
 		bool init(std::string &initErrorMessage);

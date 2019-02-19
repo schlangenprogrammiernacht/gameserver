@@ -20,6 +20,8 @@ set(sources
 	src/Bot.h
 	src/BotThreadPool.cpp
 	src/BotThreadPool.h
+	src/BotUpDownThread.cpp
+	src/BotUpDownThread.h
 	src/config.h
 	src/debug_funcs.h
 	src/DockerBot.cpp

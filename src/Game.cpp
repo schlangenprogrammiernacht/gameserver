@@ -73,7 +73,7 @@ Game::Game()
 				victim->getConsumedFoodHuntedBySelf()
 			);
 
-			createBot(victim->getDatabaseId());
+			// victim will be respawned on next database query
 		}
 	);
 }
@@ -149,6 +149,10 @@ void Game::ProcessOneFrame()
 	m_field->tick();
 	swProcessTick.Stop();
 
+	Stopwatch swLimbo("Limbo");
+	m_field->updateLimbo();
+	swLimbo.Stop();
+
 	Stopwatch swSendUpdate("SendUpdate");
 	// send differential update to all connected clients
 	std::string update = m_field->getUpdateTracker().serialize();
@@ -175,6 +179,7 @@ void Game::ProcessOneFrame()
 	swProcessLog.Print();
 	swProcessTick.Print();
 	swSendUpdate.Print();
+	swLimbo.Print();
 	swQueryDB.Print();
 	swProcessFrame.Print();
 	std::cout << std::endl;
@@ -225,7 +230,7 @@ void Game::queryDB()
 	auto active_ids = m_database->GetActiveBotIds();
 	for (auto id: active_ids)
 	{
-		if (m_field->getBotByDatabaseId(id) == nullptr)
+		if (m_field->isDatabaseIdActive(id))
 		{
 			createBot(id);
 		}
