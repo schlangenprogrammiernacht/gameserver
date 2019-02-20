@@ -510,4 +510,6 @@ void Field::killBot(std::shared_ptr<Bot> victim, std::shared_ptr<Bot> killer)
 	{
 		callback(victim, killer);
 	}
+
+	m_limbo.addShutdownBot(victim);
 }
