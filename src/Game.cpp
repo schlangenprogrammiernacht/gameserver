@@ -169,6 +169,7 @@ void Game::ProcessOneFrame()
 
 	swProcessFrame.Stop();
 
+#if DEBUG_TIMINGS
 	std::cout << std::endl;
 	std::cout << "Frame " << frame << " timings: " << std::endl;
 	swDecayFood.Print();
@@ -183,6 +184,7 @@ void Game::ProcessOneFrame()
 	swQueryDB.Print();
 	swProcessFrame.Print();
 	std::cout << std::endl;
+#endif
 }
 
 int Game::Main()

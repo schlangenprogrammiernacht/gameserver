@@ -280,6 +280,7 @@ void Field::moveAllBots(void)
 	swSegmentMap.Stop();
 	swAll.Stop();
 
+#if DEBUG_TIMINGS
 	std::cout << std::endl << "Field::moveAllBots() timings:" << std::endl;
 	swMove.Print();
 	swCollisionCheck.Print();
@@ -297,6 +298,7 @@ void Field::moveAllBots(void)
 	std::cout << "time spent in api functions: " << apiTime/1000l << std::endl;
 
 	std::cout << std::endl;
+#endif
 }
 
 void Field::processLog()
