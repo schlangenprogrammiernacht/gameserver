@@ -34,6 +34,10 @@ BotUpDownThread::BotUpDownThread(void)
 				while(!m_shutdown) {
 					bool idle = true;
 
+					/*
+					 * Shutdown has priority, because it frees resources.
+					 */
+
 					// check for work in shutdown queue
 					std::shared_ptr<Bot> bot;
 
@@ -60,7 +64,7 @@ BotUpDownThread::BotUpDownThread(void)
 						std::lock_guard<std::mutex> guard(m_shutdownQueueMutex);
 						m_shutdownOutQueue.push(std::move(result));
 
-						idle = idle || m_shutdownInQueue.empty();
+						continue;
 					}
 
 					// check for work in startup queue
@@ -87,7 +91,7 @@ BotUpDownThread::BotUpDownThread(void)
 						std::lock_guard<std::mutex> guard(m_startupQueueMutex);
 						m_startupOutQueue.push(std::move(result));
 
-						idle = idle || m_startupInQueue.empty();
+						idle = m_startupInQueue.empty();
 					}
 
 					if(idle) {
@@ -114,6 +118,8 @@ void BotUpDownThread::addStartupBot(const std::shared_ptr<Bot> &bot)
 
 	std::lock_guard<std::mutex> guard(m_startupQueueMutex);
 	m_startupInQueue.push(bot);
+
+	std::cout << "Startup input queue length: " << m_startupInQueue.size() << std::endl;
 }
 
 void BotUpDownThread::addShutdownBot(const std::shared_ptr<Bot> &bot)
@@ -122,6 +128,8 @@ void BotUpDownThread::addShutdownBot(const std::shared_ptr<Bot> &bot)
 
 	std::lock_guard<std::mutex> guard(m_shutdownQueueMutex);
 	m_shutdownInQueue.push(bot);
+
+	std::cout << "Shutdown input queue length: " << m_shutdownInQueue.size() << std::endl;
 }
 
 std::unique_ptr<BotUpDownThread::Result> BotUpDownThread::getStartupResult(void)
