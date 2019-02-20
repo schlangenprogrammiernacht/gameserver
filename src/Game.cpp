@@ -232,7 +232,7 @@ void Game::queryDB()
 	auto active_ids = m_database->GetActiveBotIds();
 	for (auto id: active_ids)
 	{
-		if (m_field->isDatabaseIdActive(id))
+		if (!m_field->isDatabaseIdActive(id))
 		{
 			createBot(id);
 		}
