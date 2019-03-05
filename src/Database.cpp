@@ -30,7 +30,7 @@ void MysqlDatabase::Connect(std::string host, std::string username, std::string 
 	_connection->setSchema(database);
 
 	_getBotDataStmt = makePreparedStatement(
-		"SELECT u.id, u.username, sv.id, sv.code, IFNULL(p.viewer_key, 0) AS viewer_key "
+		"SELECT u.id, u.username, sv.id, sv.code, sv.code_compiled, IFNULL(p.viewer_key, 0) AS viewer_key "
 		"FROM core_userprofile p "
 		"LEFT JOIN auth_user u ON (u.id=p.user_id) "
 		"LEFT JOIN core_snakeversion sv ON (sv.id=p.active_snake_id) "
@@ -81,7 +81,8 @@ std::unique_ptr<BotScript> MysqlDatabase::GetBotData(int bot_id)
 		res->getString(IDX_BOTSCRIPT_BOT_NAME),
 		res->getInt(IDX_BOTSCRIPT_VERSION_ID),
 		res->getInt64(IDX_BOTSCRIPT_VIEWER_KEY),
-		res->getString(IDX_BOTSCRIPT_CODE)
+		res->getString(IDX_BOTSCRIPT_CODE),
+		res->getBoolean(IDX_BOTSCRIPT_CODE_COMPILED)
 	);
 }
 

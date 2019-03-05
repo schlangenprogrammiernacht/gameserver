@@ -282,6 +282,10 @@ void Game::createBot(int bot_id)
 		return;
 	}
 
+	if(!data->code_compiled) {
+		return;
+	}
+
 	std::string initErrorMessage;
 	auto newBot = m_field->newBot(std::move(data), initErrorMessage);
 	if (!initErrorMessage.empty())
