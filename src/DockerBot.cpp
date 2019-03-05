@@ -40,9 +40,9 @@
 
 #include "DockerBot.h"
 
-DockerBot::DockerBot(Bot &bot, std::string botCode)
+DockerBot::DockerBot(Bot &bot, std::string imageName)
 	: m_bot(bot)
-	, m_botCode(botCode)
+	, m_imageName(imageName)
 	, m_swAPI("api")
 	, m_shm(NULL)
 	, m_listenSocket(-1)
@@ -313,14 +313,15 @@ void DockerBot::startBot(void)
 {
 	// build container name
 	std::ostringstream oss;
-	oss << "spnbot_" << m_cleanName << "_" << m_bot.getGUID() << rand();
+	oss << "spnbot_" << m_cleanName << "_" << m_bot.getGUID() << time(NULL);
 	m_dockerContainerName = oss.str();
 
 	int pid = fork();
 	if(pid == 0) {
 		// child process
 		execl(config::BOT_LAUNCHER_SCRIPT, config::BOT_LAUNCHER_SCRIPT,
-				m_cleanName.c_str(), m_dockerContainerName.c_str(), (char*)NULL);
+				m_imageName.c_str(), m_cleanName.c_str(),
+				m_dockerContainerName.c_str(), (char*)NULL);
 
 		// we only get here if execl failed
 		std::cerr << "execl() failed: " << strerror(errno) << std::endl;

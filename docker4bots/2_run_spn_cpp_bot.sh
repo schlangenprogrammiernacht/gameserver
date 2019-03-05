@@ -2,8 +2,9 @@
 
 SPN_SHM_HOSTDIR="/mnt/spn_shm"
 
-BOTNAME="$1"
-CONTAINERNAME="$2"
+IMAGENAME="$1"
+BOTNAME="$2"
+CONTAINERNAME="$3"
 
 if [ -z "$BOTNAME" ]; then
 	echo "Argument required: bot name"
@@ -16,4 +17,4 @@ docker run -d \
 	-v $SPN_SHM_HOSTDIR/$BOTNAME:/spnshm \
 	--network none \
 	--name "$CONTAINERNAME" \
-	spn_cpp_bot:$BOTNAME
+	spn_cpp_bot:$IMAGENAME

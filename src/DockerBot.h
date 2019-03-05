@@ -27,7 +27,7 @@ class Bot;
 class DockerBot
 {
 	public:
-		DockerBot(Bot &bot, std::string botCode);
+		DockerBot(Bot &bot, std::string imageName);
 		~DockerBot();
 
 		bool buildDockerContainer(std::string &errorMessage);
@@ -48,7 +48,7 @@ class DockerBot
 	private:
 		Bot&        m_bot;
 		std::string m_cleanName;
-		std::string m_botCode;
+		std::string m_imageName;
 
 		Stopwatch   m_swAPI;
 
