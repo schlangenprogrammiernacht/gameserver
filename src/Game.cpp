@@ -282,7 +282,7 @@ void Game::createBot(int bot_id)
 		return;
 	}
 
-	if(!data->code_compiled) {
+	if(data->compile_state != "successful") {
 		return;
 	}
 

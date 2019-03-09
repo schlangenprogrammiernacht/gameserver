@@ -34,11 +34,11 @@ namespace db
 			uint64_t viewer_key = 0;
 			std::string bot_name;
 			std::string code;
-			bool code_compiled;
+			std::string compile_state;
 
-			BotScript(int aBotId, std::string aBotName, int aVersionId, uint64_t viewerKey, std::string aCode, bool codeCompiled)
+			BotScript(int aBotId, std::string aBotName, int aVersionId, uint64_t viewerKey, std::string aCode, std::string compileState)
 				: bot_id(aBotId), version_id(aVersionId), viewer_key(viewerKey)
-				, bot_name(aBotName), code(aCode), code_compiled(codeCompiled)
+				, bot_name(aBotName), code(aCode), compile_state(compileState)
 			{}
 	};
 
@@ -85,7 +85,7 @@ namespace db
 				IDX_BOTSCRIPT_BOT_NAME = 2,
 				IDX_BOTSCRIPT_VERSION_ID = 3,
 				IDX_BOTSCRIPT_CODE = 4,
-				IDX_BOTSCRIPT_CODE_COMPILED = 5,
+				IDX_BOTSCRIPT_COMPILE_STATE = 5,
 				IDX_BOTSCRIPT_VIEWER_KEY = 6,
 			};
 
