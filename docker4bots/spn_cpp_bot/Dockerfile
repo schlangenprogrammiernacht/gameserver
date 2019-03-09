@@ -1,8 +1,9 @@
 FROM spn_cpp_base:latest
 
-USER spnbot
+COPY usercode.cpp /spnbot/spn_cpp_framework/src/usercode.cpp
+RUN cd /spnbot/spn_cpp_framework/src && chown spnbot * && chmod 644 *
 
-# TODO: copy user code into the container
+USER spnbot
 
 RUN cd /spnbot/spn_cpp_framework && ./build.sh
 
