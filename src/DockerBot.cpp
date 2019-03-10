@@ -183,7 +183,7 @@ void DockerBot::fillSharedMemory(void)
 	std::sort(
 		std::begin(m_shm->foodInfo),
 		std::end(m_shm->foodInfo),
-		[](const IpcFoodInfo& a, const IpcFoodInfo& b) { return a.dist > b.dist; }
+		[](const IpcFoodInfo& a, const IpcFoodInfo& b) { return a.dist < b.dist; }
 	);
 
 	// Step 2: segments
@@ -213,7 +213,7 @@ void DockerBot::fillSharedMemory(void)
 
 		m_shm->segmentInfo[idx].x = relPos.x();
 		m_shm->segmentInfo[idx].y = relPos.y();
-		m_shm->segmentInfo[idx].d = segmentRadius;
+		m_shm->segmentInfo[idx].r = segmentRadius;
 		m_shm->segmentInfo[idx].d = direction;
 		m_shm->segmentInfo[idx].dist = distance;
 		m_shm->segmentInfo[idx].bot_id = segmentBotID;
@@ -229,7 +229,7 @@ void DockerBot::fillSharedMemory(void)
 	std::sort(
 		std::begin(m_shm->segmentInfo),
 		std::end(m_shm->segmentInfo),
-		[](const IpcSegmentInfo& a, const IpcSegmentInfo& b) { return a.dist > b.dist; }
+		[](const IpcSegmentInfo& a, const IpcSegmentInfo& b) { return a.dist < b.dist; }
 	);
 
 	// Step 3: bots
@@ -417,7 +417,7 @@ int DockerBot::cleanupSubprocess(void)
 	if(WIFEXITED(status)) {
 		std::cerr << "Bot exited normally with code " << WEXITSTATUS(status) << std::endl;
 	} else if(WIFSIGNALED(status)) {
-		std::cerr << "Bot terminated by signal " << WSTOPSIG(status) << std::endl;
+		std::cerr << "Bot terminated by signal " << WTERMSIG(status) << std::endl;
 	} else {
 		std::cerr << "Bot terminated with unexpected exit status: " << status << std::endl;
 	}
