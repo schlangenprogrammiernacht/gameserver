@@ -1,5 +1,7 @@
 #pragma once
 
+#include <string.h>
+
 #include "ipc_format.h"
 
 class Api
@@ -38,6 +40,24 @@ class Api
 			m_shm->colorCount++;
 
 			return true;
+		}
+
+		void log(const char *msg)
+		{
+			size_t len = strlen(m_shm->logData);
+
+			if(len >= IPC_COLOR_MAX_COUNT-2) {
+				return;
+			}
+
+			size_t n = IPC_LOG_MAX_BYTES - len - 1;
+
+			if(len != 0) {
+				m_shm->logData[len] = '\n';
+				m_shm->logData[len+1] = '\0';
+			}
+
+			strncat(m_shm->logData, msg, n);
 		}
 
 	private:

@@ -248,6 +248,8 @@ void DockerBot::fillSharedMemory(void)
 	}
 
 	m_shm->botCount = idx;
+
+	m_shm->logData[0] = '\0';
 }
 
 void DockerBot::createSocket(void)
@@ -589,6 +591,27 @@ bool DockerBot::step(float &directionChange, bool &boost)
 	}
 
 	m_swAPI.Stop();
+
+	if(m_shm->logData[0] != '\0') {
+		// log data updated
+		char *startPtr = m_shm->logData;
+		char *endPtr = startPtr;
+		bool moreMessages = true;
+
+		while(moreMessages && ((size_t)(endPtr - m_shm->logData) < IPC_LOG_MAX_BYTES)) {
+			if(*endPtr == '\n' || *endPtr == '\0') {
+				moreMessages = *endPtr == '\n';
+				*endPtr = '\0';
+
+				std::cerr << "LOG: " << startPtr << std::endl;
+
+				m_bot.appendLogMessage(startPtr, true);
+				startPtr = endPtr + 1;
+			}
+
+			endPtr++;
+		}
+	}
 
 	if(response.type != RES_OK) {
 		std::cerr << "Bot sent an error status: " << response.type << std::endl;

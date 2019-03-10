@@ -47,6 +47,8 @@ const size_t IPC_SEGMENT_MAX_COUNT = IPC_SEGMENT_MAX_BYTES / sizeof(struct IpcSe
 const size_t IPC_COLOR_MAX_COUNT = 1024;
 const size_t IPC_COLOR_MAX_BYTES = IPC_COLOR_MAX_COUNT * sizeof(struct IpcColor);
 
+const size_t IPC_LOG_MAX_BYTES = 1024;
+
 /*!
  * Shared memory structure.
  *
@@ -65,6 +67,8 @@ struct IpcSharedMemory {
 
 	uint32_t colorCount;
 	struct IpcColor colors[IPC_COLOR_MAX_COUNT];
+
+	char logData[IPC_LOG_MAX_BYTES];
 
 	uint32_t faceID;
 	uint32_t dogTagID;
