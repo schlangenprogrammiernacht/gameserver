@@ -6,6 +6,9 @@
 typedef float ipc_real_t;
 typedef uint64_t ipc_guid_t;
 
+/*!
+ * IPC representation of a food particle.
+ */
 struct IpcFoodInfo {
 	ipc_real_t x;      //!< Relative position X
 	ipc_real_t y;      //!< Relative position Y
@@ -14,11 +17,17 @@ struct IpcFoodInfo {
 	ipc_real_t dist;   //!< Distance
 };
 
+/*!
+ * IPC representation of a bot.
+ */
 struct IpcBotInfo {
 	ipc_guid_t bot_id;        //!< Bot ID
 	char       bot_name[64];  //!< Bot name (the beginning of it, at least)
 };
 
+/*!
+ * IPC representation of a snake segment.
+ */
 struct IpcSegmentInfo {
 	ipc_real_t x;       //!< Relative position X
 	ipc_real_t y;       //!< Relative position Y
@@ -29,10 +38,13 @@ struct IpcSegmentInfo {
 	bool       is_self; //!< True if this segment belongs to ones own snake
 };
 
+/*!
+ * IPC representation of a color value.
+ */
 struct IpcColor {
-	uint8_t r; //!< Red channel
-	uint8_t g; //!< Green channel
-	uint8_t b; //!< Blue channel
+	uint8_t r; //!< Red channel (0-255)
+	uint8_t g; //!< Green channel (0-255)
+	uint8_t b; //!< Blue channel (0-255)
 };
 
 const size_t IPC_FOOD_MAX_BYTES = 1 * 1024*1024;
@@ -81,10 +93,15 @@ const size_t IPC_SHARED_MEMORY_BYTES = sizeof(struct IpcSharedMemory);
  */
 
 enum IpcRequestType {
-	REQ_INIT,
-	REQ_STEP
+	REQ_INIT, //!< Bot initialization request. Sent once after bot startup.
+	REQ_STEP  //!< Bot step request. Sent every frame.
 };
 
+/*!
+ * A request to the bot by the gameserver.
+ *
+ * Sent by the gameserver on the control socket.
+ */
 struct IpcRequest {
 	enum IpcRequestType type;
 };
@@ -94,6 +111,11 @@ enum IpcResponseType {
 	RES_ERROR
 };
 
+/*!
+ * Response of the Bot.
+ *
+ * Sent by the bot on the control socket.
+ */
 struct IpcResponse {
 	enum IpcResponseType type;
 
