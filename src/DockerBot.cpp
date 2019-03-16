@@ -552,7 +552,7 @@ bool DockerBot::init(std::string &initErrorMessage)
 		uint8_t &g = m_shm->colors[i].g;
 		uint8_t &b = m_shm->colors[i].b;
 
-		m_colors[i] = (r << 16) | (b << 8) | (g << 0);
+		m_colors[i] = (r << 16) | (g << 8) | (b << 0);
 	}
 
 	return true;
