@@ -1,8 +1,8 @@
-FROM ubuntu:18.04
+FROM alpine
 
-RUN apt update && apt install -y g++ cmake strace
+RUN apk add --no-chache g++ cmake strace make
 
-RUN useradd -u 1337 -U -d /spnbot -m spnbot
+RUN addgroup -S spnbot && adduser --uid 1337 --home /spnbot -S spnbot --shell /bin/sh -G spnbot
 
 ADD bot_wrapper.sh /
 
