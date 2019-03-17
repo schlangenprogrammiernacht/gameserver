@@ -42,6 +42,8 @@ class Snake
 				Segment(const Vector2D &position) : PositionObject(position) {}
 				Segment(const Segment &other) : PositionObject(other.pos()) {}
 				const Segment& operator = (const Segment &other) { setPos(other.pos()); return *this; }
+
+				uint32_t index; // segment index in the snake
 				// more stuff like color?
 		};
 

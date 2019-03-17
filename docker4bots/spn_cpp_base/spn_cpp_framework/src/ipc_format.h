@@ -34,6 +34,7 @@ struct IpcSegmentInfo {
 	ipc_real_t r;       //!< Segment radius
 	ipc_real_t d;       //!< Direction angle
 	ipc_real_t dist;    //!< Distance
+	ipc_real_t idx;     //!< Segment number starting from head (idx == 0)
 	ipc_guid_t bot_id;  //!< Bot ID
 	bool       is_self; //!< True if this segment belongs to ones own snake
 };

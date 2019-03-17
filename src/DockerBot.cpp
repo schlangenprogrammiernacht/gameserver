@@ -217,6 +217,7 @@ void DockerBot::fillSharedMemory(void)
 		m_shm->segmentInfo[idx].d = direction;
 		m_shm->segmentInfo[idx].dist = distance;
 		m_shm->segmentInfo[idx].bot_id = segmentBotID;
+		m_shm->segmentInfo[idx].idx = segmentInfo.segment.index;
 		m_shm->segmentInfo[idx].is_self = (segmentBotID == self_id);
 
 		usedBots.insert(segmentInfo.bot);

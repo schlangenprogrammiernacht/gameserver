@@ -141,6 +141,11 @@ std::size_t Snake::move(real_t deltaAngle, bool boost)
 	// re-add head
 	m_segments.push_front(headSegment);
 
+	// write segment indices into the segment structures
+	for(std::size_t i = 0; i < m_segments.size(); i++) {
+		m_segments[i].index = static_cast<uint32_t>(i);
+	}
+
 	// normalize heading
 	if(m_heading > M_PI) {
 		m_heading -= 2*M_PI;
