@@ -547,13 +547,18 @@ bool DockerBot::init(std::string &initErrorMessage)
 		return false;
 	}
 
-	m_colors.resize(m_shm->colorCount);
-	for(size_t i = 0; i < m_shm->colorCount; i++) {
-		uint8_t &r = m_shm->colors[i].r;
-		uint8_t &g = m_shm->colors[i].g;
-		uint8_t &b = m_shm->colors[i].b;
+	if(m_shm->colorCount == 0) {
+		m_colors.resize(1);
+		m_colors[0] = 0x00EC25A2; // a nice pink for those who do not set any colors
+	} else {
+		m_colors.resize(m_shm->colorCount);
+		for(size_t i = 0; i < m_shm->colorCount; i++) {
+			uint8_t &r = m_shm->colors[i].r;
+			uint8_t &g = m_shm->colors[i].g;
+			uint8_t &b = m_shm->colors[i].b;
 
-		m_colors[i] = (r << 16) | (g << 8) | (b << 0);
+			m_colors[i] = (r << 16) | (g << 8) | (b << 0);
+		}
 	}
 
 	return true;
