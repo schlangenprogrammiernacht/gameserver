@@ -604,8 +604,6 @@ bool DockerBot::step(float &directionChange, bool &boost)
 				moreMessages = *endPtr == '\n';
 				*endPtr = '\0';
 
-				std::cerr << "LOG: " << startPtr << std::endl;
-
 				m_bot.appendLogMessage(startPtr, true);
 				startPtr = endPtr + 1;
 			}
