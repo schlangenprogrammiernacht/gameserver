@@ -39,6 +39,8 @@ class Game
 		int m_dbQueryCounter = 0;
 		int m_streamStatsUpdateCounter = 0;
 
+		bool m_shuttingDown = false;
+
 		bool connectDB();
 		void queryDB();
 		void createBot(int bot_id);
@@ -52,4 +54,6 @@ class Game
 		void ProcessOneFrame();
 
 		int Main();
+
+		void Shutdown(void);
 };

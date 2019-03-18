@@ -219,7 +219,18 @@ int Game::Main()
 	{
 		ProcessOneFrame();
 		server.Poll(0);
+
+		if(m_shuttingDown) {
+			if(m_field->getBots().empty()) {
+				std::cerr << "No more bots remaining, terminating main loop." << std::endl;
+				break;
+			} else {
+				std::cerr << "Shutdown in progress: " << m_field->getBots().size() << " bots remaining." << std::endl;
+			}
+		}
 	}
+
+	return 0;
 }
 
 bool Game::connectDB()
@@ -237,12 +248,18 @@ bool Game::connectDB()
 
 void Game::queryDB()
 {
-	auto active_ids = m_database->GetActiveBotIds();
-	for (auto id: active_ids)
+	std::vector<int> active_ids;
+
+	// skip database query on shutdown which causes all bots to commit suicide ]:->
+	if(!m_shuttingDown)
 	{
-		if (!m_field->isDatabaseIdActive(id))
+		active_ids = m_database->GetActiveBotIds();
+		for (auto id: active_ids)
 		{
-			createBot(id);
+			if (!m_field->isDatabaseIdActive(id))
+			{
+				createBot(id);
+			}
 		}
 	}
 
@@ -301,4 +318,9 @@ void Game::createBot(int bot_id)
 		m_database->DisableBotVersion(newBot->getDatabaseVersionId(), initErrorMessage);
 		// TODO save error message, maybe lock version in inactive state
 	}
+}
+
+void Game::Shutdown(void)
+{
+	m_shuttingDown = true;
 }

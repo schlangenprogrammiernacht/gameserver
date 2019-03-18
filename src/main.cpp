@@ -16,10 +16,52 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+#include <signal.h>
+
 #include "Game.h"
+
+Game game;
+
+/*!
+ * Signal handler for terminating signals such as SIGINT, SIGTERM, etc.
+ */
+void sig_shutdown_handler(int sig)
+{
+	game.Shutdown();
+	std::cerr << "Shutdown initiated on signal " << sig << std::endl;
+	std::cerr << "Send the same signal again to terminate immediately." << std::endl;
+
+	struct sigaction default_action;
+	default_action.sa_handler = SIG_DFL;
+	sigemptyset(&default_action.sa_mask);
+	sigaction(sig, &default_action, NULL);
+}
+
+bool setup_signal_handlers(void)
+{
+	struct sigaction shutdown_action;
+
+	shutdown_action.sa_handler = sig_shutdown_handler;
+	sigemptyset(&shutdown_action.sa_mask);
+
+	if(sigaction(SIGINT, &shutdown_action, NULL) == -1) {
+		std::cerr << "sigaction(SIGINT) failed: " << strerror(errno) << std::endl;
+		return false;
+	}
+
+	if(sigaction(SIGTERM, &shutdown_action, NULL) == -1) {
+		std::cerr << "sigaction(SIGINT) failed: " << strerror(errno) << std::endl;
+		return false;
+	}
+
+	return true;
+}
 
 int main(void)
 {
-	Game game;
+	if(!setup_signal_handlers()) {
+		return 1;
+	}
+
 	return game.Main();
 }

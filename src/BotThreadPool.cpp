@@ -32,8 +32,12 @@ BotThreadPool::BotThreadPool(std::size_t num_threads)
 		std::thread newThread(
 					[this] ()
 					{
-						while(!m_shutdown) {
+						while(true) {
 							m_workAvailSemaphore.wait();
+
+							if(m_shutdown) {
+								break;
+							}
 
 							{
 								std::unique_lock<std::mutex> lock(m_finishedMutex);
@@ -85,6 +89,11 @@ BotThreadPool::~BotThreadPool()
 {
 	// request thread shutdown
 	m_shutdown = true;
+
+	// unlock all threads so they read the shutdown signal
+	for(auto &thread : m_threads) {
+		m_workAvailSemaphore.post();
+	}
 
 	// wait for all threads to finish
 	for(auto &thread : m_threads) {
