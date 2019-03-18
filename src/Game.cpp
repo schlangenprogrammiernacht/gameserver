@@ -76,6 +76,14 @@ Game::Game()
 			// victim will be respawned on next database query
 		}
 	);
+
+	m_field->addBotErrorCallback(
+		[this](const std::shared_ptr<Bot> &failedBot, const std::string &errorMessage)
+		{
+			// disabled the failed bot
+			m_database->DisableBotVersion(failedBot->getDatabaseVersionId(), errorMessage);
+		}
+	);
 }
 
 bool Game::OnConnectionEstablished(TcpSocket &socket)

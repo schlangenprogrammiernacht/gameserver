@@ -124,6 +124,10 @@ void Field::updateLimbo(void)
 			std::cerr << "Internal bot startup failed for ID " << bot->getGUID() << ", DB-ID " << bot->getDatabaseId() << ", Name: " << bot->getName() << std::endl;
 			std::cerr << "    Error message: " << result->message << std::endl;
 			m_updateTracker->botLogMessage(bot->getViewerKey(), "bot startup failed: " + result->message);
+
+			for (auto& callback: m_botErrorCallbacks) {
+				callback(bot, result->message);
+			}
 		} else {
 			std::cerr << "Initializing Bot with ID " << bot->getGUID() << ", DB-ID " << bot->getDatabaseId() << ", Name: " << bot->getName() << std::endl;
 
@@ -137,6 +141,10 @@ void Field::updateLimbo(void)
 			else
 			{
 				m_updateTracker->botLogMessage(bot->getViewerKey(), "cannot start bot: " + initErrorMessage);
+
+				for (auto& callback: m_botErrorCallbacks) {
+					callback(bot, initErrorMessage);
+				}
 			}
 		}
 	}
@@ -513,3 +521,9 @@ void Field::killBot(std::shared_ptr<Bot> victim, std::shared_ptr<Bot> killer)
 
 	m_limbo.addShutdownBot(victim);
 }
+
+void Field::addBotErrorCallback(Field::BotErrorCallback callback)
+{
+	m_botErrorCallbacks.push_back(callback);
+}
+
