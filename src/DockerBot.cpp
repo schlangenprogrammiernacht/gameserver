@@ -170,8 +170,8 @@ void DockerBot::fillSharedMemory(void)
 
 			m_shm->foodInfo[idx].x = relPos.x();
 			m_shm->foodInfo[idx].y = relPos.y();
-			m_shm->foodInfo[idx].v = food.getValue();
-			m_shm->foodInfo[idx].d = direction;
+			m_shm->foodInfo[idx].val = food.getValue();
+			m_shm->foodInfo[idx].dir = direction;
 			m_shm->foodInfo[idx].dist = distance;
 
 			idx++;
@@ -214,7 +214,7 @@ void DockerBot::fillSharedMemory(void)
 		m_shm->segmentInfo[idx].x = relPos.x();
 		m_shm->segmentInfo[idx].y = relPos.y();
 		m_shm->segmentInfo[idx].r = segmentRadius;
-		m_shm->segmentInfo[idx].d = direction;
+		m_shm->segmentInfo[idx].dir = direction;
 		m_shm->segmentInfo[idx].dist = distance;
 		m_shm->segmentInfo[idx].bot_id = segmentBotID;
 		m_shm->segmentInfo[idx].idx = segmentInfo.segment.index;

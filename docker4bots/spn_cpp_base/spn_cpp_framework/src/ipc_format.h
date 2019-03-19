@@ -12,8 +12,8 @@ typedef uint64_t ipc_guid_t;
 struct IpcFoodInfo {
 	ipc_real_t x;      //!< Relative position X
 	ipc_real_t y;      //!< Relative position Y
-	ipc_real_t v;      //!< Food value
-	ipc_real_t d;      //!< Direction angle
+	ipc_real_t val;    //!< Food value
+	ipc_real_t dir;    //!< Direction angle
 	ipc_real_t dist;   //!< Distance
 };
 
@@ -32,7 +32,7 @@ struct IpcSegmentInfo {
 	ipc_real_t x;       //!< Relative position X
 	ipc_real_t y;       //!< Relative position Y
 	ipc_real_t r;       //!< Segment radius
-	ipc_real_t d;       //!< Direction angle
+	ipc_real_t dir;     //!< Direction angle
 	ipc_real_t dist;    //!< Distance
 	ipc_real_t idx;     //!< Segment number starting from head (idx == 0)
 	ipc_guid_t bot_id;  //!< Bot ID
