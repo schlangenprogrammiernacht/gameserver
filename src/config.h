@@ -50,6 +50,11 @@ namespace config {
 	// Distance per normal movement step
 	static const real_t     SNAKE_DISTANCE_PER_STEP = 1.0;
 
+	// Inner turn radius for a snake.
+	// When the snake makes the smallest possible turn, it will surround a circle
+	// with this value times the segment radius.
+	static const real_t     SNAKE_TURN_RADIUS_FACTOR = 0.5;
+
 	static const real_t     SNAKE_PULL_FACTOR        = 0.10;
 
 	// Factor of snake mass to convert to food when snake dies
