@@ -16,6 +16,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+#include <cmath>
+
 #include "config.h"
 
 #include "Field.h"
@@ -77,7 +79,7 @@ void Snake::ensureSizeMatchesMass(void)
 
 real_t Snake::maxRotationPerStep(void)
 {
-	return (10.0*M_PI/180.0) / (m_segmentRadius/3.0 + 1);
+	return 2 * std::asin(config::SNAKE_DISTANCE_PER_STEP / (2 * m_segmentRadius * (1 + 1)));
 }
 
 void Snake::consume(const Food& food)
