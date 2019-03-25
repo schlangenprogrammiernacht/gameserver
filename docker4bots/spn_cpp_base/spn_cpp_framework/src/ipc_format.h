@@ -3,6 +3,9 @@
 #include <stdlib.h>
 #include <stdint.h>
 
+#pragma pack(push)
+#pragma pack(4)
+
 typedef float ipc_real_t;
 typedef uint64_t ipc_guid_t;
 
@@ -127,3 +130,5 @@ struct IpcResponse {
 		} step;
 	};
 };
+
+#pragma pack(pop)
