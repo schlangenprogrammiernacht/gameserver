@@ -39,6 +39,16 @@ class Api
 		{}
 
 		/*!
+		 * \brief Get a pointer to the self information.
+		 *
+		 * This is not a list, but a pointer to a single structure containing
+		 * information about your snake and parameters of the world.
+		 *
+		 * \returns    A pointer to the self information in the shared memory.
+		 */
+		const IpcSelfInfo* getSelfInfo(void) { return &(m_shm->selfInfo); }
+
+		/*!
 		 * \brief Get a pointer to the Food list.
 		 *
 		 * The Food list is sorted by distance from your snake's head.

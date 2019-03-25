@@ -10,6 +10,26 @@ typedef float ipc_real_t;
 typedef uint64_t ipc_guid_t;
 
 /*!
+ * IPC representation of one's own snake and current world parameters.
+ */
+struct IpcSelfInfo {
+	ipc_real_t segment_radius; //!< Radius of your snake's segments
+	ipc_real_t mass;           //!< Your Snake's current mass
+	ipc_real_t sight_radius;   //!< Radius around your snake's head in which you can see food and segments
+	ipc_real_t consume_radius; //!< Radius around your snake's head in which food is consumed.
+
+	uint32_t start_frame;   //!< Frame number when your snake was spawned
+	uint32_t current_frame; //!< Current frame number
+
+	ipc_real_t speed;          //!< Distance per step
+	ipc_real_t max_step_angle; //!< Maximum direction change in this step
+
+	ipc_real_t consumed_natural_food;          //!< Amount of "naturally" spawned food your snake consumed
+	ipc_real_t consumed_food_hunted_by_self;   //!< Amount of food you consumed and that was created from snakes you killed
+	ipc_real_t consumed_food_hunted_by_others; //!< Amount of food you consumed and that was created from snakes others killed (carrion)
+};
+
+/*!
  * IPC representation of a food particle.
  */
 struct IpcFoodInfo {
@@ -72,6 +92,8 @@ const size_t IPC_LOG_MAX_BYTES = 1024;
  * gameserver.
  */
 struct IpcSharedMemory {
+	struct IpcSelfInfo selfInfo;
+
 	uint32_t foodCount;
 	struct IpcFoodInfo foodInfo[IPC_FOOD_MAX_COUNT];
 

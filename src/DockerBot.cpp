@@ -140,12 +140,28 @@ void DockerBot::destroySharedMemory(void)
 
 void DockerBot::fillSharedMemory(void)
 {
-	// Step 1: food
+	// Step 1: self info
+	m_shm->selfInfo.segment_radius = m_bot.getSnake()->getSegmentRadius();
+	m_shm->selfInfo.mass           = m_bot.getSnake()->getMass();
+	m_shm->selfInfo.sight_radius   = m_bot.getSightRadius();
+	m_shm->selfInfo.consume_radius = m_bot.getSnake()->getConsumeRadius();
+
+	m_shm->selfInfo.start_frame   = m_bot.getStartFrame();
+	m_shm->selfInfo.current_frame = m_bot.getField()->getCurrentFrame();
+
+	m_shm->selfInfo.speed          = config::SNAKE_DISTANCE_PER_STEP;
+	m_shm->selfInfo.max_step_angle = m_bot.getSnake()->maxRotationPerStep();
+
+	m_shm->selfInfo.consumed_natural_food          = m_bot.getConsumedNaturalFood();
+	m_shm->selfInfo.consumed_food_hunted_by_self   = m_bot.getConsumedFoodHuntedBySelf();
+	m_shm->selfInfo.consumed_food_hunted_by_others = m_bot.getConsumedFoodHuntedByOthers();
+
+	// Step 2: food
 
 	auto head_pos = m_bot.getSnake()->getHeadPosition();
 	real_t heading = m_bot.getHeading();
 
-	real_t radius = m_bot.getSightRadius();
+	real_t radius = m_shm->selfInfo.sight_radius;
 
 	real_t min_size = 1.0f; // FIXME
 
@@ -186,7 +202,7 @@ void DockerBot::fillSharedMemory(void)
 		[](const IpcFoodInfo& a, const IpcFoodInfo& b) { return a.dist < b.dist; }
 	);
 
-	// Step 2: segments
+	// Step 3: segments
 
 	auto self_id = m_bot.getGUID();
 
@@ -233,7 +249,7 @@ void DockerBot::fillSharedMemory(void)
 		[](const IpcSegmentInfo& a, const IpcSegmentInfo& b) { return a.dist < b.dist; }
 	);
 
-	// Step 3: bots
+	// Step 4: bots
 
 	idx = 0;
 	for(auto bot: usedBots) {

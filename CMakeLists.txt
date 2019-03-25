@@ -51,6 +51,7 @@ set(sources
 	src/Environment.h
 	src/Database.h src/Database.cpp
 	src/Stopwatch.h src/Stopwatch.cpp
+	docker4bots/spn_cpp_base/spn_cpp_framework/src/ipc_format.h
 )
 
 include_directories(
