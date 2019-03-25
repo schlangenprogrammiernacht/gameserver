@@ -182,7 +182,7 @@ void DockerBot::fillSharedMemory(void)
 
 	std::sort(
 		std::begin(m_shm->foodInfo),
-		std::end(m_shm->foodInfo),
+		std::begin(m_shm->foodInfo) + m_shm->foodCount,
 		[](const IpcFoodInfo& a, const IpcFoodInfo& b) { return a.dist < b.dist; }
 	);
 
@@ -229,7 +229,7 @@ void DockerBot::fillSharedMemory(void)
 
 	std::sort(
 		std::begin(m_shm->segmentInfo),
-		std::end(m_shm->segmentInfo),
+		std::begin(m_shm->segmentInfo) + m_shm->segmentCount,
 		[](const IpcSegmentInfo& a, const IpcSegmentInfo& b) { return a.dist < b.dist; }
 	);
 
@@ -365,7 +365,7 @@ int DockerBot::forceBotShutdown(void)
 	pid_t pid = fork();
 	if(pid == 0) {
 		// child process
-		execlp("docker", "docker", "stop", "--time=3",
+		execlp("docker", "docker", "stop", "--time=1",
 				m_dockerContainerName.c_str(), (char*)NULL);
 
 		// we only get here if execlp failed
