@@ -74,8 +74,8 @@ void DockerBot::startup()
 
 void DockerBot::shutdown(void)
 {
-	cleanupSubprocess();
 	destroySocket();
+	cleanupSubprocess();
 	destroySharedMemory();
 }
 
