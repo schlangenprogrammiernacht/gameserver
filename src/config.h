@@ -116,4 +116,7 @@ namespace config {
 	static const real_t BOT_CONNECT_TIMEOUT = 5.000;
 	static const real_t BOT_INIT_TIMEOUT   = 0.050;
 	static const real_t BOT_STEP_TIMEOUT   = 0.010;
+
+	// Maximum number of step() errors in a row before the bot is killed
+	static const uint32_t BOT_MAX_STEP_ERRORS = 10;
 }

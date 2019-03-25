@@ -283,6 +283,20 @@ void Field::moveAllBots(void)
 		}
 	}
 
+	// check for bots with excessive step errors and kill them
+	std::vector< std::shared_ptr<Bot> > botsToKill;
+	for(auto &bot : m_bots) {
+		if(bot->getStepErrors() > config::BOT_MAX_STEP_ERRORS) {
+			botsToKill.push_back(bot);
+		}
+	}
+
+	for(auto &bot : botsToKill) {
+		m_updateTracker->botLogMessage(bot->getViewerKey(), "Bot terminated due to too many step errors! :-(");
+		killBot(bot, bot);
+	}
+
+	// update location maps
 	Stopwatch swSegmentMap("segment map");
 	updateSnakeSegmentMap();
 	swSegmentMap.Stop();

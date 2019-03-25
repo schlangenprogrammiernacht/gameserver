@@ -544,6 +544,7 @@ bool DockerBot::init(std::string &initErrorMessage)
 	IpcRequest request = {REQ_INIT};
 
 	if(!sendMessageToBot(&request, sizeof(request))) {
+		initErrorMessage = "Failed to send INIT request to bot.";
 		return false;
 	}
 

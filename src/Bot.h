@@ -51,6 +51,8 @@ class Bot : public IdentifyableObject
 		real_t m_consumedFoodHuntedByOthers = 0;
 		real_t m_consumedNaturalFood = 0;
 
+		uint32_t m_stepErrors = 0; //!< incremented on each failed step() call, reset on successful calls
+
 		Stopwatch m_swMove;
 
 	public:
@@ -129,4 +131,6 @@ class Bot : public IdentifyableObject
 
 		long getLastMoveTimeNs() { return m_swMove.GetThreadTimeNs(); }
 		long getApiTimeNs();
+
+		uint32_t getStepErrors(void) { return m_stepErrors; }
 };
