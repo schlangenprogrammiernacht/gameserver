@@ -68,6 +68,7 @@ DockerBot::~DockerBot()
 void DockerBot::startup()
 {
 	createSharedMemory();
+	prepareSharedMemory();
 	createSocket();
 	startBot();
 }
@@ -141,6 +142,33 @@ void DockerBot::destroySharedMemory(void)
 	close(m_shmFd);
 
 	m_shm = NULL;
+}
+
+void DockerBot::prepareSharedMemory(void)
+{
+	m_shm->serverConfig.snake_boost_steps               = config::SNAKE_BOOST_STEPS;
+	m_shm->serverConfig.snake_turn_radius_factor        = config::SNAKE_TURN_RADIUS_FACTOR;
+
+	m_shm->serverConfig.snake_pull_factor               = config::SNAKE_PULL_FACTOR;
+
+	m_shm->serverConfig.snake_conversion_factor         = config::SNAKE_CONVERSION_FACTOR;
+
+	m_shm->serverConfig.snake_segment_distance_factor   = config::SNAKE_SEGMENT_DISTANCE_FACTOR;
+	m_shm->serverConfig.snake_segment_distance_exponent = config::SNAKE_SEGMENT_DISTANCE_EXPONENT;
+
+	m_shm->serverConfig.snake_consume_range             = config::SNAKE_CONSUME_RANGE;
+
+	m_shm->serverConfig.snake_boost_loss_factor         = config::SNAKE_BOOST_LOSS_FACTOR;
+	m_shm->serverConfig.snake_survival_loss_factor      = config::SNAKE_SURVIVAL_LOSS_FACTOR;
+
+
+	m_shm->serverConfig.snake_self_kill_mass_theshold   = config::SNAKE_SELF_KILL_MASS_THESHOLD;
+
+	m_shm->serverConfig.food_decay_step                 = config::FOOD_DECAY_STEP;
+
+	m_shm->serverConfig.log_credits_per_frame           = config::LOG_CREDITS_PER_FRAME;
+	m_shm->serverConfig.log_initial_credits             = config::LOG_INITIAL_CREDITS;
+	m_shm->serverConfig.log_max_credits                 = config::LOG_MAX_CREDITS;
 }
 
 void DockerBot::fillSharedMemory(void)

@@ -67,6 +67,14 @@ class DockerBot
 		void createSharedMemory(void);
 		void destroySharedMemory(void);
 
+		/*!
+		 * Write static values to shared memory.
+		 */
+		void prepareSharedMemory(void);
+
+		/*!
+		 * Write dynamic values to shared memory.
+		 */
 		void fillSharedMemory(void);
 
 		void createSocket(void);

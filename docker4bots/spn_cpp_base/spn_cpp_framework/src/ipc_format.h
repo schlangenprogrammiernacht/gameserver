@@ -30,13 +30,45 @@ struct IpcSelfInfo {
 };
 
 /*!
+ * IPC representation of the static server and world configuration.
+ *
+ * Please note that this struct is filled once before bot startup, so if you
+ * (accidentally) modify them, they stay that way until your bot restarts.
+ */
+struct IpcServerConfig {
+	uint32_t   snake_boost_steps;        //!< Number of steps a snake moves per frame while boosting
+	ipc_real_t snake_turn_radius_factor; //!< Multiplied with your segment radius to determine the inner turn radius
+
+	ipc_real_t snake_pull_factor; //!< Pull-together factor (determines how fast segments move to the center of a loop)
+
+	ipc_real_t snake_conversion_factor; //!< how much of a snake's mass is converted to food when it dies
+
+	ipc_real_t snake_segment_distance_factor;   //!< segment distance = (mass * factor)^exponent
+	ipc_real_t snake_segment_distance_exponent; //!< segment distance = (mass * factor)^exponent
+
+	ipc_real_t snake_consume_range; //!< consume range multiplier (multiplied with segment radius)
+
+	ipc_real_t snake_boost_loss_factor;    //!< Multiplied with the snakes mass to determine how much mass is lost per frame while boosting
+	ipc_real_t snake_survival_loss_factor; //!< This part of your mass is dropped every frame (to limit snake growth)
+
+
+	ipc_real_t snake_self_kill_mass_theshold; //!< Mass below which a snake dies through starvation
+
+	ipc_real_t food_decay_step; //!< Food decays by this value each frame
+
+	ipc_real_t log_credits_per_frame; //!< How many log messages you can send per frame
+	ipc_real_t log_initial_credits;   //!< How many log messages you can send right after startup
+	ipc_real_t log_max_credits;       //!< You can send at most this many messages in a row
+};
+
+/*!
  * IPC representation of a food particle.
  */
 struct IpcFoodInfo {
-	ipc_real_t x;      //!< Relative position X
-	ipc_real_t y;      //!< Relative position Y
+	ipc_real_t x;      //!< Relative position X in world orientation
+	ipc_real_t y;      //!< Relative position Y in world orientation
 	ipc_real_t val;    //!< Food value
-	ipc_real_t dir;    //!< Direction angle
+	ipc_real_t dir;    //!< Direction angle relative to your heading (range -π to +π)
 	ipc_real_t dist;   //!< Distance
 };
 
@@ -52,10 +84,10 @@ struct IpcBotInfo {
  * IPC representation of a snake segment.
  */
 struct IpcSegmentInfo {
-	ipc_real_t x;       //!< Relative position X
-	ipc_real_t y;       //!< Relative position Y
+	ipc_real_t x;       //!< Relative position X in world orientation
+	ipc_real_t y;       //!< Relative position Y in world orientation
 	ipc_real_t r;       //!< Segment radius
-	ipc_real_t dir;     //!< Direction angle
+	ipc_real_t dir;     //!< Direction angle relative to your heading (range -π to +π)
 	ipc_real_t dist;    //!< Distance
 	ipc_real_t idx;     //!< Segment number starting from head (idx == 0)
 	ipc_guid_t bot_id;  //!< Bot ID
@@ -92,24 +124,26 @@ const size_t IPC_LOG_MAX_BYTES = 1024;
  * gameserver.
  */
 struct IpcSharedMemory {
-	struct IpcSelfInfo selfInfo;
+	struct IpcServerConfig serverConfig; //!< Information about the world and server configuration.
 
-	uint32_t foodCount;
-	struct IpcFoodInfo foodInfo[IPC_FOOD_MAX_COUNT];
+	struct IpcSelfInfo selfInfo; //!< Information about your snake (updated every frame).
 
-	uint32_t botCount;
-	struct IpcBotInfo botInfo[IPC_BOT_MAX_COUNT];
+	uint32_t foodCount;                              //!< Number of items used in foodInfo.
+	struct IpcFoodInfo foodInfo[IPC_FOOD_MAX_COUNT]; //!< List of food items seen by the snake.
 
-	uint32_t segmentCount;
-	struct IpcSegmentInfo segmentInfo[IPC_SEGMENT_MAX_COUNT];
+	uint32_t botCount;                            //!< Number of items used in botInfo.
+	struct IpcBotInfo botInfo[IPC_BOT_MAX_COUNT]; //!< List of bots related to segments in segmentInfo.
 
-	uint32_t colorCount;
-	struct IpcColor colors[IPC_COLOR_MAX_COUNT];
+	uint32_t segmentCount;                                    //!< Number of items used in segmentInfo.
+	struct IpcSegmentInfo segmentInfo[IPC_SEGMENT_MAX_COUNT]; //!< List of segments seen by the snake.
 
-	char logData[IPC_LOG_MAX_BYTES];
+	uint32_t colorCount;                         //!< Number of items used in colors.
+	struct IpcColor colors[IPC_COLOR_MAX_COUNT]; //!< Colors to set for this snake.
 
-	uint32_t faceID;
-	uint32_t dogTagID;
+	char logData[IPC_LOG_MAX_BYTES]; //!< Log data for the current frame. May contain multiple lines.
+
+	uint32_t faceID;   //!< Select a face for you snake (not used yet).
+	uint32_t dogTagID; //!< Select a dog tag for you snake (not used yet).
 };
 
 const size_t IPC_SHARED_MEMORY_BYTES = sizeof(struct IpcSharedMemory);
@@ -147,8 +181,8 @@ struct IpcResponse {
 
 	union {
 		struct {
-			ipc_real_t deltaAngle;
-			bool       boost;
+			ipc_real_t deltaAngle; //!< Direction change in this frame (radians, -π to +π).
+			bool       boost;      //!< Set to true to boost.
 		} step;
 	};
 };
