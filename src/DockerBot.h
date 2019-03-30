@@ -62,6 +62,8 @@ class DockerBot
 
 		std::vector<uint32_t> m_colors;
 
+		std::string logPrefix(void);
+
 		void createSharedMemory(void);
 		void destroySharedMemory(void);
 
@@ -71,8 +73,7 @@ class DockerBot
 		void destroySocket(void);
 
 		void startBot(void);
-		int  forceBotShutdown(void);
-		int  cleanupSubprocess(void);
+		int  shutdownSubprocess(void);
 
 		int waitForReadEvent(int fd, real_t timeout);
 		int checkIfSocketIsWriteable(int fd);
