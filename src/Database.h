@@ -66,6 +66,7 @@ namespace db
 			virtual void SetCommandCompleted(long commandId, bool result, std::string resultMsg) = 0;
 			virtual void ReportBotKilled(long victim_id, long version_id, long start_frame, long end_frame, long killer_id, double final_mass, double natural_food_consumed, double carrison_food_consumed, double hunted_food_consumed) = 0;
 			virtual void DisableBotVersion(long version_id, std::string errorMessage) = 0;
+			virtual void SetBotToCrashedState(long version_id) = 0;
 	};
 
 	class MysqlDatabase : public IDatabase
@@ -78,6 +79,7 @@ namespace db
 			void SetCommandCompleted(long commandId, bool result, std::string resultMsg) override;
 			void ReportBotKilled(long victim_id, long version_id, long start_frame, long end_frame, long killer_id, double final_mass, double natural_food_consumed, double carrison_food_consumed, double hunted_food_consumed) override;
 			void DisableBotVersion(long version_id, std::string errorMessage) override;
+			void SetBotToCrashedState(long version_id) override;
 
 		private:
 			enum {
@@ -98,6 +100,7 @@ namespace db
 			std::unique_ptr<sql::PreparedStatement> _reportBotKilledStmt;
 			std::unique_ptr<sql::PreparedStatement> _disableBotVersionStmt;
 			std::unique_ptr<sql::PreparedStatement> _saveBotVersionErrorMessageStmt;
+			std::unique_ptr<sql::PreparedStatement> _setBotToCrashedStateStmt;
 			std::unique_ptr<sql::PreparedStatement> makePreparedStatement(std::string sql);
 	};
 }
