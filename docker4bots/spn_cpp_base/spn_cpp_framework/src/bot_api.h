@@ -39,6 +39,19 @@ class Api
 		{}
 
 		/*!
+		 * \brief Get a pointer to the server config data.
+		 *
+		 * This is not a list, but a pointer to a single structure containing
+		 * information about the server configuration and static world information.
+		 *
+		 * It is only written once, so if you overwrite it by accident, it will
+		 * only be reset when your bot restarts.
+		 *
+		 * \returns    A pointer to the self information in the shared memory.
+		 */
+		const IpcServerConfig* getServerConfig(void) { return &(m_shm->serverConfig); }
+
+		/*!
 		 * \brief Get a pointer to the self information.
 		 *
 		 * This is not a list, but a pointer to a single structure containing
