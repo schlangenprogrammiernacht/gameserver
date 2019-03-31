@@ -574,6 +574,7 @@ bool DockerBot::init(std::string &initErrorMessage)
 	IpcResponse response;
 
 	if(!readMessageFromBot(&response, sizeof(response), config::BOT_INIT_TIMEOUT)) {
+		initErrorMessage = "Bot is not responding.";
 		return false;
 	}
 
