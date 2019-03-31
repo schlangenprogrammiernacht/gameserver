@@ -7,9 +7,10 @@ RUN addgroup -S spnbot && adduser --uid 1337 --home /spnbot -S spnbot --shell /b
 ADD bot_wrapper.sh /
 
 ADD spn_cpp_framework/ /spnbot/spn_cpp_framework
-RUN chown -R spnbot /spnbot
 
-RUN mkdir /spnshm
+# pre-build framework, hand it over to the spnbot user and create the shared memory directory
+# (all in one step to save layers)
+RUN cd /spnbot/spn_cpp_framework && ./build.sh && chown -R spnbot /spnbot && mkdir /spnshm
 VOLUME /spnshm
 
 ENTRYPOINT ["/bot_wrapper.sh"]
