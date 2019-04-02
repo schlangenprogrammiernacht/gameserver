@@ -29,17 +29,20 @@
 class Game
 {
 	private:
-		static constexpr const int DB_QUERY_INTERVAL = 60;
-		static constexpr const int STREAM_STATS_UPDATE_INTERVAL = 60;
-		static constexpr const int DB_STATS_UPDATE_INTERVAL = 600;
+		// all intervals are in seconds
+		static constexpr const double DB_QUERY_INTERVAL = 1.0;
+		static constexpr const double STREAM_STATS_UPDATE_INTERVAL = 1.0;
+		static constexpr const double DB_STATS_UPDATE_INTERVAL = 10.0;
 
 		TcpServer server;
 		std::unique_ptr<Field> m_field;
 		std::unique_ptr<db::IDatabase> m_database;
-		int m_dbQueryCounter = 0;
-		int m_streamStatsUpdateCounter = 0;
+		double m_nextDbQueryTime = 0;
+		double m_nextStreamStatsUpdateTime = 0;
 
 		bool m_shuttingDown = false;
+
+		double getCurrentTimestamp(void);
 
 		bool connectDB();
 		void queryDB();

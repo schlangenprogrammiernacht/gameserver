@@ -124,6 +124,8 @@ void Game::ProcessOneFrame()
 	// do all the game logic here and send updates to clients
 	auto frame = m_field->getCurrentFrame();
 
+	double now = getCurrentTimestamp();
+
 	Stopwatch swProcessFrame("ProcessFrame");
 
 	Stopwatch swDecayFood("DecayFood");
@@ -143,9 +145,9 @@ void Game::ProcessOneFrame()
 	swMoveAllBots.Stop();
 
 	Stopwatch swProcessStats("ProcessStats");
-	if(++m_streamStatsUpdateCounter >= STREAM_STATS_UPDATE_INTERVAL) {
+	if(now > m_nextStreamStatsUpdateTime) {
 		m_field->sendStatsToStream();
-		m_streamStatsUpdateCounter = 0;
+		m_nextStreamStatsUpdateTime = now + STREAM_STATS_UPDATE_INTERVAL;
 	}
 	swProcessStats.Stop();
 
@@ -168,10 +170,10 @@ void Game::ProcessOneFrame()
 	swSendUpdate.Stop();
 
 	Stopwatch swQueryDB("QueryDB");
-	if (++m_dbQueryCounter >= DB_QUERY_INTERVAL)
+	if (now > m_nextDbQueryTime)
 	{
 		queryDB();
-		m_dbQueryCounter = 0;
+		m_nextDbQueryTime = now + DB_QUERY_INTERVAL;
 	}
 	swQueryDB.Stop();
 
@@ -231,6 +233,17 @@ int Game::Main()
 	}
 
 	return 0;
+}
+double Game::getCurrentTimestamp(void)
+{
+	struct timespec t;
+	int ret = clock_gettime(CLOCK_MONOTONIC, &t);
+	if(ret == -1) {
+		std::cerr << "clock_gettime(CLOCK_MONOTONIC) failed: " << strerror(errno) << std::endl;
+		return -1;
+	}
+
+	return t.tv_sec + t.tv_nsec * 1e-9;
 }
 
 bool Game::connectDB()
