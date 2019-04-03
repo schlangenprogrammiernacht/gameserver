@@ -541,3 +541,17 @@ void Field::addBotErrorCallback(Field::BotErrorCallback callback)
 	m_botErrorCallbacks.push_back(callback);
 }
 
+void Field::calculateCurrentMass(double *living, double *dead)
+{
+	*living = 0;
+
+	for(auto b: m_bots) {
+		*living += b->getSnake()->getMass();
+	}
+
+	*dead = 0;
+
+	for (const Food &item: m_foodMap) {
+		*dead += item.getValue();
+	};
+}

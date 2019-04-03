@@ -161,3 +161,15 @@ std::unique_ptr<BotUpDownThread::Result> BotUpDownThread::getShutDownResult(void
 	m_dbIdsInProgress.erase(result->bot->getDatabaseId());
 	return result;
 }
+
+size_t BotUpDownThread::getStartupQueueLen(void)
+{
+	std::lock_guard<std::mutex> guard(m_startupQueueMutex);
+	return m_startupInQueue.size();
+}
+
+size_t BotUpDownThread::getShutdownQueueLen(void)
+{
+	std::lock_guard<std::mutex> guard(m_shutdownQueueMutex);
+	return m_shutdownInQueue.size();
+}

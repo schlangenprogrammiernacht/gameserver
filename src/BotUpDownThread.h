@@ -89,4 +89,18 @@ class BotUpDownThread
 		 * \brief Check if a bot database ID is currently managed by this class.
 		 */
 		bool containsDatabaseId(int id) { return m_dbIdsInProgress.count(id) > 0; }
+
+		/*!
+		 * \brief Get the length of the startup queue.
+		 *
+		 * \returns The number of bots waiting to be started.
+		 */
+		size_t getStartupQueueLen(void);
+
+		/*!
+		 * \brief Get the length of the shutdown queue.
+		 *
+		 * \returns The number of bots waiting to be shut down.
+		 */
+		size_t getShutdownQueueLen(void);
 };

@@ -149,6 +149,10 @@ void Game::ProcessOneFrame()
 		m_field->sendStatsToStream();
 		m_nextStreamStatsUpdateTime = now + STREAM_STATS_UPDATE_INTERVAL;
 	}
+	if(now > m_nextDbStatsUpdateTime) {
+		updateDbStats(now);
+		m_nextDbStatsUpdateTime = now + DB_STATS_UPDATE_INTERVAL;
+	}
 	swProcessStats.Stop();
 
 	Stopwatch swProcessLog("ProcessLog");
@@ -220,7 +224,7 @@ int Game::Main()
 	while(true)
 	{
 		ProcessOneFrame();
-		server.Poll(0);
+		server.Poll(33);
 
 		if(m_shuttingDown) {
 			if(m_field->getBots().empty()) {
@@ -331,6 +335,44 @@ void Game::createBot(int bot_id)
 		m_database->SetBotToCrashedState(newBot->getDatabaseVersionId());
 		// TODO save error message, maybe lock version in inactive state
 	}
+}
+
+void Game::updateDbStats(double now)
+{
+	double fps;
+	uint64_t current_frame;
+	uint32_t running_bots;
+	size_t start_queue_len;
+	size_t stop_queue_len;
+	double living_mass;
+	double dead_mass;
+
+	/*
+	 * Gather statistics
+	 */
+
+	current_frame = m_field->getCurrentFrame();
+
+	if(m_lastFPSUpdateTime != 0) {
+		fps = (current_frame - m_lastFPSUpdateFrameCount) /
+			(now - m_lastFPSUpdateTime);
+	} else {
+		// first update
+		fps = -1;
+	}
+
+	m_lastFPSUpdateTime = now;
+	m_lastFPSUpdateFrameCount = current_frame;
+
+	running_bots = m_field->getBots().size();
+
+	m_field->calculateCurrentMass(&living_mass, &dead_mass);
+	m_field->getLimboStats(&start_queue_len, &stop_queue_len);
+
+	/*
+	 * Save to database
+	 */
+	m_database->UpdateLiveStats(fps, current_frame, running_bots, start_queue_len, stop_queue_len, living_mass, dead_mass);
 }
 
 void Game::Shutdown(void)

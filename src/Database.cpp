@@ -67,6 +67,22 @@ void MysqlDatabase::Connect(std::string host, std::string username, std::string 
 	_setBotToCrashedStateStmt = makePreparedStatement(
 		"UPDATE core_snakeversion SET compile_state='crashed' WHERE id=?"
 	);
+
+	_updateLiveStatsStmt = makePreparedStatement(
+		"INSERT INTO core_livestats"
+		" (id, last_update, fps, current_frame, running_bots, start_queue_len, stop_queue_len, living_mass, dead_mass) "
+		"VALUES"
+		" (1, NOW(), ?, ?, ?, ?, ?, ?, ?) "
+		"ON DUPLICATE KEY UPDATE"
+		" last_update = NOW(), "
+		" fps = VALUES(fps), "
+		" current_frame = VALUES(current_frame), "
+		" running_bots = VALUES(running_bots), "
+		" start_queue_len = VALUES(start_queue_len), "
+		" stop_queue_len = VALUES(stop_queue_len), "
+		" living_mass = VALUES(living_mass), "
+		" dead_mass = VALUES(dead_mass)"
+	);
 }
 
 std::unique_ptr<BotScript> MysqlDatabase::GetBotData(int bot_id)
@@ -152,6 +168,20 @@ void MysqlDatabase::SetBotToCrashedState(long version_id)
 {
 	_setBotToCrashedStateStmt->setInt64(1, version_id);
 	_setBotToCrashedStateStmt->execute();
+}
+
+void MysqlDatabase::UpdateLiveStats(double fps, uint64_t current_frame,
+		uint32_t running_bots, uint32_t start_queue_len, uint32_t stop_queue_len,
+		double living_mass, double dead_mass)
+{
+	_updateLiveStatsStmt->setDouble(1, fps);
+	_updateLiveStatsStmt->setUInt64(2, current_frame);
+	_updateLiveStatsStmt->setUInt64(3, running_bots);
+	_updateLiveStatsStmt->setUInt64(4, start_queue_len);
+	_updateLiveStatsStmt->setUInt64(5, stop_queue_len);
+	_updateLiveStatsStmt->setDouble(6, living_mass);
+	_updateLiveStatsStmt->setDouble(7, dead_mass);
+	_updateLiveStatsStmt->execute();
 }
 
 std::unique_ptr<sql::PreparedStatement> MysqlDatabase::makePreparedStatement(std::string sql)

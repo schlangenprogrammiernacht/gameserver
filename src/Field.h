@@ -230,4 +230,20 @@ class Field
 		UpdateTracker& getUpdateTracker() { return *m_updateTracker; }
 
 		uint32_t getCurrentFrame() { return m_currentFrame; }
+
+		/*!
+		 * Calculate the current mass on the field.
+		 *
+		 * Living mass is contained in snakes, dead mass is food distributed over the field.
+		 */
+		void calculateCurrentMass(double *living, double *dead);
+
+		/*!
+		 * Get lengths of startup and shutdown queues.
+		 */
+		void getLimboStats(size_t *startup_queue_len, size_t *shutdown_queue_len)
+		{
+			*startup_queue_len = m_limbo.getStartupQueueLen();
+			*shutdown_queue_len = m_limbo.getShutdownQueueLen();
+		}
 };

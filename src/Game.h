@@ -32,13 +32,17 @@ class Game
 		// all intervals are in seconds
 		static constexpr const double DB_QUERY_INTERVAL = 1.0;
 		static constexpr const double STREAM_STATS_UPDATE_INTERVAL = 1.0;
-		static constexpr const double DB_STATS_UPDATE_INTERVAL = 10.0;
+		static constexpr const double DB_STATS_UPDATE_INTERVAL = 3.0;
 
 		TcpServer server;
 		std::unique_ptr<Field> m_field;
 		std::unique_ptr<db::IDatabase> m_database;
 		double m_nextDbQueryTime = 0;
 		double m_nextStreamStatsUpdateTime = 0;
+		double m_nextDbStatsUpdateTime = 0;
+
+		double m_lastFPSUpdateTime = 0;
+		double m_lastFPSUpdateFrameCount = 0;
 
 		bool m_shuttingDown = false;
 
@@ -47,6 +51,7 @@ class Game
 		bool connectDB();
 		void queryDB();
 		void createBot(int bot_id);
+		void updateDbStats(double now);
 
 	public:
 		Game();
