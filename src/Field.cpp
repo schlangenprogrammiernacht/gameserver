@@ -94,17 +94,54 @@ void Field::updateMaxSegmentRadius(void)
 	}
 }
 
+bool Field::isLocationOutsideSnakes(const Vector2D &pos, real_t margin)
+{
+	real_t max_dist = m_maxSegmentRadius + margin;
+
+	for(auto &seg: m_segmentInfoMap.getRegion(pos, max_dist)) {
+		Vector2D relPos = unwrapRelativeCoords(seg.pos() - pos);
+		real_t distance = relPos.norm();
+
+		if (distance < max_dist) {
+			// found a segment that is too close
+			return false;
+		}
+	}
+
+	// no colliding segments found
+	return true;
+}
+
+Vector2D Field::findFreeRandomLocation(void)
+{
+	Vector2D vec;
+
+	for(size_t tries = 0; tries < 5; tries++) {
+		if(tries != 0) {
+			std::cerr << "WARNING: re-trying to find an empty location, try #" << (tries+1) << std::endl;
+		}
+
+		vec(0) = (*m_positionXDistribution)(*m_rndGen);
+		vec(1) = (*m_positionYDistribution)(*m_rndGen);
+
+		if(isLocationOutsideSnakes(vec)) {
+			break;
+		}
+	}
+
+	return vec;
+}
+
 std::shared_ptr<Bot> Field::newBot(std::unique_ptr<db::BotScript> data, std::string& initErrorMessage)
 {
-	real_t x = (*m_positionXDistribution)(*m_rndGen);
-	real_t y = (*m_positionYDistribution)(*m_rndGen);
+	Vector2D startPos = findFreeRandomLocation();
 	real_t heading = (*m_angleRadDistribution)(*m_rndGen);
 
 	std::shared_ptr<Bot> bot = std::make_shared<Bot>(
 		this,
 		getCurrentFrame(),
 		std::move(data),
-		Vector2D(x,y),
+		startPos,
 		heading
 	);
 
