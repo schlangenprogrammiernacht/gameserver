@@ -34,6 +34,8 @@ class Game
 		static constexpr const double STREAM_STATS_UPDATE_INTERVAL = 1.0;
 		static constexpr const double DB_STATS_UPDATE_INTERVAL = 3.0;
 
+		static constexpr const double FPS = 60.0;
+
 		TcpServer server;
 		std::unique_ptr<Field> m_field;
 		std::unique_ptr<db::IDatabase> m_database;
@@ -44,8 +46,11 @@ class Game
 		double m_lastFPSUpdateTime = 0;
 		double m_lastFPSUpdateFrameCount = 0;
 
+		double m_nextFrameTime = 0;
+
 		bool m_shuttingDown = false;
 
+		void waitForNextFrame(void);
 		double getCurrentTimestamp(void);
 
 		bool connectDB();

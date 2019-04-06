@@ -221,10 +221,15 @@ int Game::Main()
 		createBot(id);
 	}
 
+	// initialize framerate limiter
+	m_nextFrameTime = getCurrentTimestamp();
+
 	while(true)
 	{
 		ProcessOneFrame();
-		server.Poll(33);
+		server.Poll(0);
+
+		waitForNextFrame();
 
 		if(m_shuttingDown) {
 			if(m_field->getBots().empty()) {
@@ -238,6 +243,23 @@ int Game::Main()
 
 	return 0;
 }
+
+void Game::waitForNextFrame(void)
+{
+	static const constexpr double FRAME_TIME = 1.0/FPS;
+
+	struct timespec nextFrameTS;
+	nextFrameTS.tv_sec  = static_cast<time_t>(m_nextFrameTime);
+	nextFrameTS.tv_nsec = static_cast<long  >((m_nextFrameTime - nextFrameTS.tv_sec) * 1e9);
+
+	int ret = clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, &nextFrameTS, NULL);
+	if(ret == -1) {
+		std::cerr << "clock_nanosleep(CLOCK_MONOTONIC) failed: " << strerror(errno) << std::endl;
+	}
+
+	m_nextFrameTime += FRAME_TIME;
+}
+
 double Game::getCurrentTimestamp(void)
 {
 	struct timespec t;
