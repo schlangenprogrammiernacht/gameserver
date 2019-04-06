@@ -17,6 +17,7 @@
  */
 
 #include <iostream>
+#include <cmath>
 
 #include "Bot.h"
 
@@ -73,6 +74,10 @@ std::size_t Bot::move(void)
 		boost = false;
 		directionChange = 0;
 
+		m_stepErrors++;
+	} else if(!std::isfinite(directionChange)) {
+		appendLogMessage("WARNING: NaN returned as angle, setting to 0!", false);
+		directionChange = 0;
 		m_stepErrors++;
 	} else {
 		m_stepErrors = 0;
