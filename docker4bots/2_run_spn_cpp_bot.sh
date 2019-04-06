@@ -11,7 +11,7 @@ if [ -z "$BOTNAME" ]; then
 	exit 1
 fi
 
-docker run \
+exec docker run --rm \
 	--memory=32M --memory-swap=32M --cpus=1 \
 	--read-only --tmpfs /run --tmpfs /tmp \
 	-v $SPN_SHM_HOSTDIR/$BOTNAME:/spnshm \
