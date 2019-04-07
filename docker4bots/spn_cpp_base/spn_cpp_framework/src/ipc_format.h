@@ -51,7 +51,6 @@ struct IpcServerConfig {
 	ipc_real_t snake_boost_loss_factor;    //!< Multiplied with the snakes mass to determine how much mass is lost per frame while boosting
 	ipc_real_t snake_survival_loss_factor; //!< This part of your mass is dropped every frame (to limit snake growth)
 
-
 	ipc_real_t snake_self_kill_mass_theshold; //!< Mass below which a snake dies through starvation
 
 	ipc_real_t food_decay_step; //!< Food decays by this value each frame
@@ -69,7 +68,7 @@ struct IpcFoodInfo {
 	ipc_real_t y;      //!< Relative position Y in world orientation
 	ipc_real_t val;    //!< Food value
 	ipc_real_t dir;    //!< Direction angle relative to your heading (range -π to +π)
-	ipc_real_t dist;   //!< Distance
+	ipc_real_t dist;   //!< Distance measured from the center of your head
 };
 
 /*!
@@ -88,7 +87,7 @@ struct IpcSegmentInfo {
 	ipc_real_t y;       //!< Relative position Y in world orientation
 	ipc_real_t r;       //!< Segment radius
 	ipc_real_t dir;     //!< Direction angle relative to your heading (range -π to +π)
-	ipc_real_t dist;    //!< Distance
+	ipc_real_t dist;    //!< Distance between the center of your head and the segment's center
 	uint32_t   idx;     //!< Segment number starting from head (idx == 0)
 	ipc_guid_t bot_id;  //!< Bot ID
 	bool       is_self; //!< True if this segment belongs to ones own snake
