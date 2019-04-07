@@ -74,9 +74,12 @@ std::size_t Bot::move(void)
 		boost = false;
 		directionChange = 0;
 
+		std::cerr << "[" << m_dbData->bot_name << "] step() failed: " << m_docker_bot->getErrorMessage() << std::endl;
+		appendLogMessage("step() failed: " + m_docker_bot->getErrorMessage(), false);
+
 		m_stepErrors++;
 	} else if(!std::isfinite(directionChange)) {
-		appendLogMessage("WARNING: NaN returned as angle, setting to 0!", false);
+		appendLogMessage("WARNING: NaN or +/- infinity returned as angle, setting to 0!", false);
 		directionChange = 0;
 		m_stepErrors++;
 	} else {

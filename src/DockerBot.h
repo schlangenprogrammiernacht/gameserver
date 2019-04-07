@@ -20,6 +20,8 @@
 
 #include <ipc_format.h>
 
+#include <sstream>
+
 #include "config.h"
 #include "Stopwatch.h"
 
@@ -45,6 +47,11 @@ class DockerBot
 
 		long getApiTimeNs(void) { return m_swAPI.GetThreadTimeNs(); }
 
+		/*!
+		 * Get the error message from the last step() call.
+		 */
+		std::string getErrorMessage(void) { return m_errorStream.str(); }
+
 	private:
 		Bot&        m_bot;
 		std::string m_cleanName;
@@ -59,6 +66,8 @@ class DockerBot
 		int              m_listenSocket;
 		std::string      m_listenSockPath;
 		int              m_botSocket;
+
+		std::ostringstream m_errorStream;
 
 		std::vector<uint32_t> m_colors;
 

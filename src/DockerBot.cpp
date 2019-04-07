@@ -618,6 +618,10 @@ bool DockerBot::step(float &directionChange, bool &boost)
 		return false;
 	}
 
+	// clear the last error message
+	m_errorStream.str("");
+	m_errorStream.clear();
+
 	fillSharedMemory();
 
 	m_swAPI.Reset();
@@ -627,6 +631,7 @@ bool DockerBot::step(float &directionChange, bool &boost)
 
 	if(!sendMessageToBot(&request, sizeof(request))) {
 		m_swAPI.Stop();
+		m_errorStream << "Failed to send message to bot." << std::endl;
 		return false;
 	}
 
@@ -634,6 +639,7 @@ bool DockerBot::step(float &directionChange, bool &boost)
 
 	if(!readMessageFromBot(&response, sizeof(response), config::BOT_STEP_TIMEOUT)) {
 		m_swAPI.Stop();
+		m_errorStream << "Failed to read message from bot (timeout?)." << std::endl;
 		return false;
 	}
 
@@ -659,7 +665,7 @@ bool DockerBot::step(float &directionChange, bool &boost)
 	}
 
 	if(response.type != RES_OK) {
-		std::cerr << logPrefix() << "Bot sent an error status: " << response.type << std::endl;
+		m_errorStream << "Bot responded to step() with an error status: " << response.type << std::endl;
 		return false;
 	}
 
