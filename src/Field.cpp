@@ -38,7 +38,7 @@ Field::Field(real_t w, real_t h, std::size_t food_parts, std::unique_ptr<UpdateT
 void Field::createStaticFood(std::size_t count)
 {
 	for(std::size_t i = 0; i < count; i++) {
-		real_t value = (*m_foodSizeDistribution)(*m_rndGen);
+		real_t value = std::fabs((*m_foodSizeDistribution)(*m_rndGen));
 		real_t x     = (*m_positionXDistribution)(*m_rndGen);
 		real_t y     = (*m_positionYDistribution)(*m_rndGen);
 
@@ -424,7 +424,7 @@ void Field::createDynamicFood(real_t totalValue, const Vector2D &center, real_t 
 	while(remainingValue > 0) {
 		real_t value;
 		if(remainingValue > config::FOOD_SIZE_MEAN) {
-			value = (*m_foodSizeDistribution)(*m_rndGen);
+			value = std::fabs((*m_foodSizeDistribution)(*m_rndGen));
 		} else {
 			value = remainingValue;
 		}
