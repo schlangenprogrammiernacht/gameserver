@@ -203,16 +203,20 @@ void Field::updateLimbo(void)
 
 void Field::decayFood(void)
 {
+	size_t newStaticFood = 0;
+
 	for (Food &item: m_foodMap)
 	{
 		if (item.decay()) {
 			m_updateTracker->foodDecayed(item);
 			if (item.shallRegenerate())
 			{
-				createStaticFood(1);
+				newStaticFood++;
 			}
 		}
 	};
+
+	createStaticFood(newStaticFood);
 }
 
 void Field::removeFood()
