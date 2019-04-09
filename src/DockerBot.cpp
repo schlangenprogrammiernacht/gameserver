@@ -539,13 +539,25 @@ bool DockerBot::readMessageFromBot(void *data, size_t length, real_t timeout)
 		return false;
 	}
 
-	ret = recv(m_botSocket, data, length, 0);
-	if(ret == -1) {
-		std::cerr << logPrefix() << "recv() failed: " << strerror(errno) << std::endl;
-		return false;
-	} else if(static_cast<size_t>(ret) != length) {
-		std::cerr << logPrefix() << "Received only " << ret << " of " << length << " bytes from bot." << std::endl;
-		return false;
+	int niter = 0;
+	do {
+		ret = recv(m_botSocket, data, length, MSG_DONTWAIT);
+		if(ret == -1) {
+			if(errno != EAGAIN && errno != EWOULDBLOCK) {
+				std::cerr << logPrefix() << "recv() failed: " << strerror(errno) << std::endl;
+				return false;
+			}
+			// else end the iteration as the last packet from the socket queue was received
+		} else if(static_cast<size_t>(ret) != length) {
+			std::cerr << logPrefix() << "Received only " << ret << " of " << length << " bytes from bot." << std::endl;
+			return false;
+		}
+
+		niter++;
+	} while(ret != -1);
+
+	if(niter > 2) {
+		std::cerr << logPrefix() << "Looped " << (niter-2) << " extra times to empty the socket queue." << std::endl;
 	}
 
 	return true;
