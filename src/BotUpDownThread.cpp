@@ -64,7 +64,9 @@ BotUpDownThread::BotUpDownThread(void)
 						std::lock_guard<std::mutex> guard(m_shutdownQueueMutex);
 						m_shutdownOutQueue.push(std::move(result));
 
-						continue;
+						if(!m_shutdownInQueue.empty()) {
+							idle = false;
+						}
 					}
 
 					// check for work in startup queue
@@ -91,7 +93,9 @@ BotUpDownThread::BotUpDownThread(void)
 						std::lock_guard<std::mutex> guard(m_startupQueueMutex);
 						m_startupOutQueue.push(std::move(result));
 
-						idle = m_startupInQueue.empty();
+						if(!m_startupInQueue.empty()) {
+							idle = false;
+						}
 					}
 
 					if(idle) {
