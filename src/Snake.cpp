@@ -176,6 +176,10 @@ std::size_t Snake::move(real_t deltaAngle, bool boost)
 
 	m_mass *= (1.0 - config::SNAKE_SURVIVAL_LOSS_FACTOR);
 
+	if(m_mass > m_maxMass) {
+		m_maxMass = m_mass;
+	}
+
 	return m_segments.size(); // == number of new segments at head
 }
 

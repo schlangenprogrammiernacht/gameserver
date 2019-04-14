@@ -61,6 +61,7 @@ class Snake
 		Field *m_field;
 
 		real_t m_mass; //!< Mass (length) of the snake
+		real_t m_maxMass = 0; //!< Maximum mass reached during entire lifetime
 
 		real_t m_heading; //!< Heading of the snake in radians from x axis
 
@@ -148,6 +149,7 @@ class Snake
 		real_t getHeading(void) { return m_heading; }
 
 		real_t getMass(void) { return m_mass; }
+		real_t getMaximumMass(void) { return m_maxMass; }
 
 		real_t getConsumeRadius(void);
 

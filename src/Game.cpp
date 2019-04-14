@@ -67,6 +67,7 @@ Game::Game()
 				victim->getStartFrame(),
 				m_field->getCurrentFrame(),
 				killer_id,
+				victim->getSnake()->getMaximumMass(),
 				victim->getSnake()->getMass(),
 				victim->getConsumedNaturalFood(),
 				victim->getConsumedFoodHuntedByOthers(),
