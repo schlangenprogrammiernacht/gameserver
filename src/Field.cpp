@@ -235,7 +235,7 @@ void Field::consumeFood(void)
 
 		for (auto& fi: m_foodMap.getRegion(headPos, radius))
 		{
-			if (b->getSnake()->tryConsume(fi))
+			if (!fi.shallBeRemoved() && b->getSnake()->tryConsume(fi))
 			{
 				b->updateConsumeStats(fi);
 				m_updateTracker->foodConsumed(fi, b);
