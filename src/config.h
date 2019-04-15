@@ -33,16 +33,16 @@
 namespace config {
 
 	// Field size
-	static const real_t     FIELD_SIZE_X            = 10240;
-	static const real_t     FIELD_SIZE_Y            = 5760;
+	static const real_t     FIELD_SIZE_X            = 1920*1.5;
+	static const real_t     FIELD_SIZE_Y            = 1080*1.5;
 
 	// Spatial Map size
 	static constexpr const size_t SPATIAL_MAP_TILES_X = 128;
 	static constexpr const size_t SPATIAL_MAP_TILES_Y = 128;
-	static constexpr const size_t SPATIAL_MAP_RESERVE_COUNT = 10;
+	static constexpr const size_t SPATIAL_MAP_RESERVE_COUNT = 100;
 
 	// Items of static food on field
-	static const std::size_t FIELD_STATIC_FOOD       = 12000;
+	static const std::size_t FIELD_STATIC_FOOD       = 2000;
 
 	// Steps that a snake moves while boosting (normal speed = 1 step)
 	static const std::size_t SNAKE_BOOST_STEPS       = 2;
@@ -58,7 +58,7 @@ namespace config {
 	static const real_t     SNAKE_PULL_FACTOR        = 0.10;
 
 	// Factor of snake mass to convert to food when snake dies
-	static const real_t     SNAKE_CONVERSION_FACTOR  = 0.50;
+	static const real_t     SNAKE_CONVERSION_FACTOR  = 0.90;
 
 	// segment distance = (mass * factor)^exponent
 	static const real_t     SNAKE_SEGMENT_DISTANCE_FACTOR   = 0.2;
@@ -69,7 +69,7 @@ namespace config {
 	static const real_t     SNAKE_CONSUME_RANGE     = 2.0;
 
 	// Part of Snake's mass to drop in every frame the boost is on.
-	static const real_t     SNAKE_BOOST_LOSS_FACTOR = 5e-3;
+	static const real_t     SNAKE_BOOST_LOSS_FACTOR = 1e-3;
 
 	// Snakes continuously loose mass. This parameter adjust the part of mass
 	// lost every movement (==frame). The mass is not dropped, but simply lost.
@@ -85,7 +85,7 @@ namespace config {
 	static const real_t     FOOD_SIZE_STDDEV        = 2.0;
 
 	// Food decay value per frame
-	static const real_t     FOOD_DECAY_STEP         = 0.0001;
+	static const real_t     FOOD_DECAY_STEP         = 0.001;
 
 	// Minimum mass ratio required that a bot can kill another bot. This prevents
 	// that very small/newly spawned snakes can kill large snakes.
@@ -113,7 +113,7 @@ namespace config {
 	static const char *BOT_LAUNCHER_SCRIPT = "docker4bots/2_run_spn_cpp_bot.sh";
 
 	// Timeout configuration (all times in seconds)
-	static const real_t BOT_CONNECT_TIMEOUT = 5.000;
+	static const real_t BOT_CONNECT_TIMEOUT = 10.000;
 	static const real_t BOT_INIT_TIMEOUT   = 0.050;
 	static const real_t BOT_STEP_TIMEOUT   = 0.010;
 
