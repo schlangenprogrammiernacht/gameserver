@@ -56,7 +56,7 @@ BotUpDownThread::BotUpDownThread(void)
 
 						try {
 							bot->internalShutdown();
-						} catch(const std::runtime_error &e) {
+						} catch(std::runtime_error &e) {
 							result->message = e.what();
 							result->success = false;
 						}
@@ -85,7 +85,7 @@ BotUpDownThread::BotUpDownThread(void)
 
 						try {
 							bot->internalStartup();
-						} catch(const std::runtime_error &e) {
+						} catch(std::runtime_error &e) {
 							result->message = e.what();
 							result->success = false;
 						}
