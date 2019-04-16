@@ -66,7 +66,7 @@ namespace db
 			virtual void SetCommandCompleted(long commandId, bool result, std::string resultMsg) = 0;
 			virtual void ReportBotKilled(long victim_id, long version_id, long start_frame, long end_frame, long killer_id, double maximum_mass, double final_mass, double natural_food_consumed, double carrison_food_consumed, double hunted_food_consumed) = 0;
 			virtual void DisableBotVersion(long version_id, std::string errorMessage) = 0;
-			virtual void SetBotToCrashedState(long version_id) = 0;
+			virtual void SetBotToCrashedState(long version_id, std::string errorMessage) = 0;
 			virtual void UpdateLiveStats(double fps, uint64_t current_frame, uint32_t running_bots, uint32_t start_queue_len, uint32_t stop_queue_len, double living_mass, double dead_mass) = 0;
 	};
 
@@ -80,7 +80,7 @@ namespace db
 			void SetCommandCompleted(long commandId, bool result, std::string resultMsg) override;
 			void ReportBotKilled(long victim_id, long version_id, long start_frame, long end_frame, long killer_id, double maximum_mass, double final_mass, double natural_food_consumed, double carrison_food_consumed, double hunted_food_consumed) override;
 			void DisableBotVersion(long version_id, std::string errorMessage) override;
-			void SetBotToCrashedState(long version_id) override;
+			void SetBotToCrashedState(long version_id, std::string errorMessage) override;
 			void UpdateLiveStats(double fps, uint64_t current_frame, uint32_t running_bots, uint32_t start_queue_len, uint32_t stop_queue_len, double living_mass, double dead_mass) override;
 
 		private:

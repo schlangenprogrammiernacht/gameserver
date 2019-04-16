@@ -82,7 +82,7 @@ Game::Game()
 		[this](const std::shared_ptr<Bot> &failedBot, const std::string &errorMessage)
 		{
 			// Set the bot to crashed state in the database
-			m_database->SetBotToCrashedState(failedBot->getDatabaseVersionId());
+			m_database->SetBotToCrashedState(failedBot->getDatabaseVersionId(), errorMessage);
 		}
 	);
 }
@@ -355,8 +355,7 @@ void Game::createBot(int bot_id)
 	auto newBot = m_field->newBot(std::move(data), initErrorMessage);
 	if (!initErrorMessage.empty())
 	{
-		m_database->SetBotToCrashedState(newBot->getDatabaseVersionId());
-		// TODO save error message, maybe lock version in inactive state
+		m_database->SetBotToCrashedState(newBot->getDatabaseVersionId(), initErrorMessage);
 	}
 }
 

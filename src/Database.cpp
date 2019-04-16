@@ -65,7 +65,7 @@ void MysqlDatabase::Connect(std::string host, std::string username, std::string 
 	);
 
 	_setBotToCrashedStateStmt = makePreparedStatement(
-		"UPDATE core_snakeversion SET compile_state='crashed' WHERE id=?"
+		"UPDATE core_snakeversion SET compile_state='crashed', server_error_message=? WHERE id=?"
 	);
 
 	_updateLiveStatsStmt = makePreparedStatement(
@@ -165,9 +165,10 @@ void MysqlDatabase::DisableBotVersion(long version_id, std::string errorMessage)
 	}
 }
 
-void MysqlDatabase::SetBotToCrashedState(long version_id)
+void MysqlDatabase::SetBotToCrashedState(long version_id, std::string errorMessage)
 {
-	_setBotToCrashedStateStmt->setInt64(1, version_id);
+	_setBotToCrashedStateStmt->setString(1, errorMessage);
+	_setBotToCrashedStateStmt->setInt64(2, version_id);
 	_setBotToCrashedStateStmt->execute();
 }
 
