@@ -37,7 +37,8 @@ class BotUpDownThread
 		};
 
 	private:
-		std::thread m_thread;
+		std::thread m_startupThread;
+		std::thread m_shutdownThread;
 		std::queue< std::shared_ptr<Bot> > m_startupInQueue;
 		std::queue< std::shared_ptr<Bot> > m_shutdownInQueue;
 		std::queue< std::unique_ptr<Result> > m_startupOutQueue;

@@ -28,15 +28,55 @@ using namespace std::chrono_literals;
 
 BotUpDownThread::BotUpDownThread(void)
 {
-	std::thread newThread(
+	m_startupThread = std::thread(
 			[this] ()
 			{
 				while(!m_shutdown) {
 					bool idle = true;
 
-					/*
-					 * Shutdown has priority, because it frees resources.
-					 */
+					// check for work in startup queue
+					std::shared_ptr<Bot> bot;
+
+					{
+						std::lock_guard<std::mutex> guard(m_startupQueueMutex);
+						if(!m_startupInQueue.empty()) {
+							bot = m_startupInQueue.front();
+							m_startupInQueue.pop();
+						} else {
+							bot = NULL;
+						}
+					}
+
+					if(bot) {
+						std::unique_ptr<Result> result(new Result{bot, "", true});
+
+						try {
+							bot->internalStartup();
+						} catch(std::runtime_error &e) {
+							result->message = e.what();
+							result->success = false;
+						}
+
+						std::lock_guard<std::mutex> guard(m_startupQueueMutex);
+						m_startupOutQueue.push(std::move(result));
+
+						if(!m_startupInQueue.empty()) {
+							idle = false;
+						}
+					}
+
+					if(idle) {
+						// no work remains in queue -> sleep
+						std::this_thread::sleep_for(1s);
+					}
+				}
+			});
+
+	m_shutdownThread = std::thread(
+			[this] ()
+			{
+				while(!m_shutdown) {
+					bool idle = true;
 
 					// check for work in shutdown queue
 					std::shared_ptr<Bot> bot;
@@ -69,43 +109,12 @@ BotUpDownThread::BotUpDownThread(void)
 						}
 					}
 
-					// check for work in startup queue
-					{
-						std::lock_guard<std::mutex> guard(m_startupQueueMutex);
-						if(!m_startupInQueue.empty()) {
-							bot = m_startupInQueue.front();
-							m_startupInQueue.pop();
-						} else {
-							bot = NULL;
-						}
-					}
-
-					if(bot) {
-						std::unique_ptr<Result> result(new Result{bot, "", true});
-
-						try {
-							bot->internalStartup();
-						} catch(std::runtime_error &e) {
-							result->message = e.what();
-							result->success = false;
-						}
-
-						std::lock_guard<std::mutex> guard(m_startupQueueMutex);
-						m_startupOutQueue.push(std::move(result));
-
-						if(!m_startupInQueue.empty()) {
-							idle = false;
-						}
-					}
-
 					if(idle) {
-						// no work remains in queue -> sleep for 2s
-						std::this_thread::sleep_for(2s);
+						// no work remains in queue -> sleep
+						std::this_thread::sleep_for(1s);
 					}
 				}
 			});
-
-	m_thread.swap(newThread);
 }
 
 BotUpDownThread::~BotUpDownThread()
@@ -113,7 +122,8 @@ BotUpDownThread::~BotUpDownThread()
 	// request thread shutdown
 	m_shutdown = true;
 
-	m_thread.join();
+	m_startupThread.join();
+	m_shutdownThread.join();
 }
 
 void BotUpDownThread::addStartupBot(const std::shared_ptr<Bot> &bot)
