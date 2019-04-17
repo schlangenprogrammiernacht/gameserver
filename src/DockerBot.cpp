@@ -196,7 +196,7 @@ void DockerBot::fillSharedMemory(void)
 
 	real_t radius = m_shm->selfInfo.sight_radius;
 
-	real_t min_size = 1.0f; // FIXME
+	real_t min_size = 0.1f; // FIXME
 
 	auto field = m_bot.getField();
 
