@@ -24,6 +24,8 @@
 
 #include "BotUpDownThread.h"
 
+#include <pthread.h>
+
 using namespace std::chrono_literals;
 
 BotUpDownThread::BotUpDownThread(void)
@@ -115,6 +117,11 @@ BotUpDownThread::BotUpDownThread(void)
 					}
 				}
 			});
+
+	// remove this code if it does not compile on your system. It does not affect
+	// the program's functionality.
+	pthread_setname_np(m_startupThread.native_handle(), "bot_startup");
+	pthread_setname_np(m_shutdownThread.native_handle(), "bot_shutdown");
 }
 
 BotUpDownThread::~BotUpDownThread()

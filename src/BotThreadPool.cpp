@@ -17,6 +17,7 @@
  */
 
 #include <memory>
+#include <sstream>
 
 #include "Bot.h"
 
@@ -28,8 +29,9 @@ BotThreadPool::BotThreadPool(std::size_t num_threads)
 	: m_threads(num_threads), m_activeThreads(0)
 {
 	// create all the threads
+	int threadnum = 0;
 	for(auto &thread : m_threads) {
-		std::thread newThread(
+		thread = std::thread(
 					[this] ()
 					{
 						while(true) {
@@ -81,7 +83,11 @@ BotThreadPool::BotThreadPool(std::size_t num_threads)
 						}
 					});
 
-		thread.swap(newThread);
+		// remove this line if it does not compile on your system. It does not affect
+		// the program's functionality.
+		std::ostringstream namestream;
+		namestream << "bot_worker_" << (threadnum++);
+		pthread_setname_np(thread.native_handle(), namestream.str().c_str());
 	}
 }
 
