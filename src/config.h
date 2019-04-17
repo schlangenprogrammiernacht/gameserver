@@ -107,10 +107,10 @@ namespace config {
 	static constexpr const size_t MAX_COLORS = 100;
 
 	// bot IPC directory location
-	static const char *BOT_IPC_DIRECTORY = "/mnt/spn_shm/";
+	static constexpr const char *BOT_IPC_DIRECTORY = "/mnt/spn_shm/";
 
 	// script for launching new bots
-	static const char *BOT_LAUNCHER_SCRIPT = "docker4bots/2_run_spn_cpp_bot.sh";
+	static constexpr const char *BOT_LAUNCHER_SCRIPT = "docker4bots/2_run_spn_cpp_bot.sh";
 
 	// Timeout configuration (all times in seconds)
 	static const real_t BOT_CONNECT_TIMEOUT = 10.000;
@@ -118,5 +118,5 @@ namespace config {
 	static const real_t BOT_STEP_TIMEOUT   = 0.010;
 
 	// Maximum number of step() errors in a row before the bot is killed
-	static const uint32_t BOT_MAX_STEP_ERRORS = 10;
+	static const uint32_t BOT_MAX_STEP_ERRORS = 30;
 }

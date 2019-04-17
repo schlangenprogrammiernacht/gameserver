@@ -34,7 +34,7 @@ class Game
 		static constexpr const double STREAM_STATS_UPDATE_INTERVAL = 1.0;
 		static constexpr const double DB_STATS_UPDATE_INTERVAL = 3.0;
 
-		static constexpr const double FPS = 60.0;
+		static constexpr const double FPS = 120.0;
 
 		TcpServer server;
 		std::unique_ptr<Field> m_field;
