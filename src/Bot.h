@@ -55,6 +55,8 @@ class Bot : public IdentifyableObject
 
 		Stopwatch m_swMove;
 
+		bool m_hasFatalError = false;
+
 	public:
 		/*!
 		 * Creates a new bot identified by the given name on the given playing
@@ -133,4 +135,6 @@ class Bot : public IdentifyableObject
 		long getApiTimeNs();
 
 		uint32_t getStepErrors(void) { return m_stepErrors; }
+
+		bool hasFatalError(void) { return m_hasFatalError; }
 };

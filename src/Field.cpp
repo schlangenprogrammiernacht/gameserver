@@ -327,13 +327,12 @@ void Field::moveAllBots(void)
 	// check for bots with excessive step errors and kill them
 	std::vector< std::shared_ptr<Bot> > botsToKill;
 	for(auto &bot : m_bots) {
-		if(bot->getStepErrors() > config::BOT_MAX_STEP_ERRORS) {
+		if(bot->hasFatalError()) {
 			botsToKill.push_back(bot);
 		}
 	}
 
 	for(auto &bot : botsToKill) {
-		m_updateTracker->botLogMessage(bot->getViewerKey(), "Bot terminated due to too many step errors! :-(");
 		killBot(bot, bot);
 	}
 
@@ -364,15 +363,20 @@ void Field::moveAllBots(void)
 #endif
 }
 
+void Field::sendAllLogMessages(const std::shared_ptr<Bot> &b)
+{
+	for (auto &msg: b->getLogMessages())
+	{
+		m_updateTracker->botLogMessage(b->getViewerKey(), msg);
+	}
+	b->clearLogMessages();
+}
+
 void Field::processLog()
 {
 	for (auto &b : m_bots)
 	{
-		for (auto &msg: b->getLogMessages())
-		{
-			m_updateTracker->botLogMessage(b->getViewerKey(), msg);
-		}
-		b->clearLogMessages();
+		sendAllLogMessages(b);
 		b->increaseLogCredit();
 	}
 }
@@ -567,6 +571,9 @@ void Field::killBot(std::shared_ptr<Bot> victim, std::shared_ptr<Bot> killer)
 	victim->getSnake()->convertToFood(killer);
 	m_bots.erase(victim);
 	m_updateTracker->botKilled(killer, victim);
+
+	// send final log messages to viewer
+	sendAllLogMessages(victim);
 
 	// bot will eventually be recreated in callbacks
 	for (auto& callback: m_botKilledCallbacks)

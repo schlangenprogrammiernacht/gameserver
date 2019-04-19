@@ -52,6 +52,12 @@ class DockerBot
 		 */
 		std::string getErrorMessage(void) { return m_errorStream.str(); }
 
+		/*!
+		 * Indicates that the last error should be handled as fatal error (shut
+		 * down bot immediately).
+		 */
+		bool lastErrorIsFatal(void) { return m_lastErrorWasFatal; }
+
 	private:
 		Bot&        m_bot;
 		std::string m_cleanName;
@@ -68,6 +74,8 @@ class DockerBot
 		int              m_botSocket;
 
 		std::ostringstream m_errorStream;
+
+		bool m_lastErrorWasFatal = false;
 
 		std::vector<uint32_t> m_colors;
 

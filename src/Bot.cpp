@@ -86,7 +86,19 @@ std::size_t Bot::move(void)
 		m_stepErrors = 0;
 	}
 
-	auto retval = m_snake->move(directionChange, boost);
+	// too many step errors are fatal
+	if(m_stepErrors > config::BOT_MAX_STEP_ERRORS) {
+		appendLogMessage("Too many step() errors. This is fatal.", false);
+		m_hasFatalError = true;
+	}
+
+	// pass-through fatal errors if the last step failed
+	if(m_stepErrors != 0 && m_docker_bot->lastErrorIsFatal()) {
+		appendLogMessage("Bot encountered a fatal communication error.", false);
+		m_hasFatalError = true;
+	}
+
+	std::size_t retval = m_snake->move(directionChange, boost);
 
 	m_swMove.Stop();
 	return retval;

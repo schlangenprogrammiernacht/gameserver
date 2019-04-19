@@ -95,6 +95,8 @@ class Field
 		bool isLocationOutsideSnakes(const Vector2D &pos, real_t margin = 10);
 		Vector2D findFreeRandomLocation(void);
 
+		void sendAllLogMessages(const std::shared_ptr<Bot> &b);
+
 	public:
 		Field(real_t w, real_t h, std::size_t food_parts, std::unique_ptr<UpdateTracker> update_tracker);
 

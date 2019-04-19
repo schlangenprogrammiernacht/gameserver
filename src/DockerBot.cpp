@@ -619,6 +619,9 @@ bool DockerBot::init(std::string &initErrorMessage)
 
 bool DockerBot::step(float &directionChange, bool &boost)
 {
+	// all communication errors are fatal
+	m_lastErrorWasFatal = true;
+
 	if(m_botSocket == -1) {
 		std::cerr << logPrefix() << "Bot is not properly prepared: socket not set up." << std::endl;
 		return false;
@@ -646,6 +649,10 @@ bool DockerBot::step(float &directionChange, bool &boost)
 		m_errorStream << "Failed to send message to bot." << std::endl;
 		return false;
 	}
+
+	// Don't treat read errors as fatal errors as they may be just (unavoidable)
+	// timeouts caused by system lags.
+	m_lastErrorWasFatal = false;
 
 	IpcResponse response;
 
@@ -678,6 +685,9 @@ bool DockerBot::step(float &directionChange, bool &boost)
 
 	if(response.type != RES_OK) {
 		m_errorStream << "Bot responded to step() with an error status: " << response.type << std::endl;
+
+		// If the user responds with an error code, terminate immediately.
+		m_lastErrorWasFatal = true;
 		return false;
 	}
 
