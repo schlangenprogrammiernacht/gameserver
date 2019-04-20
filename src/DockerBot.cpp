@@ -384,7 +384,25 @@ void DockerBot::startBot(void)
 		throw std::runtime_error("Error while starting bot process.");
 	}
 
+	// wait for the 'docker run' process to complete (container is run in background)
+	int status;
+	pid_t exitpid = waitpid(pid, &status, 0);
+
+	if(WIFEXITED(status)) {
+		std::cerr << logPrefix() << "'docker run' exited code " << WEXITSTATUS(status) << std::endl;
+		if(WEXITSTATUS(status) == 0) {
+			std::cerr << logPrefix() << "'docker run' completed successfully" << std::endl;
+		} else {
+			throw std::runtime_error("Error during 'docker run'.");
+		}
+	} else if(WIFSIGNALED(status)) {
+		std::cerr << logPrefix() << "'docker run' terminated by signal " << WTERMSIG(status) << std::endl;
+	} else {
+		std::cerr << logPrefix() << "'docker run' terminated with unexpected exit status: " << status << std::endl;
+	}
+
 	// parent process continues
+	// FIXME: replace with a bool (subprocess running)
 	m_dockerPID = pid;
 
 	// wait for a connection
@@ -416,50 +434,34 @@ int DockerBot::shutdownSubprocess(void)
 		return 0;
 	}
 
-	int status;
-	int exitpid = waitpid(m_dockerPID, &status, WNOHANG);
-	if(exitpid != 0) {
-		std::cerr << logPrefix() << "Process has already stopped, skipping 'docker stop'." << std::endl;
-	} else {
-		// run "docker stop" on the container
-		pid_t pid = fork();
-		if(pid == 0) {
-			// child process
-			execlp("docker", "docker", "stop", "--time=1",
-					m_dockerContainerName.c_str(), (char*)NULL);
+	// run "docker stop" on the container
+	pid_t pid = fork();
+	if(pid == 0) {
+		// child process
+		execlp("docker", "docker", "stop", "--time=1",
+				m_dockerContainerName.c_str(), (char*)NULL);
 
-			// we only get here if execlp failed
-			std::cerr << logPrefix() << "execlp() failed: " << strerror(errno) << std::endl;
-			exit(99);
-		} else if(pid == -1) {
-			// error
-			std::cerr << logPrefix() << "fork() failed: " << strerror(errno) << std::endl;
-			throw std::runtime_error("Error while stopping bot process.");
-		}
-
-		exitpid = waitpid(pid, &status, 0);
-
-		if(exitpid == -1) {
-			std::cerr << logPrefix() << "waitpid() failed: " << strerror(errno) << std::endl;
-			throw std::runtime_error("Error while stopping bot process.");
-		}
-
-		if(WIFEXITED(status) && (WEXITSTATUS(status) == 0)) {
-			std::cerr << logPrefix() << "'docker stop' completed successfully." << std::endl;
-		} else {
-			std::cerr << logPrefix() << "'docker stop' terminated with unexpected status information: " << status << std::endl;
-		}
-
-		// wait for the actual 'docker run' process
-		exitpid = waitpid(m_dockerPID, &status, 0);
+		// we only get here if execlp failed
+		std::cerr << logPrefix() << "execlp() failed: " << strerror(errno) << std::endl;
+		exit(99);
+	} else if(pid == -1) {
+		// error
+		std::cerr << logPrefix() << "fork() failed: " << strerror(errno) << std::endl;
+		throw std::runtime_error("Error while stopping bot process.");
 	}
 
-	if(WIFEXITED(status)) {
-		std::cerr << logPrefix() << "Bot exited normally with code " << WEXITSTATUS(status) << std::endl;
-	} else if(WIFSIGNALED(status)) {
-		std::cerr << logPrefix() << "Bot terminated by signal " << WTERMSIG(status) << std::endl;
+	int status;
+	pid_t exitpid = waitpid(pid, &status, 0);
+
+	if(exitpid == -1) {
+		std::cerr << logPrefix() << "waitpid() failed: " << strerror(errno) << std::endl;
+		throw std::runtime_error("Error while stopping bot process.");
+	}
+
+	if(WIFEXITED(status) && (WEXITSTATUS(status) == 0)) {
+		std::cerr << logPrefix() << "'docker stop' completed successfully." << std::endl;
 	} else {
-		std::cerr << logPrefix() << "Bot terminated with unexpected exit status: " << status << std::endl;
+		std::cerr << logPrefix() << "'docker stop' terminated with unexpected status information: " << status << std::endl;
 	}
 
 	m_dockerPID = -1;
