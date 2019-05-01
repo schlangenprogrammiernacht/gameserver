@@ -149,6 +149,23 @@ class Api
 		}
 
 		/*!
+		 * \brief Get a pointer to the persistent memory.
+		 *
+		 * You can use persistent memory to remember things across multiple lives
+		 * of your snake. It is saved after your snake dies (even when your code
+		 * crashes) and restored when it respawns.
+		 *
+		 * Note that the size this memory is very limited (given by the
+		 * IPC_PERSISTENT_MAX_BYTES constant). Use it wisely.
+		 *
+		 * \returns  A pointer to the persistent memory.
+		 */
+		void *getPersistentMemory(void)
+		{
+			return m_shm->persistentData;
+		}
+
+		/*!
 		 * \brief Send a log message.
 		 *
 		 * These messages will appear on the web interface and in the World update

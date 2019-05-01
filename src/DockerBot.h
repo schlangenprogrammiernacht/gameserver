@@ -58,6 +58,11 @@ class DockerBot
 		 */
 		bool lastErrorIsFatal(void) { return m_lastErrorWasFatal; }
 
+		/*!
+		 * Get a the bot’s perstent data blob, encapulated in an std::string.
+		 */
+		std::string getPersistentData(void);
+
 	private:
 		Bot&        m_bot;
 		std::string m_cleanName;

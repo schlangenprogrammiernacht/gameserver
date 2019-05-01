@@ -116,6 +116,8 @@ const size_t IPC_COLOR_MAX_BYTES = IPC_COLOR_MAX_COUNT * sizeof(struct IpcColor)
 
 const size_t IPC_LOG_MAX_BYTES = 1024;
 
+const size_t IPC_PERSISTENT_MAX_BYTES = 4096; //!< Space for persistent data (in bytes)
+
 /*!
  * Shared memory structure.
  *
@@ -141,8 +143,10 @@ struct IpcSharedMemory {
 
 	char logData[IPC_LOG_MAX_BYTES]; //!< Log data for the current frame. May contain multiple lines.
 
-	uint32_t faceID;   //!< Select a face for you snake (not used yet).
-	uint32_t dogTagID; //!< Select a dog tag for you snake (not used yet).
+	uint32_t faceID;   //!< Select a face for your snake (not used yet).
+	uint32_t dogTagID; //!< Select a dog tag for your snake (not used yet).
+
+	uint8_t persistentData[IPC_PERSISTENT_MAX_BYTES]; //!< Persistent data: will be saved after your snake dies and restored when it respawns
 };
 
 const size_t IPC_SHARED_MEMORY_BYTES = sizeof(struct IpcSharedMemory);

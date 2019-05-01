@@ -126,6 +126,9 @@ void DockerBot::createSharedMemory(void)
 	m_shm->colors[0].r = 0x80;
 	m_shm->colors[0].g = 0x80;
 	m_shm->colors[0].b = 0x80;
+
+	// copy persistent data
+	memcpy(m_shm->persistentData, m_bot.getPreviousPersistentData().data(), IPC_PERSISTENT_MAX_BYTES);
 }
 
 void DockerBot::destroySharedMemory(void)
@@ -697,4 +700,15 @@ bool DockerBot::step(float &directionChange, bool &boost)
 	boost = response.step.boost;
 
 	return true;
+}
+
+std::string DockerBot::getPersistentData(void)
+{
+	if(!m_shm) {
+		return std::string();
+	}
+
+	return std::string(
+			reinterpret_cast<char*>(m_shm->persistentData),
+			IPC_PERSISTENT_MAX_BYTES);
 }

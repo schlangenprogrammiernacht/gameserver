@@ -74,6 +74,11 @@ Game::Game()
 				victim->getConsumedFoodHuntedBySelf()
 			);
 
+			m_database->UpdatePersistentData(
+				victim->getDatabaseId(),
+				victim->getPersistentData()
+			);
+
 			// victim will be respawned on next database query
 		}
 	);

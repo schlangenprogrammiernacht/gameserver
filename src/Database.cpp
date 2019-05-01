@@ -21,6 +21,8 @@
 #include <cppconn/resultset.h>
 #include <cppconn/statement.h>
 
+#include <sstream>
+
 using namespace db;
 
 void MysqlDatabase::Connect(std::string host, std::string username, std::string password, std::string database)
@@ -30,7 +32,7 @@ void MysqlDatabase::Connect(std::string host, std::string username, std::string 
 	_connection->setSchema(database);
 
 	_getBotDataStmt = makePreparedStatement(
-		"SELECT u.id, u.username, sv.id, sv.code, sv.compile_state, IFNULL(p.viewer_key, 0) AS viewer_key "
+		"SELECT u.id, u.username, sv.id, sv.code, sv.compile_state, IFNULL(p.viewer_key, 0), p.persistent_data AS viewer_key "
 		"FROM core_userprofile p "
 		"LEFT JOIN auth_user u ON (u.id=p.user_id) "
 		"LEFT JOIN core_snakeversion sv ON (sv.id=p.active_snake_id) "
@@ -83,6 +85,11 @@ void MysqlDatabase::Connect(std::string host, std::string username, std::string 
 		" living_mass = VALUES(living_mass), "
 		" dead_mass = VALUES(dead_mass)"
 	);
+
+	_updatePersistentDataStmt = makePreparedStatement(
+		"UPDATE core_userprofile SET persistent_data=? WHERE user_id=?"
+	);
+
 }
 
 std::unique_ptr<BotScript> MysqlDatabase::GetBotData(int bot_id)
@@ -102,7 +109,8 @@ std::unique_ptr<BotScript> MysqlDatabase::GetBotData(int bot_id)
 		res->getInt(IDX_BOTSCRIPT_VERSION_ID),
 		res->getInt64(IDX_BOTSCRIPT_VIEWER_KEY),
 		res->getString(IDX_BOTSCRIPT_CODE),
-		res->getString(IDX_BOTSCRIPT_COMPILE_STATE)
+		res->getString(IDX_BOTSCRIPT_COMPILE_STATE),
+		res->getBlob(IDX_BOTSCRIPT_PERSISTENT_DATA)
 	);
 }
 
@@ -184,6 +192,15 @@ void MysqlDatabase::UpdateLiveStats(double fps, uint64_t current_frame,
 	_updateLiveStatsStmt->setDouble(6, living_mass);
 	_updateLiveStatsStmt->setDouble(7, dead_mass);
 	_updateLiveStatsStmt->execute();
+}
+
+void MysqlDatabase::UpdatePersistentData(int bot_id, const std::string &data)
+{
+	std::istringstream binStream(data);
+	_updatePersistentDataStmt->setBlob(1, &binStream);
+
+	_updatePersistentDataStmt->setInt(2, bot_id);
+	_updatePersistentDataStmt->execute();
 }
 
 std::unique_ptr<sql::PreparedStatement> MysqlDatabase::makePreparedStatement(std::string sql)

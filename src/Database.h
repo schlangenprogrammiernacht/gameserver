@@ -19,10 +19,14 @@
 #pragma once
 #include <string>
 #include <vector>
+#include <istream>
+#include <algorithm>
 #include <memory>
 #include <mysql_connection.h>
 #include <cppconn/driver.h>
 #include <cppconn/prepared_statement.h>
+
+#include <ipc_format.h>
 
 namespace db
 {
@@ -35,11 +39,24 @@ namespace db
 			std::string bot_name;
 			std::string code;
 			std::string compile_state;
+			std::string persistent_data;
 
-			BotScript(int aBotId, std::string aBotName, int aVersionId, uint64_t viewerKey, std::string aCode, std::string compileState)
+			BotScript(int aBotId, std::string aBotName, int aVersionId, uint64_t viewerKey, std::string aCode, std::string compileState, std::istream *persistentDataStream)
 				: bot_id(aBotId), version_id(aVersionId), viewer_key(viewerKey)
 				, bot_name(aBotName), code(aCode), compile_state(compileState)
-			{}
+			{
+				persistent_data.resize(IPC_PERSISTENT_MAX_BYTES, '\0');
+
+				if(persistentDataStream) {
+					persistentDataStream->seekg(0, std::ios::end);
+					size_t len = std::min(
+							static_cast<size_t>(persistentDataStream->tellg()),
+							IPC_PERSISTENT_MAX_BYTES);
+
+					persistentDataStream->seekg(0, std::ios::beg);
+					persistentDataStream->read(&persistent_data[0], len);
+				}
+			}
 	};
 
 	class Command
@@ -68,6 +85,7 @@ namespace db
 			virtual void DisableBotVersion(long version_id, std::string errorMessage) = 0;
 			virtual void SetBotToCrashedState(long version_id, std::string errorMessage) = 0;
 			virtual void UpdateLiveStats(double fps, uint64_t current_frame, uint32_t running_bots, uint32_t start_queue_len, uint32_t stop_queue_len, double living_mass, double dead_mass) = 0;
+			virtual void UpdatePersistentData(int bot_id, const std::string &data) = 0;
 	};
 
 	class MysqlDatabase : public IDatabase
@@ -82,6 +100,7 @@ namespace db
 			void DisableBotVersion(long version_id, std::string errorMessage) override;
 			void SetBotToCrashedState(long version_id, std::string errorMessage) override;
 			void UpdateLiveStats(double fps, uint64_t current_frame, uint32_t running_bots, uint32_t start_queue_len, uint32_t stop_queue_len, double living_mass, double dead_mass) override;
+			void UpdatePersistentData(int bot_id, const std::string &data) override;
 
 		private:
 			enum {
@@ -91,6 +110,7 @@ namespace db
 				IDX_BOTSCRIPT_CODE = 4,
 				IDX_BOTSCRIPT_COMPILE_STATE = 5,
 				IDX_BOTSCRIPT_VIEWER_KEY = 6,
+				IDX_BOTSCRIPT_PERSISTENT_DATA = 7,
 			};
 
 			sql::Driver *_driver = nullptr;
@@ -104,6 +124,7 @@ namespace db
 			std::unique_ptr<sql::PreparedStatement> _saveBotVersionErrorMessageStmt;
 			std::unique_ptr<sql::PreparedStatement> _setBotToCrashedStateStmt;
 			std::unique_ptr<sql::PreparedStatement> _updateLiveStatsStmt;
+			std::unique_ptr<sql::PreparedStatement> _updatePersistentDataStmt;
 			std::unique_ptr<sql::PreparedStatement> makePreparedStatement(std::string sql);
 	};
 }

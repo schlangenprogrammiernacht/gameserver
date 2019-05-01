@@ -28,9 +28,9 @@
 #include "Snake.h"
 #include "types.h"
 #include "Stopwatch.h"
+#include "DockerBot.h"
 
 class Field;
-class DockerBot;
 class GlobalView;
 
 /*!
@@ -137,4 +137,7 @@ class Bot : public IdentifyableObject
 		uint32_t getStepErrors(void) { return m_stepErrors; }
 
 		bool hasFatalError(void) { return m_hasFatalError; }
+
+		std::string getPersistentData(void) { return m_docker_bot->getPersistentData(); }
+		const std::string& getPreviousPersistentData(void) { return m_dbData->persistent_data; }
 };
