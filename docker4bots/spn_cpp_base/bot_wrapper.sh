@@ -1,9 +1,27 @@
-#!/bin/sh
+#!/bin/sh -e
 
-echo "Hello World!"
+action="$1"
 
-# run spnbot as user spnbot
-cd /spnbot/spn_cpp_framework/build/
-su -c ./bot spnbot
+echo "Hello from the SPN C++ container!"
 
-echo "Goodbye World!"
+case "$action" in
+	compile)
+		# copy the code in, build and move the binary out
+		cd /spnbot/spn_cpp_framework/
+
+		cp -f /spndata/usercode.cpp src/usercode.cpp
+		./build.sh && cp build/bot /spndata/bot
+		;;
+
+	run)
+		# run the bot and allow coredumps
+		ulimit -c unlimited
+
+		cd /spndata/
+		exec ./bot
+		;;
+
+	*)
+		echo "Invalid action: $action"
+		exit 1
+esac

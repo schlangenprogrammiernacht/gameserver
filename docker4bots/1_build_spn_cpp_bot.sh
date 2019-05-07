@@ -1,30 +1,42 @@
 #!/bin/bash
 
-if [ -z "$1" ]; then
-	echo "Argument required: snake version id"
-	exit 1
-fi
+source config.sh
 
-if [ -z "$2" ]; then
-	echo "Argument required: path to user code file"
-	exit 1
-fi
+usage() {
+	echo "usage: $0 <version-id> <bot-name> <code-file>"
+}
 
 VERSION_ID=$1
-CODE_FILE=$2
+BOT_NAME=$2
+CODE_FILE=$3
 
-CONTEXTDIR=$(mktemp -d)
+if [ -z "$VERSION_ID" ]; then
+	echo "Argument required: snake version id"
+	usage
+	exit 1
+fi
 
-cp spn_cpp_bot/Dockerfile "$CONTEXTDIR"
-cp "$CODE_FILE" "$CONTEXTDIR/usercode.cpp"
+if [ -z "$BOT_NAME" ]; then
+	echo "Argument required: bot name"
+	usage
+	exit 1
+fi
 
-pushd "$CONTEXTDIR"
+if [ -z "$CODE_FILE" ]; then
+	echo "Argument required: path to user code file"
+	usage
+	exit 1
+fi
 
-docker build -t spn_cpp_bot:$VERSION_ID .
-EXITCODE=$?
+BOT_DATADIR="$SPN_DATA_HOSTDIR/${BOT_NAME}_$VERSION_ID"
 
-popd
+mkdir -p "$BOT_DATADIR"
+chmod 777 "$BOT_DATADIR"
 
-rm -r "$CONTEXTDIR"
+install -m 444 "$CODE_FILE" "$BOT_DATADIR/usercode.cpp"
 
-exit $EXITCODE
+exec docker run --rm \
+	$DOCKER_COMPILE_ARGS \
+	-v "$BOT_DATADIR:/spndata:rw" \
+	--name "build_${BOT_NAME}_${VERSION_ID}" \
+	spn_cpp_base:latest compile

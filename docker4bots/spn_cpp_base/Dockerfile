@@ -12,5 +12,8 @@ ADD spn_cpp_framework/ /spnbot/spn_cpp_framework
 # (all in one step to save layers)
 RUN cd /spnbot/spn_cpp_framework && ./build.sh && chown -R spnbot /spnbot && mkdir /spnshm
 VOLUME /spnshm
+VOLUME /spndata
+
+USER spnbot
 
 ENTRYPOINT ["/bot_wrapper.sh"]

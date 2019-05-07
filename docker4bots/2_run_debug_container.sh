@@ -1,20 +1,39 @@
 #!/bin/sh -x
 
-SPN_SHM_HOSTDIR="/mnt/spn_shm"
+source $(dirname $0)/config.sh
 
-BOTNAME="$1"
-CONTAINERNAME="$2"
+usage() {
+	echo "usage: $0 <version-id> <bot-name> <container-name>"
+}
 
-if [ -z "$BOTNAME" ]; then
-	echo "Argument required: bot name"
+VERSION_ID="$1"
+BOT_NAME="$2"
+CONTAINER_NAME="$3"
+
+if [ -z "$VERSION_ID" ]; then
+	echo "Argument required: version id"
+	usage
 	exit 1
 fi
 
-docker run \
-	--memory=32M --memory-swap=32M --cpus=1 \
-	--read-only --tmpfs /run --tmpfs /tmp \
-	-v $SPN_SHM_HOSTDIR/$BOTNAME:/spnshm \
-	--network none \
-	--name "$CONTAINERNAME" \
+if [ -z "$BOT_NAME" ]; then
+	echo "Argument required: bot name"
+	usage
+	exit 1
+fi
+
+if [ -z "$CONTAINER_NAME" ]; then
+	echo "Argument required: container name"
+	usage
+	exit 1
+fi
+
+BOT_DATADIR="$SPN_DATA_HOSTDIR/${BOT_NAME}_$VERSION_ID"
+
+exec docker run -d --rm \
+	$DOCKER_RUN_ARGS \
+	-v "$BOT_DATADIR:/spndata:ro" \
+	-v $SPN_SHM_HOSTDIR/$BOT_NAME:/spnshm \
+	--name "$CONTAINER_NAME" \
 	--entrypoint=/bin/bash -it \
-	spn_cpp_bot:$BOTNAME
+	spn_cpp_base:latest run

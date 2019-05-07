@@ -371,11 +371,15 @@ void DockerBot::startBot(void)
 	oss << "spnbot_" << m_cleanName << "_" << m_bot.getGUID() << time(NULL);
 	m_dockerContainerName = oss.str();
 
+	oss.str("");
+	oss << m_bot.getDatabaseVersionId();
+	std::string dbVersionStr = oss.str();
+
 	int pid = fork();
 	if(pid == 0) {
 		// child process
 		execl(config::BOT_LAUNCHER_SCRIPT, config::BOT_LAUNCHER_SCRIPT,
-				m_imageName.c_str(), m_cleanName.c_str(),
+				dbVersionStr.c_str(), m_cleanName.c_str(),
 				m_dockerContainerName.c_str(), (char*)NULL);
 
 		// we only get here if execl failed
@@ -391,8 +395,13 @@ void DockerBot::startBot(void)
 	int status;
 	pid_t exitpid = waitpid(pid, &status, 0);
 
+	if(exitpid == -1) {
+		std::cerr << logPrefix() << "waitpid() failed: " << strerror(errno) << std::endl;
+		throw std::runtime_error("wait() failed for 'docker run'.");
+	}
+
 	if(WIFEXITED(status)) {
-		std::cerr << logPrefix() << "'docker run' exited code " << WEXITSTATUS(status) << std::endl;
+		std::cerr << logPrefix() << "'docker run' exited with code " << WEXITSTATUS(status) << std::endl;
 		if(WEXITSTATUS(status) == 0) {
 			std::cerr << logPrefix() << "'docker run' completed successfully" << std::endl;
 		} else {

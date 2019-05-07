@@ -1,8 +1,8 @@
-#!/bin/sh
+#!/bin/sh -e
 
-set -e
+source config.sh
 
-sudo mount -t tmpfs -o noexec,size=1G none /mnt/spn_shm/
-sudo chown $(id -u):$(id -g) /mnt/spn_shm
-mkdir /mnt/spn_shm/testbot
+sudo mount -t tmpfs -o noexec,size=1G none $SPN_SHM_HOSTDIR/
+sudo chown $(id -u):$(id -g) $SPN_SHM_HOSTDIR
+mkdir $SPN_SHM_HOSTDIR/testbot
 

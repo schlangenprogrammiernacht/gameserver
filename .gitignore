@@ -15,3 +15,6 @@ tags
 .*.sw?
 Session.vim
 viminfo
+
+# compiled bots
+docker4bots/compiled_bots
