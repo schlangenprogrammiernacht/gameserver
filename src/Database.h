@@ -55,6 +55,8 @@ namespace db
 
 					persistentDataStream->seekg(0, std::ios::beg);
 					persistentDataStream->read(&persistent_data[0], len);
+
+					delete persistentDataStream; // no longer needed
 				}
 			}
 	};
