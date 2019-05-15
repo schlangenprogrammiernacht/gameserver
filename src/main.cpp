@@ -40,6 +40,7 @@ void sig_shutdown_handler(int sig)
 bool setup_signal_handlers(void)
 {
 	struct sigaction shutdown_action;
+	memset(&shutdown_action, 0, sizeof(shutdown_action));
 
 	shutdown_action.sa_handler = sig_shutdown_handler;
 	sigemptyset(&shutdown_action.sa_mask);
