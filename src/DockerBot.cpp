@@ -590,6 +590,9 @@ bool DockerBot::init(std::string &initErrorMessage)
 		return false;
 	}
 
+	// reset log data
+	m_shm->logData[0] = '\0';
+
 	IpcRequest request = {REQ_INIT};
 
 	if(!sendMessageToBot(&request, sizeof(request))) {
@@ -600,9 +603,12 @@ bool DockerBot::init(std::string &initErrorMessage)
 	IpcResponse response;
 
 	if(!readMessageFromBot(&response, sizeof(response), config::BOT_INIT_TIMEOUT)) {
+		handleLogMessages();
 		initErrorMessage = "Bot is not responding.";
 		return false;
 	}
+
+	handleLogMessages();
 
 	if(response.type != RES_OK) {
 		initErrorMessage = "Bot could not initialize successfully.";
@@ -678,24 +684,7 @@ bool DockerBot::step(float &directionChange, bool &boost)
 
 	m_swAPI.Stop();
 
-	if(m_shm->logData[0] != '\0') {
-		// log data updated
-		char *startPtr = m_shm->logData;
-		char *endPtr = startPtr;
-		bool moreMessages = true;
-
-		while(moreMessages && ((size_t)(endPtr - m_shm->logData) < IPC_LOG_MAX_BYTES)) {
-			if(*endPtr == '\n' || *endPtr == '\0') {
-				moreMessages = *endPtr == '\n';
-				*endPtr = '\0';
-
-				m_bot.appendLogMessage(startPtr, true);
-				startPtr = endPtr + 1;
-			}
-
-			endPtr++;
-		}
-	}
+	handleLogMessages();
 
 	if(response.type != RES_OK) {
 		m_errorStream << "Bot responded to step() with an error status: " << response.type << std::endl;
@@ -720,4 +709,26 @@ std::string DockerBot::getPersistentData(void)
 	return std::string(
 			reinterpret_cast<char*>(m_shm->persistentData),
 			IPC_PERSISTENT_MAX_BYTES);
+}
+
+void DockerBot::handleLogMessages(void)
+{
+	// check for updated log data
+	if(m_shm->logData[0] != '\0') {
+		char *startPtr = m_shm->logData;
+		char *endPtr = startPtr;
+		bool moreMessages = true;
+
+		while(moreMessages && ((size_t)(endPtr - m_shm->logData) < IPC_LOG_MAX_BYTES)) {
+			if(*endPtr == '\n' || *endPtr == '\0') {
+				moreMessages = *endPtr == '\n';
+				*endPtr = '\0';
+
+				m_bot.appendLogMessage(startPtr, true);
+				startPtr = endPtr + 1;
+			}
+
+			endPtr++;
+		}
+	}
 }

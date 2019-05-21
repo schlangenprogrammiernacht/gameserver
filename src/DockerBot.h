@@ -110,4 +110,6 @@ class DockerBot
 
 		bool sendMessageToBot(void *data, size_t length);
 		bool readMessageFromBot(void *data, size_t length, real_t timeout);
+
+		void handleLogMessages(void);
 };

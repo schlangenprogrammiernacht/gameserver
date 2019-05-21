@@ -178,6 +178,7 @@ void Field::updateLimbo(void)
 			else
 			{
 				m_updateTracker->botLogMessage(bot->getViewerKey(), "cannot start bot: " + initErrorMessage);
+				sendAllLogMessages(bot); // allow the user to see his logs from init()
 
 				for (auto& callback: m_botErrorCallbacks) {
 					callback(bot, initErrorMessage);
