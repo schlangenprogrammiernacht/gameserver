@@ -119,4 +119,8 @@ namespace config {
 
 	// Maximum number of step() errors in a row before the bot is killed
 	static const uint32_t BOT_MAX_STEP_ERRORS = 30;
+
+	// Thread pool size
+	static constexpr const size_t NTHREADS_BOT_THREAD_POOL = 4; // Main worker thread pool
+	static constexpr const size_t NTHREADS_BOT_STARTUP = 4; // Bot startup parallelism
 }

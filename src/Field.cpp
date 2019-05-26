@@ -29,7 +29,7 @@ Field::Field(real_t w, real_t h, std::size_t food_parts, std::unique_ptr<UpdateT
 	, m_updateTracker(std::move(update_tracker))
 	, m_foodMap(static_cast<size_t>(w), static_cast<size_t>(h), config::SPATIAL_MAP_RESERVE_COUNT)
 	, m_segmentInfoMap(static_cast<size_t>(w), static_cast<size_t>(h), config::SPATIAL_MAP_RESERVE_COUNT)
-	, m_threadPool(std::thread::hardware_concurrency())
+	, m_threadPool(config::NTHREADS_BOT_THREAD_POOL)
 {
 	setupRandomness();
 	createStaticFood(food_parts);

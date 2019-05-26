@@ -23,6 +23,7 @@
 #include <memory>
 #include <queue>
 #include <set>
+#include <vector>
 
 // forward declaration
 class Bot;
@@ -37,7 +38,7 @@ class BotUpDownThread
 		};
 
 	private:
-		std::thread m_startupThread;
+		std::vector<std::thread> m_startupThreads;
 		std::thread m_shutdownThread;
 		std::queue< std::shared_ptr<Bot> > m_startupInQueue;
 		std::queue< std::shared_ptr<Bot> > m_shutdownInQueue;

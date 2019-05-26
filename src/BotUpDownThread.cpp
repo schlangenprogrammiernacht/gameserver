@@ -29,50 +29,53 @@
 using namespace std::chrono_literals;
 
 BotUpDownThread::BotUpDownThread(void)
+	: m_startupThreads(config::NTHREADS_BOT_STARTUP)
 {
-	m_startupThread = std::thread(
-			[this] ()
-			{
-				while(!m_shutdown) {
-					bool idle = true;
+	for(auto &thread : m_startupThreads) {
+		thread = std::thread(
+				[this] ()
+				{
+					while(!m_shutdown) {
+						bool idle = true;
 
-					// check for work in startup queue
-					std::shared_ptr<Bot> bot;
+						// check for work in startup queue
+						std::shared_ptr<Bot> bot;
 
-					{
-						std::lock_guard<std::mutex> guard(m_startupQueueMutex);
-						if(!m_startupInQueue.empty()) {
-							bot = m_startupInQueue.front();
-							m_startupInQueue.pop();
-						} else {
-							bot = NULL;
-						}
-					}
-
-					if(bot) {
-						std::unique_ptr<Result> result(new Result{bot, "", true});
-
-						try {
-							bot->internalStartup();
-						} catch(std::runtime_error &e) {
-							result->message = e.what();
-							result->success = false;
+						{
+							std::lock_guard<std::mutex> guard(m_startupQueueMutex);
+							if(!m_startupInQueue.empty()) {
+								bot = m_startupInQueue.front();
+								m_startupInQueue.pop();
+							} else {
+								bot = NULL;
+							}
 						}
 
-						std::lock_guard<std::mutex> guard(m_startupQueueMutex);
-						m_startupOutQueue.push(std::move(result));
+						if(bot) {
+							std::unique_ptr<Result> result(new Result{bot, "", true});
 
-						if(!m_startupInQueue.empty()) {
-							idle = false;
+							try {
+								bot->internalStartup();
+							} catch(std::runtime_error &e) {
+								result->message = e.what();
+								result->success = false;
+							}
+
+							std::lock_guard<std::mutex> guard(m_startupQueueMutex);
+							m_startupOutQueue.push(std::move(result));
+
+							if(!m_startupInQueue.empty()) {
+								idle = false;
+							}
+						}
+
+						if(idle) {
+							// no work remains in queue -> sleep
+							std::this_thread::sleep_for(1s);
 						}
 					}
-
-					if(idle) {
-						// no work remains in queue -> sleep
-						std::this_thread::sleep_for(1s);
-					}
-				}
-			});
+				});
+	}
 
 	m_shutdownThread = std::thread(
 			[this] ()
@@ -120,7 +123,12 @@ BotUpDownThread::BotUpDownThread(void)
 
 	// remove this code if it does not compile on your system. It does not affect
 	// the program's functionality.
-	pthread_setname_np(m_startupThread.native_handle(), "bot_startup");
+	for(size_t i = 0; i < m_startupThreads.size(); i++) {
+		std::ostringstream nameBuilder;
+		nameBuilder << "bot_startup" << i;
+		pthread_setname_np(m_startupThreads[i].native_handle(), nameBuilder.str().c_str());
+	}
+
 	pthread_setname_np(m_shutdownThread.native_handle(), "bot_shutdown");
 }
 
@@ -129,7 +137,10 @@ BotUpDownThread::~BotUpDownThread()
 	// request thread shutdown
 	m_shutdown = true;
 
-	m_startupThread.join();
+	for(auto &thread: m_startupThreads) {
+		thread.join();
+	}
+
 	m_shutdownThread.join();
 }
 
