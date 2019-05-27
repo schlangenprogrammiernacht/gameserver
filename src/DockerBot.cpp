@@ -23,7 +23,7 @@
 
 #include <sys/mman.h>
 #include <sys/socket.h>
-#include <sys/select.h>
+#include <poll.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/un.h>
@@ -483,42 +483,34 @@ int DockerBot::shutdownSubprocess(void)
 
 int DockerBot::waitForReadEvent(int fd, real_t timeout)
 {
-	fd_set rfds;
+	struct pollfd pfd;
+	pfd.fd      = fd;
+	pfd.events  = POLLIN;
+	pfd.revents = 0;
 
-	FD_ZERO(&rfds);
-	FD_SET(fd, &rfds);
-
-	struct timeval tv;
-	tv.tv_sec = static_cast<long>(timeout);
-	tv.tv_usec = static_cast<long>(1e6 * (timeout - tv.tv_sec));
-
-	int ret = select(fd+1, &rfds, NULL, NULL, &tv);
+	int ret = poll(&pfd, 1, static_cast<int>(timeout * 1000));
 	if(ret == -1) {
-		std::cerr << logPrefix() << "select() failed: " << strerror(errno) << std::endl;
+		std::cerr << logPrefix() << "poll(" << fd << ", POLLOUT) failed: " << strerror(errno) << std::endl;
 		return -1;
 	}
 
-	return ret;
+	return (pfd.revents & POLLIN) != 0;
 }
 
 int DockerBot::checkIfSocketIsWriteable(int fd)
 {
-	fd_set wfds;
+	struct pollfd pfd;
+	pfd.fd      = fd;
+	pfd.events  = POLLOUT;
+	pfd.revents = 0;
 
-	FD_ZERO(&wfds);
-	FD_SET(fd, &wfds);
-
-	struct timeval tv;
-	tv.tv_sec = 0;
-	tv.tv_usec = 0;
-
-	int ret = select(fd+1, NULL, &wfds, NULL, &tv);
+	int ret = poll(&pfd, 1, 0);
 	if(ret == -1) {
-		std::cerr << logPrefix() << "select() failed: " << strerror(errno) << std::endl;
+		std::cerr << logPrefix() << "poll(" << fd << ", POLLOUT) failed: " << strerror(errno) << std::endl;
 		return -1;
 	}
 
-	return ret;
+	return (pfd.revents & POLLOUT) != 0;
 }
 
 bool DockerBot::sendMessageToBot(void *data, size_t length)
