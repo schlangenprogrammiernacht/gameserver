@@ -79,8 +79,14 @@ void Snake::ensureSizeMatchesMass(void)
 
 real_t Snake::maxRotationPerStep(void)
 {
-	return 2 * std::asin(config::SNAKE_DISTANCE_PER_STEP /
-			(2 * m_segmentRadius * (1 + config::SNAKE_TURN_RADIUS_FACTOR)));
+	real_t arg = config::SNAKE_DISTANCE_PER_STEP /
+			(2 * m_segmentRadius * (1 + config::SNAKE_TURN_RADIUS_FACTOR));
+
+	if(arg >= 1 || arg <= -1) {
+		return M_PI/2;
+	}
+
+	return 2 * std::asin(arg);
 }
 
 void Snake::consume(const Food& food)
