@@ -16,8 +16,11 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+#include <fstream>
+
 #include <signal.h>
 
+#include "config.h"
 #include "Game.h"
 
 Game game;
@@ -58,8 +61,23 @@ bool setup_signal_handlers(void)
 	return true;
 }
 
+bool test_shm_writability(void)
+{
+	std::string filename(config::BOT_IPC_DIRECTORY);
+	filename += "___testfile___";
+
+	std::ofstream testfile(filename);
+	testfile << "Gameserver write test." << std::endl;
+	return testfile.is_open() && testfile.good();
+}
+
 int main(void)
 {
+	if(!test_shm_writability()) {
+		std::cerr << "Cannot write to shared memory located at " << config::BOT_IPC_DIRECTORY << " !" << std::endl;
+		return 1;
+	}
+
 	if(!setup_signal_handlers()) {
 		return 1;
 	}
