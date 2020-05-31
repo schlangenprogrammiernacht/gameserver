@@ -1,6 +1,6 @@
 #!/bin/bash
 
-source config.sh
+source $(dirname $0)/config.sh
 
 usage() {
 	echo "usage: $0 <version-id> <bot-name> <code-file>"
