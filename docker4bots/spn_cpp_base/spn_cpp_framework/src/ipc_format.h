@@ -64,8 +64,8 @@ struct IpcServerConfig {
  * IPC representation of a food particle.
  */
 struct IpcFoodInfo {
-	ipc_real_t x;      //!< Relative position X in world orientation
-	ipc_real_t y;      //!< Relative position Y in world orientation
+	ipc_real_t x;      //!< Relative position X relative to your heading
+	ipc_real_t y;      //!< Relative position Y relative to your heading
 	ipc_real_t val;    //!< Food value
 	ipc_real_t dir;    //!< Direction angle relative to your heading (range -π to +π)
 	ipc_real_t dist;   //!< Distance measured from the center of your head
@@ -83,8 +83,8 @@ struct IpcBotInfo {
  * IPC representation of a snake segment.
  */
 struct IpcSegmentInfo {
-	ipc_real_t x;       //!< Relative position X in world orientation
-	ipc_real_t y;       //!< Relative position Y in world orientation
+	ipc_real_t x;       //!< Relative position X relative to your heading
+	ipc_real_t y;       //!< Relative position Y relative to your heading
 	ipc_real_t r;       //!< Segment radius
 	ipc_real_t dir;     //!< Direction angle relative to your heading (range -π to +π)
 	ipc_real_t dist;    //!< Distance between the center of your head and the segment's center
