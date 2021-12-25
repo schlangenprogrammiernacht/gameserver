@@ -431,10 +431,10 @@ void Field::createDynamicFood(real_t totalValue, const Vector2D &center, real_t 
 	real_t remainingValue = totalValue;
 
 	while(remainingValue > 0) {
-		real_t value;
-		if(remainingValue > config::FOOD_SIZE_MEAN) {
-			value = std::fabs((*m_foodSizeDistribution)(*m_rndGen));
-		} else {
+		real_t value = std::fabs((*m_foodSizeDistribution)(*m_rndGen));
+
+		// prevent dropping more than totalValue of food
+		if(value > remainingValue) {
 			value = remainingValue;
 		}
 
