@@ -33,7 +33,7 @@ BOT_DATADIR="$SPN_DATA_HOSTDIR/${BOT_NAME}_$VERSION_ID"
 exec docker run -d --rm \
 	$DOCKER_RUN_ARGS \
 	-v "$BOT_DATADIR:/spndata:ro" \
-	-v $SPN_SHM_HOSTDIR/$BOT_NAME:/spnshm \
+	-v "$SPN_SHM_HOSTDIR/$BOT_NAME:/spnshm" \
 	--name "$CONTAINER_NAME" \
 	--entrypoint=/bin/bash -it \
 	spn_cpp_base:latest run
