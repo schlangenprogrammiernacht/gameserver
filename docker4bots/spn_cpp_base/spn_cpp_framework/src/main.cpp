@@ -133,6 +133,18 @@ int main(int argc, char **argv)
 	int shm_fd;
 	struct IpcSharedMemory *shm;
 
+	printf("sizeof(IpcSelfInfo)     = %8lu\n", sizeof(IpcSelfInfo));
+	printf("sizeof(IpcServerConfig) = %8lu\n", sizeof(IpcServerConfig));
+	printf("sizeof(IpcFoodInfo)     = %8lu\n", sizeof(IpcFoodInfo));
+	printf("sizeof(IpcBotInfo)      = %8lu\n", sizeof(IpcBotInfo));
+	printf("sizeof(IpcSegmentInfo)  = %8lu\n", sizeof(IpcSegmentInfo));
+	printf("sizeof(IpcColor)        = %8lu\n", sizeof(IpcColor));
+	printf("sizeof(IpcSharedMemory) = %8lu\n", sizeof(IpcSharedMemory));
+	printf("sizeof(IpcRequest)      = %8lu\n", sizeof(IpcRequest));
+	printf("sizeof(IpcStepResponse) =      N/A\n");
+	printf("sizeof(IpcResponse)     = %8lu\n", sizeof(IpcResponse));
+	printf("sizeof(bool)            = %8lu\n", sizeof(bool));
+
 	log() << "Hello from the bot code!" << std::endl;
 
 	log() << "Setting up shared memory..." << std::endl;

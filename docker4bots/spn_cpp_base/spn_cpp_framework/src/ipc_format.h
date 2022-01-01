@@ -2,9 +2,11 @@
 
 #include <stdlib.h>
 #include <stdint.h>
+#include <stdbool.h>
 
-#pragma pack(push)
-#pragma pack(4)
+extern "C" {
+
+#define ALIGNED __attribute__((aligned(4)))
 
 typedef float ipc_real_t;
 typedef uint64_t ipc_guid_t;
@@ -12,7 +14,7 @@ typedef uint64_t ipc_guid_t;
 /*!
  * IPC representation of one's own snake and current world parameters.
  */
-struct IpcSelfInfo {
+struct ALIGNED IpcSelfInfo {
 	ipc_real_t segment_radius; //!< Radius of your snake's segments
 	ipc_real_t mass;           //!< Your Snake's current mass
 	ipc_real_t sight_radius;   //!< Radius around your snake's head in which you can see food and segments
@@ -35,7 +37,7 @@ struct IpcSelfInfo {
  * Please note that this struct is filled once before bot startup, so if you
  * (accidentally) modify them, they stay that way until your bot restarts.
  */
-struct IpcServerConfig {
+struct ALIGNED IpcServerConfig {
 	uint32_t   snake_boost_steps;        //!< Number of steps a snake moves per frame while boosting
 	ipc_real_t snake_turn_radius_factor; //!< Multiplied with your segment radius to determine the inner turn radius
 
@@ -63,7 +65,7 @@ struct IpcServerConfig {
 /*!
  * IPC representation of a food particle.
  */
-struct IpcFoodInfo {
+struct ALIGNED IpcFoodInfo {
 	ipc_real_t x;      //!< Relative position X in world orientation
 	ipc_real_t y;      //!< Relative position Y in world orientation
 	ipc_real_t val;    //!< Food value
@@ -74,7 +76,7 @@ struct IpcFoodInfo {
 /*!
  * IPC representation of a bot.
  */
-struct IpcBotInfo {
+struct ALIGNED IpcBotInfo {
 	ipc_guid_t bot_id;        //!< Bot ID
 	char       bot_name[64];  //!< Bot name (the beginning of it, at least)
 };
@@ -82,7 +84,7 @@ struct IpcBotInfo {
 /*!
  * IPC representation of a snake segment.
  */
-struct IpcSegmentInfo {
+struct ALIGNED IpcSegmentInfo {
 	ipc_real_t x;       //!< Relative position X in world orientation
 	ipc_real_t y;       //!< Relative position Y in world orientation
 	ipc_real_t r;       //!< Segment radius
@@ -96,7 +98,7 @@ struct IpcSegmentInfo {
 /*!
  * IPC representation of a color value.
  */
-struct IpcColor {
+struct ALIGNED IpcColor {
 	uint8_t r; //!< Red channel (0-255)
 	uint8_t g; //!< Green channel (0-255)
 	uint8_t b; //!< Blue channel (0-255)
@@ -165,7 +167,7 @@ enum IpcRequestType {
  *
  * Sent by the gameserver on the control socket.
  */
-struct IpcRequest {
+struct ALIGNED IpcRequest {
 	enum IpcRequestType type;
 };
 
@@ -179,15 +181,15 @@ enum IpcResponseType {
  *
  * Sent by the bot on the control socket.
  */
-struct IpcResponse {
+struct ALIGNED IpcResponse {
 	enum IpcResponseType type;
 
-	union {
-		struct {
+	union ALIGNED {
+		struct ALIGNED {
 			ipc_real_t deltaAngle; //!< Direction change in this frame (radians, -π to +π).
 			bool       boost;      //!< Set to true to boost.
 		} step;
 	};
 };
 
-#pragma pack(pop)
+} // extern "C"
