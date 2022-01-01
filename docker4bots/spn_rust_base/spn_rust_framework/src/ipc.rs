@@ -6,7 +6,7 @@ type IpcGuid = u64;
 /// IPC representation of one's own snake and current world parameters.
 #[repr(C)]
 #[repr(align(4))]
-struct IpcSelfInfo {
+pub struct IpcSelfInfo {
 	/// Radius of your snake's segments
 	segment_radius                 : IpcReal,
 	/// Your Snake's current mass
@@ -17,9 +17,9 @@ struct IpcSelfInfo {
 	consume_radius                 : IpcReal,
 
 	/// Frame number when your snake was spawned
-	start_frame                    : i32,
+	start_frame                    : u32,
 	/// Current frame number
-	current_frame                  : i32,
+	current_frame                  : u32,
 
 	/// Distance per step
 	speed                          : IpcReal,
@@ -42,7 +42,7 @@ struct IpcSelfInfo {
  */
 #[repr(C)]
 #[repr(align(4))]
-struct IpcServerConfig {
+pub struct IpcServerConfig {
 	/// Number of steps a snake moves per frame while boosting
 	snake_boost_steps: u32,
 	/// Multiplied with your segment radius to determine the inner turn radius
@@ -86,7 +86,7 @@ struct IpcServerConfig {
  */
 #[repr(C)]
 #[repr(align(4))]
-struct IpcFoodInfo {
+pub struct IpcFoodInfo {
 	/// Relative position X in world orientation
 	x: IpcReal,
 	/// Relative position Y in world orientation
@@ -104,7 +104,7 @@ struct IpcFoodInfo {
  */
 #[repr(C)]
 #[repr(align(4))]
-struct IpcBotInfo {
+pub struct IpcBotInfo {
 	/// Bot ID
 	bot_id: IpcGuid,
 	/// Bot name (the beginning of it, at least)
@@ -116,7 +116,7 @@ struct IpcBotInfo {
  */
 #[repr(C)]
 #[repr(align(4))]
-struct IpcSegmentInfo {
+pub struct IpcSegmentInfo {
 	/// Relative position X in world orientation
 	x: IpcReal,
 	/// Relative position Y in world orientation
@@ -140,13 +140,13 @@ struct IpcSegmentInfo {
  */
 #[repr(C)]
 #[repr(align(4))]
-struct IpcColor {
+pub struct IpcColor {
 	/// Red channel (0-255)
-	r: u8,
+	pub r: u8,
 	/// Green channel (0-255)
-	g: u8,
+	pub g: u8,
 	/// Blue channel (0-255)
-	b: u8,
+	pub b: u8,
 }
 
 const IPC_FOOD_MAX_BYTES: usize = 1 * 1024*1024;
@@ -174,43 +174,43 @@ const IPC_PERSISTENT_MAX_BYTES: usize = 4096;
  */
 #[repr(C)]
 #[repr(align(4))]
-struct IpcSharedMemory {
+pub struct IpcSharedMemory {
 	/// Information about the world and server configuration.
-	serverConfig: IpcServerConfig,
+	pub server_config: IpcServerConfig,
 
 	/// Information about your snake (updated every frame).
-	selfInfo: IpcSelfInfo,
+	pub self_info: IpcSelfInfo,
 
 	/// Number of items used in foodInfo.
-	foodCount: u32,
+	pub food_count: u32,
 	/// List of food items seen by the snake.
-	foodInfo: [IpcFoodInfo; IPC_FOOD_MAX_COUNT],
+	pub food_info: [IpcFoodInfo; IPC_FOOD_MAX_COUNT],
 
 	/// Number of items used in botInfo.
-	botCount: u32,
+	pub bot_count: u32,
 	/// List of bots related to segments in segmentInfo.
-	botInfo: [IpcBotInfo; IPC_BOT_MAX_COUNT],
+	pub bot_info: [IpcBotInfo; IPC_BOT_MAX_COUNT],
 
 	/// Number of items used in segmentInfo.
-	segmentCount: u32,
+	pub segment_count: u32,
 	/// List of segments seen by the snake.
-	segmentInfo: [IpcSegmentInfo; IPC_SEGMENT_MAX_COUNT],
+	pub segment_info: [IpcSegmentInfo; IPC_SEGMENT_MAX_COUNT],
 
 	/// Number of items used in colors.
-	colorCount: u32,
+	pub color_count: u32,
 	/// Colors to set for this snake.
-	colors: [IpcColor; IPC_COLOR_MAX_COUNT],
+	pub colors: [IpcColor; IPC_COLOR_MAX_COUNT],
 
 	/// Log data for the current frame. May contain multiple lines.
-	logData: [u8; IPC_LOG_MAX_BYTES],
+	pub log_data: [u8; IPC_LOG_MAX_BYTES],
 
 	/// Select a face for your snake (not used yet).
-	faceID: u32,
+	pub face_id: u32,
 	/// Select a dog tag for your snake (not used yet).
-	dogTagID: u32,
+	pub dog_tag_id: u32,
 
 	/// Persistent data: will be saved after your snake dies and restored when it respawns
-	persistentData: [u8; IPC_PERSISTENT_MAX_BYTES],
+	pub persistent_data: [u8; IPC_PERSISTENT_MAX_BYTES],
 }
 
 const IPC_SHARED_MEMORY_BYTES: usize = size_of::<IpcSharedMemory>();
@@ -219,7 +219,9 @@ const IPC_SHARED_MEMORY_BYTES: usize = size_of::<IpcSharedMemory>();
  * Communication structures.
  */
 
-enum IpcRequestType {
+#[repr(C)]
+#[repr(align(4))]
+pub enum IpcRequestType {
 	/// Bot initialization request. Sent once after bot startup.
 	Init = 0,
 	/// Bot step request. Sent every frame.
@@ -233,20 +235,23 @@ enum IpcRequestType {
  */
 #[repr(C)]
 #[repr(align(4))]
-struct IpcRequest {
+pub struct IpcRequest {
 	request_type: IpcRequestType
 }
 
-enum IpcResponseType {
+#[repr(C)]
+#[repr(align(4))]
+pub enum IpcResponseType {
 	Ok = 0,
 	Error = 1
 }
 
 #[repr(C)]
 #[repr(align(4))]
-struct IpcStepResponse {
+#[derive(Clone, Copy)]
+pub struct IpcStepResponse {
 	/// Direction change in this frame (radians, -π to +π).
-	deltaAngle: IpcReal,
+	delta_angle: IpcReal,
 	/// Set to true to boost.
 	boost: bool,
 }
@@ -256,7 +261,7 @@ struct IpcStepResponse {
 // later.
 #[repr(C)]
 #[repr(align(4))]
-struct ResponseData {
+pub union ResponseData {
 	step: IpcStepResponse
 }
 
@@ -267,7 +272,7 @@ struct ResponseData {
  */
 #[repr(C)]
 #[repr(align(4))]
-struct IpcResponse {
+pub struct IpcResponse {
 	response_type: IpcResponseType,
 
 	data: ResponseData
