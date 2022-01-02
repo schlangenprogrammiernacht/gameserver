@@ -8,7 +8,7 @@ use std::mem::{size_of, transmute};
 
 use memmap2::MmapRaw;
 
-mod ipc;
+pub mod ipc;
 use ipc::IpcSharedMemory;
 
 pub struct Api<'a>
