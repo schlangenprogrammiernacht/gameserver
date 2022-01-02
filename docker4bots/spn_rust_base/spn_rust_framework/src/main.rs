@@ -1,13 +1,6 @@
 // vim: noet
-extern crate memmap2;
 
-use std::fs::OpenOptions;
-use std::mem::{size_of, transmute};
-
-use memmap2::MmapRaw;
-
-mod ipc;
-use crate::ipc::*;
+mod api;
 
 static SPN_SHM_FILE:    &str = "testdata/shm1.bin"; //"/spnshm/shm";
 static SPN_SOCKET_FILE: &str = "/spnshm/socket";
@@ -28,21 +21,16 @@ fn main() {
 	println!("sizeof(bool)            = {:8}", size_of::<bool>());
 	*/
 
-	let file = OpenOptions::new()
-		.read(true)
-		.write(true)
-		.open(SPN_SHM_FILE).unwrap();
+	let a = api::Api::new(SPN_SHM_FILE).unwrap();
 
-	let mmap = MmapRaw::map_raw(&file).unwrap();
+	println!("Number of food items: {}", a.get_food().len());
+	println!("Number of segments:   {}", a.get_segments().len());
+	println!("Number of bots:       {}", a.get_bot_info().len());
 
-	if mmap.len() < size_of::<ipc::IpcSharedMemory>() {
-		panic!("Shared memory contains only {} bytes where {} bytes are required.",
-			   mmap.len(), size_of::<ipc::IpcSharedMemory>());
-	}
+	let f = &a.get_food()[1];
 
-	let ipcdata = unsafe {
-		&mut *transmute::<*mut u8, *mut ipc::IpcSharedMemory>(mmap.as_mut_ptr())
-	};
-
-	println!("Food Count: {}", ipcdata.food_count);
+	println!("Location:   {}/{}", f.x, f.y);
+	println!("Distance:   {}", f.dist);
+	println!("Direction:  {}", f.dir);
+	println!("Value:      {}", f.val);
 }

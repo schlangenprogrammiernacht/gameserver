@@ -8,30 +8,30 @@ type IpcGuid = u64;
 #[repr(align(4))]
 pub struct IpcSelfInfo {
 	/// Radius of your snake's segments
-	segment_radius                 : IpcReal,
+	pub segment_radius                 : IpcReal,
 	/// Your Snake's current mass
-	mass                           : IpcReal,
+	pub mass                           : IpcReal,
 	/// Radius around your snake's head in which you can see food and segments
-	sight_radius                   : IpcReal,
+	pub sight_radius                   : IpcReal,
 	/// Radius around your snake's head in which food is consumed.
-	consume_radius                 : IpcReal,
+	pub consume_radius                 : IpcReal,
 
 	/// Frame number when your snake was spawned
-	start_frame                    : u32,
+	pub start_frame                    : u32,
 	/// Current frame number
-	current_frame                  : u32,
+	pub current_frame                  : u32,
 
 	/// Distance per step
-	speed                          : IpcReal,
+	pub speed                          : IpcReal,
 	/// Maximum direction change in this step
-	max_step_angle                 : IpcReal,
+	pub max_step_angle                 : IpcReal,
 
 	/// Amount of "naturally" spawned food your snake consumed
-	consumed_natural_food          : IpcReal,
+	pub consumed_natural_food          : IpcReal,
 	/// Amount of food you consumed and that was created from snakes you killed
-	consumed_food_hunted_by_self   : IpcReal,
+	pub consumed_food_hunted_by_self   : IpcReal,
 	/// Amount of food you consumed and that was created from snakes others killed (carrion)
-	consumed_food_hunted_by_others : IpcReal,
+	pub consumed_food_hunted_by_others : IpcReal,
 }
 
 /**
@@ -44,41 +44,41 @@ pub struct IpcSelfInfo {
 #[repr(align(4))]
 pub struct IpcServerConfig {
 	/// Number of steps a snake moves per frame while boosting
-	snake_boost_steps: u32,
+	pub snake_boost_steps: u32,
 	/// Multiplied with your segment radius to determine the inner turn radius
-	snake_turn_radius_factor: IpcReal,
+	pub snake_turn_radius_factor: IpcReal,
 
 	/// Pull-together factor (determines how fast segments move to the center of a loop)
-	snake_pull_factor: IpcReal,
+	pub snake_pull_factor: IpcReal,
 
 	/// how much of a snake's mass is converted to food when it dies
-	snake_conversion_factor: IpcReal,
+	pub snake_conversion_factor: IpcReal,
 
 	/// segment distance = (mass * factor)^exponent
-	snake_segment_distance_factor: IpcReal,
+	pub snake_segment_distance_factor: IpcReal,
 	/// segment distance = (mass * factor)^exponent
-	snake_segment_distance_exponent: IpcReal,
+	pub snake_segment_distance_exponent: IpcReal,
 
 	/// consume range multiplier (multiplied with segment radius)
-	snake_consume_range: IpcReal,
+	pub snake_consume_range: IpcReal,
 
 	/// Multiplied with the snakes mass to determine how much mass is lost per frame while boosting
-	snake_boost_loss_factor: IpcReal,
+	pub snake_boost_loss_factor: IpcReal,
 	/// This part of your mass is dropped every frame (to limit snake growth)
-	snake_survival_loss_factor: IpcReal,
+	pub snake_survival_loss_factor: IpcReal,
 
 	/// Mass below which a snake dies through starvation
-	snake_self_kill_mass_theshold: IpcReal,
+	pub snake_self_kill_mass_theshold: IpcReal,
 
 	/// Food decays by this value each frame
-	food_decay_step: IpcReal,
+	pub food_decay_step: IpcReal,
 
 	/// How many log messages you can send per frame
-	log_credits_per_frame: IpcReal,
+	pub log_credits_per_frame: IpcReal,
 	/// How many log messages you can send right after startup
-	log_initial_credits: IpcReal,
+	pub log_initial_credits: IpcReal,
 	/// You can send at most this many messages in a row
-	log_max_credits: IpcReal,
+	pub log_max_credits: IpcReal,
 }
 
 /**
@@ -88,15 +88,15 @@ pub struct IpcServerConfig {
 #[repr(align(4))]
 pub struct IpcFoodInfo {
 	/// Relative position X in world orientation
-	x: IpcReal,
+	pub x: IpcReal,
 	/// Relative position Y in world orientation
-	y: IpcReal,
+	pub y: IpcReal,
 	/// Food value
-	val: IpcReal,
+	pub val: IpcReal,
 	/// Direction angle relative to your heading (range -π to +π)
-	dir: IpcReal,
+	pub dir: IpcReal,
 	/// Distance measured from the center of your head
-	dist: IpcReal,
+	pub dist: IpcReal,
 }
 
 /**
@@ -106,9 +106,9 @@ pub struct IpcFoodInfo {
 #[repr(align(4))]
 pub struct IpcBotInfo {
 	/// Bot ID
-	bot_id: IpcGuid,
+	pub bot_id: IpcGuid,
 	/// Bot name (the beginning of it, at least)
-	bot_name: [u8; 64],
+	pub bot_name: [u8; 64],
 }
 
 /**
@@ -118,21 +118,21 @@ pub struct IpcBotInfo {
 #[repr(align(4))]
 pub struct IpcSegmentInfo {
 	/// Relative position X in world orientation
-	x: IpcReal,
+	pub x: IpcReal,
 	/// Relative position Y in world orientation
-	y: IpcReal,
+	pub y: IpcReal,
 	/// Segment radius
-	r: IpcReal,
+	pub r: IpcReal,
 	/// Direction angle relative to your heading (range -π to +π)
-	dir: IpcReal,
+	pub dir: IpcReal,
 	/// Distance between the center of your head and the segment's center
-	dist: IpcReal,
+	pub dist: IpcReal,
 	/// Segment number starting from head (idx == 0)
-	idx: u32,
+	pub idx: u32,
 	/// Bot ID
-	bot_id: IpcGuid,
+	pub bot_id: IpcGuid,
 	/// True if this segment belongs to ones own snake
-	is_self: bool,
+	pub is_self: bool,
 }
 
 /**
@@ -236,7 +236,7 @@ pub enum IpcRequestType {
 #[repr(C)]
 #[repr(align(4))]
 pub struct IpcRequest {
-	request_type: IpcRequestType
+	pub request_type: IpcRequestType
 }
 
 #[repr(C)]
@@ -251,9 +251,9 @@ pub enum IpcResponseType {
 #[derive(Clone, Copy)]
 pub struct IpcStepResponse {
 	/// Direction change in this frame (radians, -π to +π).
-	delta_angle: IpcReal,
+	pub delta_angle: IpcReal,
 	/// Set to true to boost.
-	boost: bool,
+	pub boost: bool,
 }
 
 // FIXME! This should actually be a union, which makes things complicated in Rust. As there is
@@ -262,7 +262,7 @@ pub struct IpcStepResponse {
 #[repr(C)]
 #[repr(align(4))]
 pub union ResponseData {
-	step: IpcStepResponse
+	pub step: IpcStepResponse
 }
 
 /**
@@ -273,7 +273,7 @@ pub union ResponseData {
 #[repr(C)]
 #[repr(align(4))]
 pub struct IpcResponse {
-	response_type: IpcResponseType,
+	pub response_type: IpcResponseType,
 
-	data: ResponseData
+	pub data: ResponseData
 }
