@@ -133,6 +133,8 @@ int main(int argc, char **argv)
 	int shm_fd;
 	struct IpcSharedMemory *shm;
 
+	/*
+	// For cross-checking structure layout between different programming languages.
 	printf("sizeof(IpcSelfInfo)     = %8lu\n", sizeof(IpcSelfInfo));
 	printf("sizeof(IpcServerConfig) = %8lu\n", sizeof(IpcServerConfig));
 	printf("sizeof(IpcFoodInfo)     = %8lu\n", sizeof(IpcFoodInfo));
@@ -141,9 +143,9 @@ int main(int argc, char **argv)
 	printf("sizeof(IpcColor)        = %8lu\n", sizeof(IpcColor));
 	printf("sizeof(IpcSharedMemory) = %8lu\n", sizeof(IpcSharedMemory));
 	printf("sizeof(IpcRequest)      = %8lu\n", sizeof(IpcRequest));
-	printf("sizeof(IpcStepResponse) =      N/A\n");
 	printf("sizeof(IpcResponse)     = %8lu\n", sizeof(IpcResponse));
 	printf("sizeof(bool)            = %8lu\n", sizeof(bool));
+	*/
 
 	log() << "Hello from the bot code!" << std::endl;
 

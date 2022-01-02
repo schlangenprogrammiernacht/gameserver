@@ -13,6 +13,8 @@ static SPN_SHM_FILE:    &str = "testdata/shm1.bin"; //"/spnshm/shm";
 static SPN_SOCKET_FILE: &str = "/spnshm/socket";
 
 fn main() {
+	/*
+	// For cross-checking structure layout between different programming languages.
 	println!("sizeof(IpcSelfInfo)     = {:8}", size_of::<ipc::IpcSelfInfo>());
 	println!("sizeof(IpcServerConfig) = {:8}", size_of::<ipc::IpcServerConfig>());
 	println!("sizeof(IpcFoodInfo)     = {:8}", size_of::<ipc::IpcFoodInfo>());
@@ -24,6 +26,7 @@ fn main() {
 	println!("sizeof(IpcStepResponse) = {:8}", size_of::<ipc::IpcStepResponse>());
 	println!("sizeof(IpcResponse)     = {:8}", size_of::<ipc::IpcResponse>());
 	println!("sizeof(bool)            = {:8}", size_of::<bool>());
+	*/
 
 	let file = OpenOptions::new()
 		.read(true)
