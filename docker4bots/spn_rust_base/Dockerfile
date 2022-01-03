@@ -1,6 +1,6 @@
-FROM alpine
+FROM rust:alpine
 
-RUN apk add --no-cache rust cargo
+#RUN apk add --no-cache rust cargo
 
 RUN addgroup -S spnbot && adduser --uid 1337 --home /spnbot -S spnbot --shell /bin/sh -G spnbot
 
