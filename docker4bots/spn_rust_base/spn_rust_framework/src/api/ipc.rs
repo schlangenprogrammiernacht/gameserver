@@ -221,6 +221,7 @@ const IPC_SHARED_MEMORY_BYTES: usize = size_of::<IpcSharedMemory>();
 
 #[repr(C)]
 #[repr(align(4))]
+#[derive(FromPrimitive, ToPrimitive)]
 pub enum IpcRequestType {
 	/// Bot initialization request. Sent once after bot startup.
 	Init = 0,
@@ -241,6 +242,7 @@ pub struct IpcRequest {
 
 #[repr(C)]
 #[repr(align(4))]
+#[derive(FromPrimitive, ToPrimitive)]
 pub enum IpcResponseType {
 	Ok = 0,
 	Error = 1

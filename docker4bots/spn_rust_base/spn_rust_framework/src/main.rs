@@ -2,6 +2,12 @@
 
 extern crate uds;
 
+#[macro_use]
+extern crate num_derive;
+extern crate num;
+
+use num::FromPrimitive;
+
 use uds::UnixSeqpacketConn;
 
 use std::mem::{size_of, transmute};
@@ -9,18 +15,11 @@ use std::mem::{size_of, transmute};
 mod api;
 use api::ipc::{IpcResponse, IpcResponseType, IpcRequestType};
 
+mod usercode;
+use usercode::{init, step};
+
 static SPN_SHM_FILE:    &str = "testdata/shm1.bin"; //"/spnshm/shm";
 static SPN_SOCKET_FILE: &str = "/spnshm/socket";
-
-fn step(api: &mut api::Api) -> (bool, f32, bool)
-{
-	return (true, 0.0, false); // continue, angle, boost
-}
-
-fn init(api: &mut api::Api) -> bool
-{
-	return true;
-}
 
 fn mainloop(mut api: api::Api, socket: UnixSeqpacketConn)
 {
@@ -38,16 +37,33 @@ fn mainloop(mut api: api::Api, socket: UnixSeqpacketConn)
 			continue;
 		}
 
+		// check whether the data contains a valid enum value
+		let request_value = unsafe {
+			*transmute::<*const u8, *const u32>(rxbuf.as_ptr())
+		};
+
+		let request_type;
+
+		match api::ipc::IpcRequestType::from_u32(request_value) {
+			Some(x) => request_type = x,
+			None => {
+				println!("Request type cannot be decoded!");
+				continue;
+			}
+		}
+
+		/*
 		// reinterpret the received data as struct IpcRequest
 		let request: &api::ipc::IpcRequest = unsafe {
 			& *transmute::<*const u8, *const api::ipc::IpcRequest>(rxbuf.as_ptr())
 		};
+		*/
 
 		let angle: f32;
 		let boost: bool;
 
 		// execute the user functions corresponding to the request type
-		match &request.request_type {
+		match request_type {
 			IpcRequestType::Init => {
 				println!("Init request received!");
 				running = init(&mut api);
@@ -62,10 +78,6 @@ fn mainloop(mut api: api::Api, socket: UnixSeqpacketConn)
 				angle = tmp_angle;
 				boost = tmp_boost;
 			},
-			_ => {
-				println!("Unknown request received and ignored!");
-				continue;
-			}
 		}
 
 		// build the response structure
@@ -97,16 +109,16 @@ fn mainloop(mut api: api::Api, socket: UnixSeqpacketConn)
 fn main() {
 	/*
 	// For cross-checking structure layout between different programming languages.
-	println!("sizeof(IpcSelfInfo)     = {:8}", size_of::<ipc::IpcSelfInfo>());
-	println!("sizeof(IpcServerConfig) = {:8}", size_of::<ipc::IpcServerConfig>());
-	println!("sizeof(IpcFoodInfo)     = {:8}", size_of::<ipc::IpcFoodInfo>());
-	println!("sizeof(IpcBotInfo)      = {:8}", size_of::<ipc::IpcBotInfo>());
-	println!("sizeof(IpcSegmentInfo)  = {:8}", size_of::<ipc::IpcSegmentInfo>());
-	println!("sizeof(IpcColor)        = {:8}", size_of::<ipc::IpcColor>());
-	println!("sizeof(IpcSharedMemory) = {:8}", size_of::<ipc::IpcSharedMemory>());
-	println!("sizeof(IpcRequest)      = {:8}", size_of::<ipc::IpcRequest>());
-	println!("sizeof(IpcStepResponse) = {:8}", size_of::<ipc::IpcStepResponse>());
-	println!("sizeof(IpcResponse)     = {:8}", size_of::<ipc::IpcResponse>());
+	println!("sizeof(IpcSelfInfo)     = {:8}", size_of::<api::ipc::IpcSelfInfo>());
+	println!("sizeof(IpcServerConfig) = {:8}", size_of::<api::ipc::IpcServerConfig>());
+	println!("sizeof(IpcFoodInfo)     = {:8}", size_of::<api::ipc::IpcFoodInfo>());
+	println!("sizeof(IpcBotInfo)      = {:8}", size_of::<api::ipc::IpcBotInfo>());
+	println!("sizeof(IpcSegmentInfo)  = {:8}", size_of::<api::ipc::IpcSegmentInfo>());
+	println!("sizeof(IpcColor)        = {:8}", size_of::<api::ipc::IpcColor>());
+	println!("sizeof(IpcSharedMemory) = {:8}", size_of::<api::ipc::IpcSharedMemory>());
+	println!("sizeof(IpcRequest)      = {:8}", size_of::<api::ipc::IpcRequest>());
+	println!("sizeof(IpcStepResponse) = {:8}", size_of::<api::ipc::IpcStepResponse>());
+	println!("sizeof(IpcResponse)     = {:8}", size_of::<api::ipc::IpcResponse>());
 	println!("sizeof(bool)            = {:8}", size_of::<bool>());
 	return;
 	*/
