@@ -6,9 +6,16 @@ usage() {
 	echo "usage: $0 <version-id> <bot-name> <container-name>"
 }
 
-VERSION_ID="$1"
-BOT_NAME="$2"
-CONTAINER_NAME="$3"
+PROGLANG="$1"
+VERSION_ID="$2"
+BOT_NAME="$3"
+CONTAINER_NAME="$4"
+
+if [ -z "$PROGLANG" ]; then
+	echo "Argument required: programming language"
+	usage
+	exit 1
+fi
 
 if [ -z "$VERSION_ID" ]; then
 	echo "Argument required: version id"
@@ -35,4 +42,4 @@ exec docker run -d --rm \
 	-v "$BOT_DATADIR:/spndata:ro" \
 	-v $SPN_SHM_HOSTDIR/$BOT_NAME:/spnshm \
 	--name "$CONTAINER_NAME" \
-	spn_cpp_base:latest run
+	"spn_${PROGLANG}_base:latest" run
