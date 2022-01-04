@@ -11,6 +11,16 @@ use memmap2::MmapRaw;
 pub mod ipc;
 use ipc::IpcSharedMemory;
 
+/**
+ * Your bot’s interface to the game data.
+ *
+ * This class provides a safe interface to the shared memory used for fast communication with the
+ * gameserver. Use the provided methods to obtain information about your snake’s surroundings or
+ * the server configuration, and to access persistent memory.
+ *
+ * Please note that most methods return direct references to the shared memory structures. These
+ * are specified and documentet in the ipc module.
+ */
 pub struct Api<'a>
 {
 	mmap: MmapRaw,
@@ -19,6 +29,11 @@ pub struct Api<'a>
 
 impl<'i> Api<'i>
 {
+	/**
+	 * Construct a new Api instance from the given shared memory file.
+	 *
+	 * This function is used internally by the bot framework. Do not worry about it.
+	 */
 	pub fn new<'a>(shmfilename: &'a str) -> Result<Api<'a>, String>
 	{
 		// open and map the shared memory
@@ -47,32 +62,75 @@ impl<'i> Api<'i>
 		})
 	}
 
+	/**
+	 * Get a reference to the array of food items around your snake’s head.
+	 *
+	 * The items are sorted by the distance from your snake’s head, so the first entry is the
+	 * closest item.
+	 *
+	 * Only the valid entries in the shared memory are returned.
+	 */
 	pub fn get_food(&self) -> &[ipc::IpcFoodInfo]
 	{
 		&self.ipcdata.food_info[0 .. self.ipcdata.food_count as usize]
 	}
 
+	/**
+	 * Get a reference to the array of snake segments around your snake’s head.
+	 *
+	 * The items are sorted by the distance from your snake’s head, so the first entry is the
+	 * closest item.
+	 *
+	 * Only the valid entries in the shared memory are returned.
+	 */
 	pub fn get_segments(&self) -> &[ipc::IpcSegmentInfo]
 	{
 		&self.ipcdata.segment_info[0 .. self.ipcdata.segment_count as usize]
 	}
 
+	/**
+	 * Get a reference to the array of bot information structures.
+	 *
+	 * Only the valid entries in the shared memory are returned.
+	 */
 	pub fn get_bot_info(&self) -> &[ipc::IpcBotInfo]
 	{
 		&self.ipcdata.bot_info[0 .. self.ipcdata.bot_count as usize]
 	}
 
+	/**
+	 * Remove all color entries from the shared memory.
+	 *
+	 * This must be called in your [`crate::usercode::init()`] function to remove the default color
+	 * in case you want to set your own.
+	 */
 	pub fn clear_colors(&mut self)
 	{
 		self.ipcdata.color_count = 0;
 	}
 
+	/**
+	 * Add a color to your snake’s color sequence.
+	 *
+	 * Call this multiple times from [`crate::usercode::init()`] to set up your snake’s colors. The
+	 * provided sequence will be repeated along your snake if it has more sequence than colors were
+	 * specified. You can set up to [`ipc::IPC_COLOR_MAX_COUNT`] colors.
+	 */
 	pub fn add_color(&mut self, r: u8, g: u8, b: u8)
 	{
 		self.ipcdata.colors[self.ipcdata.color_count as usize] = ipc::IpcColor{r, g, b};
 		self.ipcdata.color_count += 1;
 	}
 
+	/**
+	 * Send a log message.
+	 *
+	 * These messages will appear on the web interface and in the World update
+	 * stream when you provide your viewer key to the server.
+	 *
+	 * Rate limiting is enforced by the gameserver, so messages are dropped
+	 * when you send too many of them.
+	 */
 	pub fn log(&mut self, text: &str) -> bool
 	{
 		// determine length of stored data

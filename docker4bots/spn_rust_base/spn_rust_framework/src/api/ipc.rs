@@ -1,3 +1,5 @@
+// vim: noet
+
 use std::mem::size_of;
 
 type IpcReal = f32;
@@ -149,22 +151,22 @@ pub struct IpcColor {
 	pub b: u8,
 }
 
-const IPC_FOOD_MAX_BYTES: usize = 1 * 1024*1024;
-const IPC_FOOD_MAX_COUNT: usize = IPC_FOOD_MAX_BYTES / size_of::<IpcFoodInfo>();
+pub const IPC_FOOD_MAX_BYTES: usize = 1 * 1024*1024;
+pub const IPC_FOOD_MAX_COUNT: usize = IPC_FOOD_MAX_BYTES / size_of::<IpcFoodInfo>();
 
-const IPC_BOT_MAX_COUNT: usize = 1024;
-const IPC_BOT_MAX_BYTES: usize = IPC_BOT_MAX_COUNT * size_of::<IpcBotInfo>();
+pub const IPC_BOT_MAX_COUNT: usize = 1024;
+pub const IPC_BOT_MAX_BYTES: usize = IPC_BOT_MAX_COUNT * size_of::<IpcBotInfo>();
 
-const IPC_SEGMENT_MAX_BYTES: usize = 1 * 1024*1024;
-const IPC_SEGMENT_MAX_COUNT: usize = IPC_SEGMENT_MAX_BYTES / size_of::<IpcSegmentInfo>();
+pub const IPC_SEGMENT_MAX_BYTES: usize = 1 * 1024*1024;
+pub const IPC_SEGMENT_MAX_COUNT: usize = IPC_SEGMENT_MAX_BYTES / size_of::<IpcSegmentInfo>();
 
-const IPC_COLOR_MAX_COUNT: usize = 1024;
-const IPC_COLOR_MAX_BYTES: usize = IPC_COLOR_MAX_COUNT * size_of::<IpcColor>();
+pub const IPC_COLOR_MAX_COUNT: usize = 1024;
+pub const IPC_COLOR_MAX_BYTES: usize = IPC_COLOR_MAX_COUNT * size_of::<IpcColor>();
 
-const IPC_LOG_MAX_BYTES: usize = 1024;
+pub const IPC_LOG_MAX_BYTES: usize = 1024;
 
 /// Space for persistent data (in bytes)
-const IPC_PERSISTENT_MAX_BYTES: usize = 4096;
+pub const IPC_PERSISTENT_MAX_BYTES: usize = 4096;
 
 /**
  * Shared memory structure.
@@ -213,7 +215,7 @@ pub struct IpcSharedMemory {
 	pub persistent_data: [u8; IPC_PERSISTENT_MAX_BYTES],
 }
 
-const IPC_SHARED_MEMORY_BYTES: usize = size_of::<IpcSharedMemory>();
+pub const IPC_SHARED_MEMORY_BYTES: usize = size_of::<IpcSharedMemory>();
 
 /*
  * Communication structures.
@@ -240,6 +242,9 @@ pub struct IpcRequest {
 	pub request_type: IpcRequestType
 }
 
+/**
+ * The response type sent from the bot to the gameserver.
+ */
 #[repr(C)]
 #[repr(align(4))]
 #[derive(FromPrimitive, ToPrimitive)]
@@ -248,6 +253,9 @@ pub enum IpcResponseType {
 	Error = 1
 }
 
+/**
+ * The response structure sent if IpcRequest::request_type was set to Step.
+ */
 #[repr(C)]
 #[repr(align(4))]
 #[derive(Clone, Copy)]

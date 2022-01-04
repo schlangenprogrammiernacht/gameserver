@@ -1,5 +1,18 @@
 // vim: noet
 
+/*!
+ * Welcome to the Rust framework documentation for SPN players!
+ *
+ * This documentation will guide you while you program your SPN bot in Rust.
+ *
+ * The code you write in the webinterface will replace the [`usercode`] module, which must provide
+ * the [`usercode::init()`] and [`usercode::step()`] functions. These will be called by the
+ * framework when requested to do so by the gameserver.
+ *
+ * We recommend that you start by reading the documentation of the [`api::Api`] struct,
+ * which provides safe access to the data provided by the gameserver.
+ */
+
 extern crate uds;
 
 #[macro_use]
@@ -12,10 +25,10 @@ use uds::UnixSeqpacketConn;
 
 use std::mem::{size_of, transmute};
 
-mod api;
+pub mod api;
 use api::ipc::{IpcResponse, IpcResponseType, IpcRequestType};
 
-mod usercode;
+pub mod usercode;
 use usercode::{init, step};
 
 static SPN_SHM_FILE:    &str = "testdata/shm1.bin"; //"/spnshm/shm";

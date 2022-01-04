@@ -2,7 +2,7 @@ use crate::api;
 
 /* You can use the entire Rust standard library (std). */
 
-/*
+/**
  * This is your bot's startup function. Here you can set your snake's colors,
  * set up persistent variables, etc.
  */
@@ -22,7 +22,7 @@ pub fn init(api: &mut api::Api) -> bool
 	return true;
 }
 
-/*
+/**
  * This function will be called by the framework on every step. Here you decide
  * where to move next!
  *
