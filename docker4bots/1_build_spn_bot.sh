@@ -3,13 +3,14 @@
 source $(dirname $0)/config.sh
 
 usage() {
-	echo "usage: $0 <programming-language> <version-id> <bot-name> <code-file>"
+	echo "usage: $0 <programming-language> <version-id> <bot-name> <code-file> <file-extension>"
 }
 
 PROGLANG="$1"
 VERSION_ID=$2
 BOT_NAME=$3
 CODE_FILE=$4
+EXTENSION=$5
 
 if [ -z "$PROGLANG" ]; then
 	echo "Argument required: programming language"
@@ -35,21 +36,18 @@ if [ -z "$CODE_FILE" ]; then
 	exit 1
 fi
 
+if [ -z "$EXTENSION" ]; then
+	echo "Argument required: code file name extension"
+	usage
+	exit 1
+fi
+
 BOT_DATADIR="$SPN_DATA_HOSTDIR/${BOT_NAME}_$VERSION_ID"
 
 mkdir -p "$BOT_DATADIR"
 chmod 777 "$BOT_DATADIR"
 
-case "$PROGLANG" in
-	cpp)    EXT="cpp";;
-	rust)   EXT="rust";;
-	*)
-		echo "Unknown programming language: $PROGLANG"
-		exit 1
-		;;
-esac
-
-install -m 444 "$CODE_FILE" "$BOT_DATADIR/usercode.$EXT"
+install -m 444 "$CODE_FILE" "$BOT_DATADIR/usercode.$EXTENSION"
 
 exec docker run --rm \
 	$DOCKER_COMPILE_ARGS \

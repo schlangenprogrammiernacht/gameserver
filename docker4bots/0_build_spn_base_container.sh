@@ -2,10 +2,12 @@
 
 PROGLANG="$1"
 
+shift
+
 if [ "x$PROGLANG" == "x" ]; then
 	echo "Programming language not set!"
 	echo
-	echo "usage: $0 <programming-language>"
+	echo "usage: $0 <programming-language> [<docker-flags...>]"
 	exit 1
 fi
 
@@ -16,4 +18,4 @@ if [ ! -d "$BASE_DIR" ]; then
 	exit 1
 fi
 
-docker build -t "spn_${PROGLANG}_base:latest" "$BASE_DIR"
+docker build -t "spn_${PROGLANG}_base:latest" $@ "$BASE_DIR"

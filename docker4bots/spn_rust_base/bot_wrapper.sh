@@ -10,7 +10,7 @@ case "$action" in
 		cd /spnbot/spn_rust_framework/
 
 		cp -f /spndata/usercode.rs src/usercode.rs
-		./build.sh && cp target/debug/spn_rust_bot /spndata/bot
+		./build.sh && cp target/release/spn_rust_bot /spndata/bot
 		;;
 
 	run)

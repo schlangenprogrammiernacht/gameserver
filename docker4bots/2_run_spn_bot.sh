@@ -3,7 +3,7 @@
 source $(dirname $0)/config.sh
 
 usage() {
-	echo "usage: $0 <version-id> <bot-name> <container-name>"
+	echo "usage: $0 <programming-language> <version-id> <bot-name> <container-name>"
 }
 
 PROGLANG="$1"
