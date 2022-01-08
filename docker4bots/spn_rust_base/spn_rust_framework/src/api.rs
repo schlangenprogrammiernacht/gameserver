@@ -63,6 +63,28 @@ impl<'i> Api<'i>
 	}
 
 	/**
+	 * Get a reference to the server config data.
+	 *
+	 * The returned structure contains information about the server
+	 * configuration and static world information.
+	 */
+	pub fn get_server_config(&self) -> &ipc::IpcServerConfig
+	{
+		return &self.ipcdata.server_config;
+	}
+
+	/**
+	 * Get a pointer to the self information.
+	 *
+	 * The returned structure contains information about your snake and
+	 * parameters of the world.
+	 */
+	pub fn get_self_info(&self) -> &ipc::IpcSelfInfo
+	{
+		return &self.ipcdata.self_info;
+	}
+
+	/**
 	 * Get a reference to the array of food items around your snake’s head.
 	 *
 	 * The items are sorted by the distance from your snake’s head, so the first entry is the
@@ -123,6 +145,21 @@ impl<'i> Api<'i>
 	}
 
 	/**
+	 * Get a reference to the persistent memory.
+	 *
+	 * You can use persistent memory to remember things across multiple lives
+	 * of your snake. It is saved after your snake dies (even when your code
+	 * crashes) and restored when it respawns.
+	 *
+	 * Note that the size this memory is very limited (given by the
+	 * [`ipc::IPC_PERSISTENT_MAX_BYTES`] constant). Use it wisely.
+	 */
+	pub fn get_persistent_memory(&mut self) -> &mut[u8]
+	{
+		return &mut self.ipcdata.persistent_data;
+	}
+
+	/**
 	 * Send a log message.
 	 *
 	 * These messages will appear on the web interface and in the World update
@@ -155,7 +192,6 @@ impl<'i> Api<'i>
 		self.ipcdata.log_data[pos] = b'\n';
 		pos += 1;
 		self.ipcdata.log_data[pos] = b'\0';
-		pos += 1;
 
 		return true;
 	}
