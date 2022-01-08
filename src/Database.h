@@ -40,10 +40,20 @@ namespace db
 			std::string code;
 			std::string compile_state;
 			std::string persistent_data;
+			std::string programming_language_slug;
 
-			BotScript(int aBotId, std::string aBotName, int aVersionId, uint64_t viewerKey, std::string aCode, std::string compileState, std::istream *persistentDataStream)
+			BotScript(
+					int aBotId,
+					std::string aBotName,
+					int aVersionId,
+					uint64_t viewerKey,
+					std::string aCode,
+					std::string compileState,
+					std::istream *persistentDataStream,
+					std::string programmingLanguageSlug)
 				: bot_id(aBotId), version_id(aVersionId), viewer_key(viewerKey)
 				, bot_name(aBotName), code(aCode), compile_state(compileState)
+				, programming_language_slug(programmingLanguageSlug)
 			{
 				persistent_data.resize(IPC_PERSISTENT_MAX_BYTES, '\0');
 
@@ -113,6 +123,7 @@ namespace db
 				IDX_BOTSCRIPT_COMPILE_STATE = 5,
 				IDX_BOTSCRIPT_VIEWER_KEY = 6,
 				IDX_BOTSCRIPT_PERSISTENT_DATA = 7,
+				IDX_BOTSCRIPT_PROGRAMMING_LANGUAGE_SLUG = 8
 			};
 
 			sql::Driver *_driver = nullptr;
