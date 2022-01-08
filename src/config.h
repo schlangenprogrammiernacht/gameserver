@@ -110,7 +110,7 @@ namespace config {
 	static constexpr const char *BOT_IPC_DIRECTORY = "/mnt/spn_shm/";
 
 	// script for launching new bots
-	static constexpr const char *BOT_LAUNCHER_SCRIPT = "docker4bots/2_run_spn_cpp_bot.sh";
+	static constexpr const char *BOT_LAUNCHER_SCRIPT = "docker4bots/2_run_spn_bot.sh";
 
 	// Timeout configuration (all times in seconds)
 	static const real_t BOT_CONNECT_TIMEOUT = 10.000;

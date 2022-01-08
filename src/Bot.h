@@ -140,4 +140,6 @@ class Bot : public IdentifyableObject
 
 		std::string getPersistentData(void) { return m_docker_bot->getPersistentData(); }
 		const std::string& getPreviousPersistentData(void) { return m_dbData->persistent_data; }
+
+		const std::string& getProgrammingLanguageSlug(void) { return m_dbData->programming_language_slug; }
 };

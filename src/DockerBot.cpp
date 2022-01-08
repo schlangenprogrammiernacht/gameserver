@@ -379,6 +379,7 @@ void DockerBot::startBot(void)
 	if(pid == 0) {
 		// child process
 		execl(config::BOT_LAUNCHER_SCRIPT, config::BOT_LAUNCHER_SCRIPT,
+				m_bot.getProgrammingLanguageSlug().c_str(),
 				dbVersionStr.c_str(), m_cleanName.c_str(),
 				m_dockerContainerName.c_str(), (char*)NULL);
 
