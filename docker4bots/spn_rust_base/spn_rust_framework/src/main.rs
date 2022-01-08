@@ -1,9 +1,9 @@
 // vim: noet
 
 /*!
- * Welcome to the Rust framework documentation for SPN players!
+ * Welcome to the Rust framework documentation for Schlangenprogrammiernacht players!
  *
- * This documentation will guide you while you program your SPN bot in Rust.
+ * This documentation will guide you while you program your Schlangenprogrammiernacht (SPN) bot in Rust.
  *
  * The code you write in the webinterface will replace the [`usercode`] module, which must provide
  * the [`usercode::init()`] and [`usercode::step()`] functions. These will be called by the
