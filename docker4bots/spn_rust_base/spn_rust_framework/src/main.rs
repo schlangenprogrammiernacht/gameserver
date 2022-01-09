@@ -78,13 +78,11 @@ fn mainloop(mut api: api::Api, socket: UnixSeqpacketConn)
 		// execute the user functions corresponding to the request type
 		match request_type {
 			IpcRequestType::Init => {
-				println!("Init request received!");
 				running = init(&mut api);
 				angle = 0.0;
 				boost = false;
 			},
 			IpcRequestType::Step => {
-				println!("Step request received!");
 				// unfortunately, destructuring is not stable yet.
 				let (tmp_running, tmp_angle, tmp_boost) = step(&mut api);
 				running = tmp_running;
@@ -139,17 +137,6 @@ fn main() {
 	let a = api::Api::new(SPN_SHM_FILE).unwrap();
 
 	let conn = UnixSeqpacketConn::connect(SPN_SOCKET_FILE).unwrap();
-
-	println!("Number of food items: {}", a.get_food().len());
-	println!("Number of segments:   {}", a.get_segments().len());
-	println!("Number of bots:       {}", a.get_bot_info().len());
-
-	let f = &a.get_food()[1];
-
-	println!("Location:   {}/{}", f.x, f.y);
-	println!("Distance:   {}", f.dist);
-	println!("Direction:  {}", f.dir);
-	println!("Value:      {}", f.val);
 
 	mainloop(a, conn);
 }
