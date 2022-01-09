@@ -1,3 +1,3 @@
 #!/bin/sh
 
-cargo build --release --offline
+cargo build --release $@

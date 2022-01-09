@@ -1,8 +1,8 @@
-FROM rust:alpine
+FROM rust:1.57-slim
 
 #RUN apk add --no-cache rust cargo
 
-RUN addgroup -S spnbot && adduser --uid 1337 --home /spnbot -S spnbot --shell /bin/sh -G spnbot
+RUN addgroup --system spnbot && adduser --system --uid 1337 --home /spnbot --shell /bin/sh --ingroup spnbot spnbot
 
 ADD bot_wrapper.sh /
 
