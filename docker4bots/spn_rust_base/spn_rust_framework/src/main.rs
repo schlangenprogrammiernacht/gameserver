@@ -31,7 +31,7 @@ use api::ipc::{IpcResponse, IpcResponseType, IpcRequestType};
 pub mod usercode;
 use usercode::{init, step};
 
-static SPN_SHM_FILE:    &str = "testdata/shm1.bin"; //"/spnshm/shm";
+static SPN_SHM_FILE:    &str = "/spnshm/shm";
 static SPN_SOCKET_FILE: &str = "/spnshm/socket";
 
 fn mainloop(mut api: api::Api, socket: UnixSeqpacketConn)
