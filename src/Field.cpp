@@ -314,7 +314,7 @@ void Field::moveAllBots(void)
 
 				victim->getSnake()->dropFood(lossValue);
 
-				if(victim->getSnake()->getMass() < config::SNAKE_SELF_KILL_MASS_THESHOLD) {
+				if(victim->getSnake()->getMass() < config::SNAKE_SELF_KILL_MASS_THRESHOLD) {
 					// Bot is now too small, so it dies
 					killBot(victim, victim);
 				}
