@@ -70,7 +70,7 @@ pub struct IpcServerConfig {
 	pub snake_survival_loss_factor: IpcReal,
 
 	/// Mass below which a snake dies through starvation
-	pub snake_self_kill_mass_theshold: IpcReal,
+	pub snake_self_kill_mass_threshold: IpcReal,
 
 	/// Food decays by this value each frame
 	pub food_decay_step: IpcReal,
