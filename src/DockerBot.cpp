@@ -165,7 +165,7 @@ void DockerBot::prepareSharedMemory(void)
 	m_shm->serverConfig.snake_survival_loss_factor      = config::SNAKE_SURVIVAL_LOSS_FACTOR;
 
 
-	m_shm->serverConfig.snake_self_kill_mass_theshold   = config::SNAKE_SELF_KILL_MASS_THESHOLD;
+	m_shm->serverConfig.snake_self_kill_mass_threshold  = config::SNAKE_SELF_KILL_MASS_THRESHOLD;
 
 	m_shm->serverConfig.food_decay_step                 = config::FOOD_DECAY_STEP;
 

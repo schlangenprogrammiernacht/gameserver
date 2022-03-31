@@ -53,7 +53,7 @@ struct ALIGNED IpcServerConfig {
 	ipc_real_t snake_boost_loss_factor;    //!< Multiplied with the snakes mass to determine how much mass is lost per frame while boosting
 	ipc_real_t snake_survival_loss_factor; //!< This part of your mass is dropped every frame (to limit snake growth)
 
-	ipc_real_t snake_self_kill_mass_theshold; //!< Mass below which a snake dies through starvation
+	ipc_real_t snake_self_kill_mass_threshold; //!< Mass below which a snake dies through starvation
 
 	ipc_real_t food_decay_step; //!< Food decays by this value each frame
 

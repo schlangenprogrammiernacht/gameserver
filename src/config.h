@@ -78,7 +78,7 @@ namespace config {
 	static const real_t     SNAKE_SURVIVAL_LOSS_FACTOR = 1e-5;
 
 	// Mass below which Snake dies through starvation
-	static const real_t     SNAKE_SELF_KILL_MASS_THESHOLD = 1.0;
+	static const real_t     SNAKE_SELF_KILL_MASS_THRESHOLD = 1.0;
 
 	// Food particle size log-normal distribution parameters
 	static const real_t     FOOD_SIZE_MEAN          = 3.5;
