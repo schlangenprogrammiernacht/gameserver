@@ -21,6 +21,12 @@ case "$action" in
 		exec ./bot >/spnshm/log 2>&1
 		;;
 
+	doc)
+		cd /spnbot/spn_rust_framework/
+		cargo doc --release
+		mv target/doc/* /doc
+		;;
+
 	*)
 		echo "Invalid action: $action"
 		exit 1

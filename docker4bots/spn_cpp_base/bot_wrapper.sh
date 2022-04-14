@@ -21,6 +21,12 @@ case "$action" in
 		exec ./bot
 		;;
 
+	doc)
+		cd /spnbot/spn_cpp_framework/
+		doxygen Doxyfile
+		mv doc/html/* /doc
+		;;
+
 	*)
 		echo "Invalid action: $action"
 		exit 1

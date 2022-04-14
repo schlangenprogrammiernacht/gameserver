@@ -1,6 +1,6 @@
 FROM alpine
 
-RUN apk add --no-cache g++ cmake strace make
+RUN apk add --no-cache g++ cmake strace make doxygen
 
 RUN addgroup -S spnbot && adduser --uid 1337 --home /spnbot -S spnbot --shell /bin/sh -G spnbot
 
