@@ -4,7 +4,7 @@ PROGLANG="$1"
 
 shift
 
-if [ "x$PROGLANG" == "x" ]; then
+if [ "x$PROGLANG" = "x" ]; then
 	echo "Programming language not set!"
 	echo
 	echo "usage: $0 <programming-language> [<docker-flags...>]"
