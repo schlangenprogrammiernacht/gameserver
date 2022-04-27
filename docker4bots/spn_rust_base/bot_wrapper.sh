@@ -18,7 +18,7 @@ case "$action" in
 		ulimit -c unlimited
 
 		cd /spndata/
-		exec ./bot >/spnshm/log 2>&1
+		./bot >/spnshm/log 2>&1
 		;;
 
 	doc)
