@@ -44,7 +44,10 @@ fn mainloop(mut api: api::Api, socket: UnixSeqpacketConn)
 		let (len, _truncated) = socket.recv(&mut rxbuf).unwrap();
 
 		// length check
-		if len < rxbuf.len() {
+		if len == 0 {
+			println!("Socket connection terminated by server.");
+			break;
+		} else if len < rxbuf.len() {
 			println!("Error: packet is too short! Expected {} bytes, but received only {}. Packet ignored.",
 			         rxbuf.len(), len);
 			continue;
