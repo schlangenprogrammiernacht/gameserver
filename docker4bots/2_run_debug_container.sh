@@ -1,4 +1,4 @@
-#!/bin/sh -x
+#!/bin/sh
 
 source $(dirname $0)/config.sh
 
@@ -37,10 +37,10 @@ fi
 
 BOT_DATADIR="$SPN_DATA_HOSTDIR/${BOT_NAME}_$VERSION_ID"
 
-exec docker run -d --rm \
+exec docker run --rm \
 	$DOCKER_RUN_ARGS \
 	-v "$BOT_DATADIR:/spndata:ro" \
 	-v "$SPN_SHM_HOSTDIR/$BOT_NAME:/spnshm" \
 	--name "$CONTAINER_NAME" \
 	--entrypoint=/bin/sh -it \
-	"spn_${PROGLANG}_base:latest" run
+	"spn_${PROGLANG}_base:latest"
