@@ -23,6 +23,7 @@ use ipc::IpcSharedMemory;
  */
 pub struct Api<'a>
 {
+	#[allow(dead_code)]
 	mmap: MmapRaw,
 	ipcdata: &'a mut IpcSharedMemory,
 }
