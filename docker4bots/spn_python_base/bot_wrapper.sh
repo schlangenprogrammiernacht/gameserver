@@ -10,6 +10,8 @@ case "$action" in
 		cd /spnbot/spn_python_framework/
 
 		# copy template code into production container
+		cp -f src/api.py  /spndata/
+		cp -f src/main.py /spndata/
 
 		chmod +x /spndata/main.py
 		;;
@@ -18,7 +20,7 @@ case "$action" in
 		# run the bot and allow coredumps
 		ulimit -c unlimited
 		cd /spndata/
-		./usercode.py
+		./main.py
 		;;
 
 	doc)
