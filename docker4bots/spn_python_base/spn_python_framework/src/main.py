@@ -5,8 +5,9 @@ import os
 import socket
 import struct
 
-from api import Api
+sys.path.insert(0, '/spndata')
 from usercode import init,step
+from api import Api
 
 class SpnBot():
 	RX_REQ_INIT=0

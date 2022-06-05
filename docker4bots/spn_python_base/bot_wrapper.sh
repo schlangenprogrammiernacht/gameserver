@@ -9,17 +9,12 @@ case "$action" in
 		# copy the code in, build and move the binary out
 		cd /spnbot/spn_python_framework/
 
-		# copy template code into production container
-		cp -f src/api.py  /spndata/
-		cp -f src/main.py /spndata/
-
-		chmod +x /spndata/main.py
 		;;
 
 	run)
 		# run the bot and allow coredumps
 		ulimit -c unlimited
-		cd /spndata/
+		cd /spnbot/spn_python_framework/src
 		./main.py
 		;;
 
