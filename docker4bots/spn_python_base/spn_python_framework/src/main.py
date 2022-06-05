@@ -3,6 +3,7 @@
 """Main module providing the framework calling the bot code provided by the user"""
 
 import sys
+import traceback
 import os
 import socket
 import struct
@@ -45,12 +46,16 @@ class SpnBot():
 			else:
 				break # shutdown request from server
 
+			try:
 				if self.RX_REQ_STEP == request:
 					success, angle, boost = step(self.__api) # call usercode
 				elif self.RX_REQ_INIT == request:
 					success = init(self.__api) # call usercode
 				else:
 					pass # unknown command
+			except Exception:
+				self.__api.log(traceback.format_exc(limit=-4)) # only print line the exception occured on
+				success = False # kill bot
 
 			out_data = struct.pack("Ifbxxx", int(not success), angle, boost)
 			self.__socket.send(out_data)
