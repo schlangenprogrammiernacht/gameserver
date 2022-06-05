@@ -288,6 +288,13 @@ class IpcFoodInfo():
 		self.__data_idx += 1
 		return self
 
+	def __getitem__(self, idx):
+		"""get element at index but don't affect iteration"""
+		if idx >= self.__elem_count:
+			raise IndexError
+		self.__mem.seek(self.__offset + 4 + (4*5 * idx))
+		self.x, self.y, self.val, self.dir, self.dist = struct.unpack("fffff", self.__mem.read(5*4))
+		return self
 
 
 class IpcBotInfo():
@@ -328,6 +335,14 @@ class IpcBotInfo():
 		self.__data_idx += 1
 		return self
 
+	def __getitem__(self, idx):
+		"""get element at index but don't affect iteration"""
+		if idx >= self.__elem_count:
+			raise IndexError
+		self.__mem.seek(self.__offset + 8 + ((8+64) * idx))
+		self.bot_id   = struct.unpack("Q", self.__mem.read(8))[0]
+		self.bot_name = str(self.__mem.read(64).rstrip(b"\0").decode())
+		return self
 
 
 class IpcSegmentInfo():
@@ -380,6 +395,13 @@ class IpcSegmentInfo():
 		self.__data_idx += 1
 		return self
 
+	def __getitem__(self, idx):
+		"""get element at index but don't affect iteration"""
+		if idx >= self.__elem_count:
+			raise IndexError(f"idx({idx}) >= elem_count({self.__elem_count})")
+		self.__mem.seek(self.__offset + 8 + (40 * self.idx))
+		self.x, self.y, self.r, self.dir, self.dist, self.idx, self.bot_id, self.is_self = struct.unpack("fffffIQ?xxx", self.__mem.read(36))
+		return self
 
 
 class IpcColor():
@@ -420,6 +442,15 @@ class IpcColor():
 		self.__mem.seek(self.__offset + 4 + (4 * self.__data_idx))
 		self.r, self.g, self.b = struct.unpack("BBBx", self.__mem.read(4))
 		self.__data_idx += 1
+		return self
+
+	def __getitem__(self, idx):
+		"""get element at index but don't affect iteration"""
+		if idx >= self.__elem_count:
+			raise IndexError(f"idx({idx}) >= elem_count({self.__elem_count})")
+
+		self.__mem.seek(self.__offset + 4 + (4 * idx))
+		self.r, self.g, self.b = struct.unpack("BBBx", self.__mem.read(4))
 		return self
 
 	def add_color(self, r, g ,b):
