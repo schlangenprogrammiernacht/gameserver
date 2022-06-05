@@ -1,6 +1,6 @@
 FROM alpine
 
-RUN apk --no-cache add python3 py3-pip
+RUN apk --no-cache add python3 py3-pip py3-numpy
 RUN apk --no-cache add doxygen
 RUN pip3  --no-cache-dir install pylint pylint-exit
 
