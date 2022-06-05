@@ -1,13 +1,9 @@
 #!/usr/bin/env python3
 
-import socket
-import sys
-import os
+"""The python API for bots written for the SchlangenProgrammierNacht"""
+
 import struct
 import mmap
-import time
-import math
-import struct
 
 # |       IpcSharedMemory offsets (shm)        |
 # |      name       |  size   |  start offset  |
@@ -27,202 +23,206 @@ import struct
 # | dogTagId        |       4 |        2176096 |
 # | persistentData  |    4096 |        2176100 |
 
+
 class Api():
+	"""
+	Top level data class exposing configuration and some actions to bots
+	"""
+
+	face_id   = 0
+	dog_tag_id = 0
+
 	def __init__(self, shm):
-		self.shm_fd = shm
-		self.serverConfig = IpcServerConfig(self.shm_fd,           0)
-		self.selfInfo     = IpcSelfInfo(self.shm_fd,              56)
-		self.food         = IpcFoodInfo(self.shm_fd,             100)
-		self.bots         = IpcBotInfo(self.shm_fd,          1048664)
-		self.segments     = IpcSegmentInfo(self.shm_fd,      1122400)
-		self.colors       = IpcColor(self.shm_fd,            2170968)
-		self.persMemory   = IpcPersistentMemory(self.shm_fd, 2176100)
-		self.faceId       = 0
-		self.dogTagId     = 0
+		self.__shm_fd = shm
+		self.server_config = IpcServerConfig(self.__shm_fd,           0)
+		self.self_info     = IpcSelfInfo(self.__shm_fd,              56)
+		self.food          = IpcFoodInfo(self.__shm_fd,             100)
+		self.bots          = IpcBotInfo(self.__shm_fd,          1048664)
+		self.segments      = IpcSegmentInfo(self.__shm_fd,      1122400)
+		self.__colors      = IpcColor(self.__shm_fd,            2170968)
+		self.__pers_memory = IpcPersistentMemory(self.__shm_fd, 2176100)
 
-	def getServerConfig(self):
-		return self.serverConfig
+	def clear_colors(self):
+		"""reset the color pattern of the bot"""
+		self.__colors.clear_colors()
 
-	def getSelfInfo(self):
-		return self.selfInfo
+	def add_color(self, red, green, blue):
+		"""add a color to the color sequence marking the bot"""
+		self.__colors.add_color(red, green, blue)
 
-	def getFood(self):
-		return self.food
+	def read_persistent_memory(self, offset, length):
+		"""read from only memory section that is persistent even over bot restarts"""
+		return self.__pers_memory.read(offset, length)
 
-	def getSegments(self):
-		return self.segments
-
-	def getBots(self):
-		return self.bots
-
-	def clearColors(self):
-		self.colors.clearColors()
-
-	def addColor(self, r, g, b):
-		self.colors.addColor(r, g, b)
-
-	def readPersistentMemory(self, offset, length):
-		return self.persMemory.read(offset, length)
-
-	def writePersistentMemory(self, offset, data):
-		self.persMemory.write(offset, data)
+	def write_persistent_memory(self, offset, data):
+		"""write to only memory section that is persistent even over bot restarts"""
+		self.__pers_memory.write(offset, data)
 
 	def log(self, message):
-		mem = mmap.mmap(self.shm_fd, 0, mmap.MAP_SHARED, mmap.PROT_WRITE)
-		if len(message) >= 1024:
-			return
-		mem.seek(2175068)
-		mem.write(bytearray(message.encode("utf-8")))
-		mem.write(bytes([0]))
-
-	def setFaceId(self, id):
-		self.faceId = id
-
-	def setDogTagId(self, id):
-		self.dogTagId = id
+		"""write a log message to the console"""
+		message_str = str(message)
+		mem = mmap.mmap(self.__shm_fd, 0, mmap.MAP_SHARED, mmap.PROT_WRITE)
+		if len(message_str) < 1024:
+			mem.seek(2175068)
+			mem.write(bytearray(message_str.encode("utf-8")))
+			mem.write(bytes([0]))
 
 
 
 class IpcServerConfig():
-	def __init__(self, shm_fd, byteOffset):
-		self.mem = mmap.mmap(shm_fd, mmap.PAGESIZE, mmap.MAP_SHARED, mmap.PROT_READ)
-		self.offset = byteOffset
+	"""
+	Data class exposing the game server configuration to bots
+	"""
+
+	def __init__(self, shm_fd, byte_offset):
+		self.__mem = mmap.mmap(shm_fd, mmap.PAGESIZE, mmap.MAP_SHARED, mmap.PROT_READ)
+		self.__offset = byte_offset
 
 	def getSnakeBoostSteps(self):
 		"""Number of steps a snake moves per frame while boosting"""
-		self.mem.seek(self.offset + 0*4)
-		return struct.unpack("I", self.mem.read(4))[0]
+		self.__mem.seek(self.__offset + 0*4)
+		return struct.unpack("I", self.__mem.read(4))[0]
 
 	def getSnakeTurnRadiusFactor(self):
 		"""Multiplied with your segment radius to determine the inner turn radius"""
-		self.mem.seek(self.offset + 1*4)
-		return struct.unpack("f", self.mem.read(4))[0]
+		self.__mem.seek(self.__offset + 1*4)
+		return struct.unpack("f", self.__mem.read(4))[0]
 
 	def getSnakePullFactor(self):
 		"""Pull-together factor (determines how fast segments move to the center of a loop)"""
-		self.mem.seek(self.offset + 2*4)
-		return struct.unpack("f", self.mem.read(4))[0]
+		self.__mem.seek(self.__offset + 2*4)
+		return struct.unpack("f", self.__mem.read(4))[0]
 
 	def getSnakeConversionFactor(self):
 		"""how much of a snake's mass is converted to food when it dies"""
-		self.mem.seek(self.offset + 3*4)
-		return struct.unpack("f", self.mem.read(4))[0]
+		self.__mem.seek(self.__offset + 3*4)
+		return struct.unpack("f", self.__mem.read(4))[0]
 
 	def getSnakeSegmentDistanceFactor(self):
 		"""segment distance = (mass * factor)^exponent"""
-		self.mem.seek(self.offset + 4*4)
-		return struct.unpack("f", self.mem.read(4))[0]
+		self.__mem.seek(self.__offset + 4*4)
+		return struct.unpack("f", self.__mem.read(4))[0]
 
 	def getSnakeSegmentDistanceExponent(self):
 		"""segment distance = (mass * factor)^exponent"""
-		self.mem.seek(self.offset + 5*4)
-		return struct.unpack("f", self.mem.read(4))[0]
+		self.__mem.seek(self.__offset + 5*4)
+		return struct.unpack("f", self.__mem.read(4))[0]
 
 	def getSnakeConsumeRange(self):
 		"""consume range multiplier (multiplied with segment radius)"""
-		self.mem.seek(self.offset + 6*4)
-		return struct.unpack("f", self.mem.read(4))[0]
+		self.__mem.seek(self.__offset + 6*4)
+		return struct.unpack("f", self.__mem.read(4))[0]
 
 	def getSnakeBoostLossFactor(self):
 		"""Multiplied with the snakes mass to determine how much mass is lost per frame while boosting"""
-		self.mem.seek(self.offset + 7*4)
-		return struct.unpack("f", self.mem.read(4))[0]
+		self.__mem.seek(self.__offset + 7*4)
+		return struct.unpack("f", self.__mem.read(4))[0]
 
 	def getSnakeSurvivalLossFactor(self):
 		"""This part of your mass is dropped every frame (to limit snake growth)"""
-		self.mem.seek(self.offset + 8*4)
-		return struct.unpack("f", self.mem.read(4))[0]
+		self.__mem.seek(self.__offset + 8*4)
+		return struct.unpack("f", self.__mem.read(4))[0]
 
 	def getSnakeSelfKillMassThreshold(self):
 		"""Mass below which a snake dies through starvation"""
-		self.mem.seek(self.offset + 9*4)
-		return struct.unpack("f", self.mem.read(4))[0]
+		self.__mem.seek(self.__offset + 9*4)
+		return struct.unpack("f", self.__mem.read(4))[0]
 
 	def getFoodDecayStep(self):
 		"""Food decays by this value each frame"""
-		self.mem.seek(self.offset + 10*4)
-		return struct.unpack("f", self.mem.read(4))[0]
+		self.__mem.seek(self.__offset + 10*4)
+		return struct.unpack("f", self.__mem.read(4))[0]
 
 	def getLogCreditsPerFrame(self):
 		"""How many log messages you can send per frame"""
-		self.mem.seek(self.offset + 11*4)
-		return struct.unpack("f", self.mem.read(4))[0]
+		self.__mem.seek(self.__offset + 11*4)
+		return struct.unpack("f", self.__mem.read(4))[0]
 
 	def getLogInitialCredits(self):
 		"""How many log messages you can send right after startup"""
-		self.mem.seek(self.offset + 12*4)
-		return struct.unpack("f", self.mem.read(4))[0]
+		self.__mem.seek(self.__offset + 12*4)
+		return struct.unpack("f", self.__mem.read(4))[0]
 
 	def getLogMaxCredits(self):
 		"""You can send at most this many messages in a row"""
-		self.mem.seek(self.offset + 13*4)
-		return struct.unpack("f", self.mem.read(4))[0]
+		self.__mem.seek(self.__offset + 13*4)
+		return struct.unpack("f", self.__mem.read(4))[0]
+
+
 
 
 
 class IpcSelfInfo():
-	def __init__(self, shm_fd, byteOffset):
-		self.mem = mmap.mmap(shm_fd, mmap.PAGESIZE, mmap.MAP_SHARED, mmap.PROT_READ)
-		self.offset = byteOffset
+	"""
+	Data class exposing general information about this bot
+	"""
+
+	def __init__(self, shm_fd, byte_offset):
+		self.__mem = mmap.mmap(shm_fd, mmap.PAGESIZE, mmap.MAP_SHARED, mmap.PROT_READ)
+		self.__offset = byte_offset
 
 	def getSegmentRadius(self):
 		"""Radius of your snake's segments"""
-		self.mem.seek(self.offset + 0*4)
-		return struct.unpack("f", self.mem.read(4))[0]
+		self.__mem.seek(self.__offset + 0*4)
+		return struct.unpack("f", self.__mem.read(4))[0]
 
 	def getMass(self):
 		"""Your Snake's current mass"""
-		self.mem.seek(self.offset + 1*4)
-		return struct.unpack("f", self.mem.read(4))[0]
+		self.__mem.seek(self.__offset + 1*4)
+		return struct.unpack("f", self.__mem.read(4))[0]
 
 	def getSightRadius(self):
 		"""Radius around your snake's head in which you can see food and segments"""
-		self.mem.seek(self.offset + 2*4)
-		return struct.unpack("f", self.mem.read(4))[0]
+		self.__mem.seek(self.__offset + 2*4)
+		return struct.unpack("f", self.__mem.read(4))[0]
 
 	def getConsumeRadius(self):
 		"""Radius around your snake's head in which food is consumed"""
-		self.mem.seek(self.offset + 3*4)
-		return struct.unpack("f", self.mem.read(4))[0]
+		self.__mem.seek(self.__offset + 3*4)
+		return struct.unpack("f", self.__mem.read(4))[0]
 
 	def getStartFrame(self):
 		"""Frame number when your snake was spawned"""
-		self.mem.seek(self.offset + 4*4)
-		return struct.unpack("I", self.mem.read(4))[0]
+		self.__mem.seek(self.__offset + 4*4)
+		return struct.unpack("I", self.__mem.read(4))[0]
 
 	def getCurrentFrame(self):
 		"""Current frame number"""
-		self.mem.seek(self.offset + 5*4)
-		return struct.unpack("I", self.mem.read(4))[0]
+		self.__mem.seek(self.__offset + 5*4)
+		return struct.unpack("I", self.__mem.read(4))[0]
 
 	def getSpeed(self):
 		"""Distance per step"""
-		self.mem.seek(self.offset + 6*4)
-		return struct.unpack("f", self.mem.read(4))[0]
+		self.__mem.seek(self.__offset + 6*4)
+		return struct.unpack("f", self.__mem.read(4))[0]
 
 	def getMaxStepAngle(self):
 		"""Maximum direction change in this step"""
-		self.mem.seek(self.offset + 7*4)
-		return struct.unpack("f", self.mem.read(4))[0]
+		self.__mem.seek(self.__offset + 7*4)
+		return struct.unpack("f", self.__mem.read(4))[0]
 
 	def getConsumedNaturalFood(self):
 		"""Amount of "naturally" spawned food your snake consumed"""
-		self.mem.seek(self.offset + 8*4)
-		return struct.unpack("f", self.mem.read(4))[0]
+		self.__mem.seek(self.__offset + 8*4)
+		return struct.unpack("f", self.__mem.read(4))[0]
 
 	def getConsumedFoodHuntedBySelf(self):
 		"""Amount of food you consumed and that was created from snakes you killed"""
-		self.mem.seek(self.offset + 9*4)
-		return struct.unpack("f", self.mem.read(4))[0]
+		self.__mem.seek(self.__offset + 9*4)
+		return struct.unpack("f", self.__mem.read(4))[0]
 
 	def getConsumedFoodHuntedByOthers(self):
 		"""Amount of food you consumed and that was created from snakes others killed (carrion)"""
-		self.mem.seek(self.offset + 10*4)
-		return struct.unpack("f", self.mem.read(4))[0]
+		self.__mem.seek(self.__offset + 10*4)
+		return struct.unpack("f", self.__mem.read(4))[0]
 
 
 
 class IpcFoodInfo():
+	"""
+	Data class exposing information about size and location of food objects
+	"""
+
 	## Relative position X in world orientation
 	x    = 0.0
 	## Relative position Y in world orientation
@@ -234,72 +234,82 @@ class IpcFoodInfo():
 	## Distance measured from the center of your head
 	dist = 0.0
 	## number of food elements to iterate over
-	elemCount = 0
+	elem_count = 0
 	## current element served by iterator
-	dataIdx = 0
+	__data_idx = 0
 
-	def __init__(self, shm_fd, byteOffset):
-		self.mem = mmap.mmap(shm_fd, 0, mmap.MAP_SHARED, mmap.PROT_READ)
-		self.offset = byteOffset
-		self.mem.seek(self.offset)
-		self.elemCount = struct.unpack("I", self.mem.read(4))[0]
+	def __init__(self, shm_fd, byte_offset):
+		self.__mem = mmap.mmap(shm_fd, 0, mmap.MAP_SHARED, mmap.PROT_READ)
+		self.__offset = byte_offset
+		self.__mem.seek(self.__offset)
+		self.__elem_count = struct.unpack("I", self.__mem.read(4))[0]
 
 	def __len__(self):
 		"""Get the length of the Food list"""
-		return self.elemCount
+		return self.__elem_count
 
 	def __iter__(self):
-		self.mem.seek(self.offset)
-		self.elemCount = struct.unpack("I", self.mem.read(4))[0]
-		self.dataIdx = 0
+		self.__mem.seek(self.__offset)
+		self.__elem_count = struct.unpack("I", self.__mem.read(4))[0]
+		self.__data_idx = 0
 		return self
 
 	def __next__(self):
 		"""Get next Food list item"""
-		if self.dataIdx >= self.elemCount:
+		if self.__data_idx >= self.__elem_count:
 			raise StopIteration
-		self.mem.seek(self.offset + 4 + (4*5 * self.dataIdx))
-		self.x, self.y, self.val, self.dir, self.dist = struct.unpack("fffff", self.mem.read(5*4))
-		self.dataIdx += 1
+		self.__mem.seek(self.__offset + 4 + (4*5 * self.__data_idx))
+		self.x, self.y, self.val, self.dir, self.dist = struct.unpack("fffff", self.__mem.read(5*4))
+		self.__data_idx += 1
 		return self
 
 
 
 class IpcBotInfo():
-	## Bot ID
-	botId = 0
-	## Bot name (the beginning of it, at least)
-	botName = ""
+	"""
+	Data class exposing a mapping of bot_ids to bot names in the bots range of vision
+	"""
 
-	def __init__(self, shm_fd, byteOffset):
-		self.mem = mmap.mmap(shm_fd, 0, mmap.MAP_SHARED, mmap.PROT_READ)
-		self.offset = byteOffset
-		self.mem.seek(self.offset)
-		self.elemCount = struct.unpack("I", self.mem.read(4))[0]
+	## Bot ID
+	bot_id = 0
+	## Bot name (the beginning of it, at least)
+	bot_name = ""
+	## current element served by iterator
+	__data_idx = 0
+
+	def __init__(self, shm_fd, byte_offset):
+		self.__mem = mmap.mmap(shm_fd, 0, mmap.MAP_SHARED, mmap.PROT_READ)
+		self.__offset = byte_offset
+		self.__mem.seek(self.__offset)
+		self.__elem_count = struct.unpack("I", self.__mem.read(4))[0]
 
 	def __len__(self):
 		"""Get the length of the Bot list"""
-		return self.elemCount
+		return self.__elem_count
 
 	def __iter__(self):
-		self.mem.seek(self.offset)
-		self.elemCount = struct.unpack("I", self.mem.read(4))[0]
-		self.dataIdx = 0
+		self.__mem.seek(self.__offset)
+		self.__elem_count = struct.unpack("I", self.__mem.read(4))[0]
+		self.__data_idx = 0
 		return self
 
 	def __next__(self):
 		"""Get next Bot list item"""
-		if self.dataIdx >= self.elemCount:
+		if self.__data_idx >= self.__elem_count:
 			raise StopIteration
-		self.mem.seek(self.offset + 8 + ((8+64)*self.dataIdx))
-		self.botId   = struct.unpack("Q", self.mem.read(8))[0]
-		self.botName = str(self.mem.read(64).rstrip(b"\0").decode())
-		self.dataIdx += 1
+		self.__mem.seek(self.__offset + 8 + ((8+64) * self.__data_idx))
+		self.bot_id   = struct.unpack("Q", self.__mem.read(8))[0]
+		self.bot_name = str(self.__mem.read(64).rstrip(b"\0").decode())
+		self.__data_idx += 1
 		return self
 
 
 
 class IpcSegmentInfo():
+	"""
+	Data class exposing information about size and location of other bots in the range of vision of this bot
+	"""
+
 	## Relative position X in world orientation
 	x = 0.0
 	## Relative position Y in world orientation
@@ -313,96 +323,118 @@ class IpcSegmentInfo():
 	## Segment number starting from head (idx == 0)
 	idx = 0
 	## Bot ID
-	botId = 0
+	bot_id = 0
 	## True if this segment belongs to ones own snake
-	isSelf = False
+	is_self = False
+	## current element served by iterator
+	__data_idx = 0
 
-	def __init__(self, shm_fd, byteOffset):
-		self.mem = mmap.mmap(shm_fd, 0, mmap.MAP_SHARED, mmap.PROT_READ)
-		self.offset = byteOffset
-		self.mem.seek(self.offset)
-		self.elemCount = struct.unpack("I", self.mem.read(4))[0]
+	def __init__(self, shm_fd, byte_offset):
+		self.__mem = mmap.mmap(shm_fd, 0, mmap.MAP_SHARED, mmap.PROT_READ)
+		self.__offset = byte_offset
+		self.__mem.seek(self.__offset)
+		self.__elem_count = struct.unpack("I", self.__mem.read(4))[0]
 
 	def __len__(self):
-		return self.elemCount
+		"""Get the length of the Segment list"""
+		return self.__elem_count
 
 	def __iter__(self):
-		self.mem.seek(self.offset)
-		self.elemCount = struct.unpack("I", self.mem.read(4))[0]
-		self.dataIdx = 0
+		"""Get next Bot list item"""
+		self.__mem.seek(self.__offset)
+		self.__elem_count = struct.unpack("I", self.__mem.read(4))[0]
+		self.__data_idx = 0
 		return self
 
 	def __next__(self):
-		if self.dataIdx > self.elemCount:
+		"""Get next Bot list item"""
+		if self.__data_idx > self.__elem_count:
 			raise StopIteration
-		self.mem.seek(self.offset + 8 + (40 * self.dataIdx))
-		self.x, self.y, self.r, self.dir, self.dist, self.idx, self.botId, self.isSelf = struct.unpack("fffffIQ?xxx", self.mem.read(36))
-		self.dataIdx += 1
+		self.__mem.seek(self.__offset + 8 + (40 * self.__data_idx))
+		self.x, self.y, self.r, self.dir, self.dist, self.idx, self.bot_id, self.is_self = struct.unpack("fffffIQ?xxx", self.__mem.read(36))
+		self.__data_idx += 1
 		return self
 
 
 
 class IpcColor():
+	"""
+	Data class exposing information about the color pattern of this bot
+	"""
+
 	## Red channel (0-255)
 	r = 0
 	## Green channel (0-255)
 	g = 0
 	## Blue channel (0-255)
 	b = 0
+	## current element served by iterator
+	__data_idx = 0
 
-	def __init__(self, shm_fd, byteOffset):
-		self.mem = mmap.mmap(shm_fd, 0, mmap.MAP_SHARED, mmap.PROT_WRITE | mmap.PROT_READ)
-		self.offset = byteOffset
-		self.mem.seek(self.offset)
-		self.elemCount = 0
+	def __init__(self, shm_fd, byte_offset):
+		self.__mem = mmap.mmap(shm_fd, 0, mmap.MAP_SHARED, mmap.PROT_WRITE | mmap.PROT_READ)
+		self.__offset = byte_offset
+		self.__mem.seek(self.__offset)
+		self.__elem_count = struct.unpack("I", self.__mem.read(4))[0]
+
 
 	def __len__(self):
-		return self.elemCount
+		"""Get the length of the Color list"""
+		return self.__elem_count
 
 	def __iter__(self):
-		self.mem.seek(self.offset)
-		self.elemCount
-		self.dataIdx = 0
+		self.__mem.seek(self.__offset)
+		self.__elem_count = struct.unpack("I", self.__mem.read(4))[0]
+		self.__data_idx = 0
 		return self
 
 	def __next__(self):
-		if self.dataIdx > self.elemCount:
+		"""Get next Color list item"""
+		if self.__data_idx > self.__elem_count:
 			raise StopIteration
-		self.mem.seek(self.offset + 4 + (4 * self.dataIdx))
-		self.r, self.g, self.b = struct.unpack("bbbx", self.mem.read(4))
-		self.dataIdx += 1
+		self.__mem.seek(self.__offset + 4 + (4 * self.__data_idx))
+		self.r, self.g, self.b = struct.unpack("BBBx", self.__mem.read(4))
+		self.__data_idx += 1
 		return self
 
-	def addColor(self, r, g ,b):
-		if self.elemCount >= 1024:
+	def add_color(self, r, g ,b):
+		"""add a color to the color sequence marking the bot"""
+		if self.__elem_count >= 1024:
 			return
 
-		self.mem.seek(self.offset + 4 + (self.elemCount*4))
-		self.mem.write(struct.pack("BBBx", int(r), int(g), int(b)))
-		self.elemCount += 1
-		self.mem.seek(self.offset)
-		self.mem.write(struct.pack("I", self.elemCount))
+		self.__mem.seek(self.__offset + 4 + (self.__elem_count * 4))
+		self.__mem.write(struct.pack("BBBx", int(r), int(g), int(b)))
+		self.__elem_count += 1
+		self.__mem.seek(self.__offset)
+		self.__mem.write(struct.pack("I", self.__elem_count))
 
-	def clearColors(self):
-		self.elemCount = 0
-		self.mem.seek(self.offset)
-		self.mem.write(struct.pack("I", self.elemCount))
+	def clear_colors(self):
+		"""reset the color pattern of the bot"""
+		self.__elem_count = 0
+		self.__mem.seek(self.__offset)
+		self.__mem.write(struct.pack("I", self.__elem_count))
 
 
 
 class IpcPersistentMemory():
-	def __init__(self, shm_fd, byteOffset):
-		self.mem = mmap.mmap(shm_fd, 0, mmap.MAP_SHARED, mmap.PROT_WRITE | mmap.PROT_READ)
-		self.offset = byteOffset
+	"""
+	Provides an interface to persistant memory to this bot
+	"""
+
+	def __init__(self, shm_fd, byte_offset):
+		self.__mem = mmap.mmap(shm_fd, 0, mmap.MAP_SHARED, mmap.PROT_WRITE | mmap.PROT_READ)
+		self.__offset = byte_offset
 
 	def read(self, offset, length):
+		"""read from only memory section that is persistent even over bot restarts"""
 		if (offset + length) > 4096:
-			raise IndexError("reading past the buffer")
-		self.mem.seek(self.offset + offset)
-		return self.mem.read(length)
+			raise IndexError(f"offset({offset}) + length({length}) > 4096. reading past the buffer")
+		self.__mem.seek(self.__offset + offset)
+		return self.__mem.read(length)
 
 	def write(self, offset, data):
+		"""write to only memory section that is persistent even over bot restarts"""
 		if (offset + len(data)) > 4096:
-			raise IndexError("writing past the buffer")
-		self.mem.seek(self.offset + offset)
-		self.mem.write(data)
+			raise IndexError(f"offset({offset}) + length({len(data)}) > 4096. writing past the buffer")
+		self.__mem.seek(self.__offset + offset)
+		self.__mem.write(data)
