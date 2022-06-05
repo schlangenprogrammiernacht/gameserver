@@ -1,6 +1,8 @@
 FROM alpine
 
-RUN apk add --no-cache python3 py3-pip doxygen
+RUN apk --no-cache add python3 py3-pip
+RUN apk --no-cache add doxygen
+RUN pip3  --no-cache-dir install pylint pylint-exit
 
 RUN addgroup -S spnbot && adduser --uid 1337 --home /spnbot -S spnbot --shell /bin/sh -G spnbot
 

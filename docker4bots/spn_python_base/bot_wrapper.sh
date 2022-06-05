@@ -9,6 +9,8 @@ case "$action" in
 		# copy the code in, build and move the binary out
 		cd /spnbot/spn_python_framework/
 
+		echo "starting pylint"
+		pylint /spndata/usercode.py || pylint-exit $?
 		;;
 
 	run)
