@@ -78,72 +78,86 @@ class IpcServerConfig():
 		self.__mem = mmap.mmap(shm_fd, mmap.PAGESIZE, mmap.MAP_SHARED, mmap.PROT_READ)
 		self.__offset = byte_offset
 
-	def getSnakeBoostSteps(self):
+	@property
+	def snake_boost_steps(self):
 		"""Number of steps a snake moves per frame while boosting"""
 		self.__mem.seek(self.__offset + 0*4)
 		return struct.unpack("I", self.__mem.read(4))[0]
 
-	def getSnakeTurnRadiusFactor(self):
+	@property
+	def snake_turn_radius_factor(self):
 		"""Multiplied with your segment radius to determine the inner turn radius"""
 		self.__mem.seek(self.__offset + 1*4)
 		return struct.unpack("f", self.__mem.read(4))[0]
 
-	def getSnakePullFactor(self):
+	@property
+	def snake_pull_factor(self):
 		"""Pull-together factor (determines how fast segments move to the center of a loop)"""
 		self.__mem.seek(self.__offset + 2*4)
 		return struct.unpack("f", self.__mem.read(4))[0]
 
-	def getSnakeConversionFactor(self):
+	@property
+	def snake_conversion_factor(self):
 		"""how much of a snake's mass is converted to food when it dies"""
 		self.__mem.seek(self.__offset + 3*4)
 		return struct.unpack("f", self.__mem.read(4))[0]
 
-	def getSnakeSegmentDistanceFactor(self):
+	@property
+	def snake_segment_distance_factor(self):
 		"""segment distance = (mass * factor)^exponent"""
 		self.__mem.seek(self.__offset + 4*4)
 		return struct.unpack("f", self.__mem.read(4))[0]
 
-	def getSnakeSegmentDistanceExponent(self):
+	@property
+	def snake_segment_distance_exponent(self):
 		"""segment distance = (mass * factor)^exponent"""
 		self.__mem.seek(self.__offset + 5*4)
 		return struct.unpack("f", self.__mem.read(4))[0]
 
-	def getSnakeConsumeRange(self):
+	@property
+	def snake_consume_range(self):
 		"""consume range multiplier (multiplied with segment radius)"""
 		self.__mem.seek(self.__offset + 6*4)
 		return struct.unpack("f", self.__mem.read(4))[0]
 
-	def getSnakeBoostLossFactor(self):
+	@property
+	def snake_boost_loss_factor(self):
 		"""Multiplied with the snakes mass to determine how much mass is lost per frame while boosting"""
 		self.__mem.seek(self.__offset + 7*4)
 		return struct.unpack("f", self.__mem.read(4))[0]
 
-	def getSnakeSurvivalLossFactor(self):
+	@property
+	def snake_survival_loss_factor(self):
 		"""This part of your mass is dropped every frame (to limit snake growth)"""
 		self.__mem.seek(self.__offset + 8*4)
 		return struct.unpack("f", self.__mem.read(4))[0]
 
-	def getSnakeSelfKillMassThreshold(self):
+	@property
+	def snake_self_kill_mass_threshold(self):
 		"""Mass below which a snake dies through starvation"""
 		self.__mem.seek(self.__offset + 9*4)
 		return struct.unpack("f", self.__mem.read(4))[0]
 
-	def getFoodDecayStep(self):
+	@property
+	def food_decay_step(self):
 		"""Food decays by this value each frame"""
 		self.__mem.seek(self.__offset + 10*4)
 		return struct.unpack("f", self.__mem.read(4))[0]
 
-	def getLogCreditsPerFrame(self):
+	@property
+	def log_credits_per_frame(self):
 		"""How many log messages you can send per frame"""
 		self.__mem.seek(self.__offset + 11*4)
 		return struct.unpack("f", self.__mem.read(4))[0]
 
-	def getLogInitialCredits(self):
+	@property
+	def log_initial_credits(self):
 		"""How many log messages you can send right after startup"""
 		self.__mem.seek(self.__offset + 12*4)
 		return struct.unpack("f", self.__mem.read(4))[0]
 
-	def getLogMaxCredits(self):
+	@property
+	def log_max_credits(self):
 		"""You can send at most this many messages in a row"""
 		self.__mem.seek(self.__offset + 13*4)
 		return struct.unpack("f", self.__mem.read(4))[0]
@@ -161,57 +175,68 @@ class IpcSelfInfo():
 		self.__mem = mmap.mmap(shm_fd, mmap.PAGESIZE, mmap.MAP_SHARED, mmap.PROT_READ)
 		self.__offset = byte_offset
 
-	def getSegmentRadius(self):
+	@property
+	def segment_radius(self):
 		"""Radius of your snake's segments"""
 		self.__mem.seek(self.__offset + 0*4)
 		return struct.unpack("f", self.__mem.read(4))[0]
 
-	def getMass(self):
+	@property
+	def mass(self):
 		"""Your Snake's current mass"""
 		self.__mem.seek(self.__offset + 1*4)
 		return struct.unpack("f", self.__mem.read(4))[0]
 
-	def getSightRadius(self):
+	@property
+	def sight_radius(self):
 		"""Radius around your snake's head in which you can see food and segments"""
 		self.__mem.seek(self.__offset + 2*4)
 		return struct.unpack("f", self.__mem.read(4))[0]
 
-	def getConsumeRadius(self):
+	@property
+	def consume_radius(self):
 		"""Radius around your snake's head in which food is consumed"""
 		self.__mem.seek(self.__offset + 3*4)
 		return struct.unpack("f", self.__mem.read(4))[0]
 
-	def getStartFrame(self):
+	@property
+	def start_frame(self):
 		"""Frame number when your snake was spawned"""
 		self.__mem.seek(self.__offset + 4*4)
 		return struct.unpack("I", self.__mem.read(4))[0]
 
-	def getCurrentFrame(self):
+	@property
+	def current_frame(self):
 		"""Current frame number"""
 		self.__mem.seek(self.__offset + 5*4)
 		return struct.unpack("I", self.__mem.read(4))[0]
 
-	def getSpeed(self):
+	@property
+	def speed(self):
 		"""Distance per step"""
 		self.__mem.seek(self.__offset + 6*4)
 		return struct.unpack("f", self.__mem.read(4))[0]
 
-	def getMaxStepAngle(self):
+	@property
+	def max_step_angle(self):
 		"""Maximum direction change in this step"""
 		self.__mem.seek(self.__offset + 7*4)
 		return struct.unpack("f", self.__mem.read(4))[0]
 
-	def getConsumedNaturalFood(self):
+	@property
+	def consumed_natural_food(self):
 		"""Amount of "naturally" spawned food your snake consumed"""
 		self.__mem.seek(self.__offset + 8*4)
 		return struct.unpack("f", self.__mem.read(4))[0]
 
-	def getConsumedFoodHuntedBySelf(self):
+	@property
+	def consumed_food_hunted_by_self(self):
 		"""Amount of food you consumed and that was created from snakes you killed"""
 		self.__mem.seek(self.__offset + 9*4)
 		return struct.unpack("f", self.__mem.read(4))[0]
 
-	def getConsumedFoodHuntedByOthers(self):
+	@property
+	def consumed_food_hunted_by_others(self):
 		"""Amount of food you consumed and that was created from snakes others killed (carrion)"""
 		self.__mem.seek(self.__offset + 10*4)
 		return struct.unpack("f", self.__mem.read(4))[0]
