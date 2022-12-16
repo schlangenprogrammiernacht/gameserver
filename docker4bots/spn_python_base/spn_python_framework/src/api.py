@@ -388,7 +388,7 @@ class IpcSegmentInfo():
 
 	def __next__(self):
 		"""Get next Bot list item"""
-		if self.__data_idx > self.__elem_count:
+		if self.__data_idx >= self.__elem_count:
 			raise StopIteration
 		self.__mem.seek(self.__offset + 8 + (40 * self.__data_idx))
 		self.x, self.y, self.r, self.dir, self.dist, self.idx, self.bot_id, self.is_self = struct.unpack("fffffIQ?xxx", self.__mem.read(36))
