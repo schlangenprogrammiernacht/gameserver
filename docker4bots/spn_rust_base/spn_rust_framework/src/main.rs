@@ -34,13 +34,15 @@ use usercode::{init, step};
 static SPN_SHM_FILE: &str = "/spnshm/shm";
 static SPN_SOCKET_FILE: &str = "/spnshm/socket";
 
-fn mainloop(mut api: api::Api, socket: UnixSeqpacketConn) {
+fn mainloop(mut api: api::Api, socket: UnixSeqpacketConn) -> Result<(), String> {
     let mut running = true;
     let mut rxbuf = [0u8; size_of::<api::ipc::IpcRequest>()];
 
     while running {
         // receive messages from the Gameserver
-        let (len, _truncated) = socket.recv(&mut rxbuf).unwrap();
+        let (len, _truncated) = socket
+            .recv(&mut rxbuf)
+            .map_err(|err| format!("Failed to receive data from unix socket: {err}"))?;
 
         // length check
         if len == 0 {
@@ -112,11 +114,15 @@ fn mainloop(mut api: api::Api, socket: UnixSeqpacketConn) {
         };
 
         // send the result packet
-        socket.send(txdata).unwrap();
+        socket
+            .send(txdata)
+            .map_err(|err| format!("Failed to send data to unix socket: {err}"))?;
     }
+
+    Ok(())
 }
 
-fn main() {
+fn main() -> Result<(), String> {
     /*
     // For cross-checking structure layout between different programming languages.
     println!("sizeof(IpcSelfInfo)     = {:8}", size_of::<api::ipc::IpcSelfInfo>());
@@ -133,9 +139,12 @@ fn main() {
     return;
     */
 
-    let a = api::Api::new(SPN_SHM_FILE).unwrap();
+    let a = api::Api::new(SPN_SHM_FILE)?;
 
-    let conn = UnixSeqpacketConn::connect(SPN_SOCKET_FILE).unwrap();
+    let conn = UnixSeqpacketConn::connect(SPN_SOCKET_FILE)
+        .map_err(|err| format!("Failed to connect to unix socket: {err}"))?;
 
-    mainloop(a, conn);
+    mainloop(a, conn)?;
+
+    Ok(())
 }

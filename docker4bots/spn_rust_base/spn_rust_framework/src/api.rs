@@ -19,7 +19,7 @@ use ipc::IpcSharedMemory;
  * the server configuration, and to access persistent memory.
  *
  * Please note that most methods return direct references to the shared memory structures. These
- * are specified and documentet in the ipc module.
+ * are specified and documented in the ipc module.
  */
 pub struct Api<'a> {
     #[allow(dead_code)]
@@ -39,9 +39,10 @@ impl<'i> Api<'i> {
             .read(true)
             .write(true)
             .open(shmfilename)
-            .unwrap();
+            .map_err(|err| format!("Could not open shared memory file {shmfilename}: {err}"))?;
 
-        let mmap = MmapRaw::map_raw(&file).unwrap();
+        let mmap = MmapRaw::map_raw(&file)
+            .map_err(|err| format!("Could not create shared memory mmap: {err}"))?;
 
         // check the size of the shared memory. It must be large enough to hold one complete
         // IpcSharedMemory structure.
@@ -57,10 +58,7 @@ impl<'i> Api<'i> {
         let ipcdata =
             unsafe { &mut *transmute::<*mut u8, *mut ipc::IpcSharedMemory>(mmap.as_mut_ptr()) };
 
-        Ok(Api {
-            mmap,
-            ipcdata,
-        })
+        Ok(Api { mmap, ipcdata })
     }
 
     /**
@@ -161,16 +159,17 @@ impl<'i> Api<'i> {
      * Rate limiting is enforced by the gameserver, so messages are dropped
      * when you send too many of them.
      */
-    pub fn log(&mut self, text: &str) -> bool {
+    pub fn log(&mut self, text: &str) -> Result<(), String> {
         // determine length of stored data
-        let startpos = match self.ipcdata.log_data.iter().position(|&b| b == b'\0') {
-            Some(n) => n,
-            None => return false, // log memory is not properly initialized or corrupt
-        };
+        let startpos = self
+            .ipcdata
+            .log_data
+            .iter()
+            .position(|&b| b == b'\0')
+            .ok_or_else(|| "Log memory is not properly initialized or corrupt".to_string())?;
 
         if startpos + text.len() + 2 > self.ipcdata.log_data.len() {
-            // log memory too full to append this message + newline + nullbyte
-            return false;
+            return Err("Rate limit reached (Log memory too full to append this message + newline + nullbyte)".to_owned());
         }
 
         let mut pos = startpos;
@@ -183,6 +182,6 @@ impl<'i> Api<'i> {
         pos += 1;
         self.ipcdata.log_data[pos] = b'\0';
 
-        true
+        Ok(())
     }
 }
