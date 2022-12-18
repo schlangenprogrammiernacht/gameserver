@@ -55,15 +55,13 @@ fn mainloop(mut api: api::Api, socket: UnixSeqpacketConn) {
         // check whether the data contains a valid enum value
         let request_value = unsafe { *transmute::<*const u8, *const u32>(rxbuf.as_ptr()) };
 
-        let request_type;
-
-        match api::ipc::IpcRequestType::from_u32(request_value) {
-            Some(x) => request_type = x,
+        let request_type = match api::ipc::IpcRequestType::from_u32(request_value) {
+            Some(x) => x,
             None => {
                 println!("Request type cannot be decoded!");
                 continue;
             }
-        }
+        };
 
         /*
         // reinterpret the received data as struct IpcRequest
@@ -100,7 +98,7 @@ fn mainloop(mut api: api::Api, socket: UnixSeqpacketConn) {
             data: api::ipc::ResponseData {
                 step: api::ipc::IpcStepResponse {
                     delta_angle: angle,
-                    boost: boost,
+                    boost,
                 },
             },
         };

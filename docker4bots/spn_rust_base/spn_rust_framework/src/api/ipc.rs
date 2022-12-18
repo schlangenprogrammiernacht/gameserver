@@ -151,13 +151,13 @@ pub struct IpcColor {
     pub b: u8,
 }
 
-pub const IPC_FOOD_MAX_BYTES: usize = 1 * 1024 * 1024;
+pub const IPC_FOOD_MAX_BYTES: usize = 1024 * 1024;
 pub const IPC_FOOD_MAX_COUNT: usize = IPC_FOOD_MAX_BYTES / size_of::<IpcFoodInfo>();
 
 pub const IPC_BOT_MAX_COUNT: usize = 1024;
 pub const IPC_BOT_MAX_BYTES: usize = IPC_BOT_MAX_COUNT * size_of::<IpcBotInfo>();
 
-pub const IPC_SEGMENT_MAX_BYTES: usize = 1 * 1024 * 1024;
+pub const IPC_SEGMENT_MAX_BYTES: usize = 1024 * 1024;
 pub const IPC_SEGMENT_MAX_COUNT: usize = IPC_SEGMENT_MAX_BYTES / size_of::<IpcSegmentInfo>();
 
 pub const IPC_COLOR_MAX_COUNT: usize = 1024;

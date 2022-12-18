@@ -18,7 +18,7 @@ pub fn init(api: &mut api::Api) -> bool {
 
     // indicate successful startup. If anything goes wrong,
     // return false and we'll clean you up.
-    return true;
+    true
 }
 
 /**
@@ -59,5 +59,5 @@ pub fn step(api: &mut api::Api) -> (bool, f32, bool) {
 
     // Signal that everything is ok. Return false here if anything goes wrong but
     // you want to shut down cleanly.
-    return (true, angle, false); // continue, angle, boost
+    (true, angle, false) // continue, angle, boost
 }

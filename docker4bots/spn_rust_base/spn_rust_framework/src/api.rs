@@ -33,7 +33,7 @@ impl<'i> Api<'i> {
      *
      * This function is used internally by the bot framework. Do not worry about it.
      */
-    pub fn new<'a>(shmfilename: &'a str) -> Result<Api<'a>, String> {
+    pub fn new(shmfilename: &str) -> Result<Api, String> {
         // open and map the shared memory
         let file = OpenOptions::new()
             .read(true)
@@ -58,8 +58,8 @@ impl<'i> Api<'i> {
             unsafe { &mut *transmute::<*mut u8, *mut ipc::IpcSharedMemory>(mmap.as_mut_ptr()) };
 
         Ok(Api {
-            mmap: mmap,
-            ipcdata: ipcdata,
+            mmap,
+            ipcdata,
         })
     }
 
@@ -70,7 +70,7 @@ impl<'i> Api<'i> {
      * configuration and static world information.
      */
     pub fn get_server_config(&self) -> &ipc::IpcServerConfig {
-        return &self.ipcdata.server_config;
+        &self.ipcdata.server_config
     }
 
     /**
@@ -80,7 +80,7 @@ impl<'i> Api<'i> {
      * parameters of the world.
      */
     pub fn get_self_info(&self) -> &ipc::IpcSelfInfo {
-        return &self.ipcdata.self_info;
+        &self.ipcdata.self_info
     }
 
     /**
@@ -149,7 +149,7 @@ impl<'i> Api<'i> {
      * [`ipc::IPC_PERSISTENT_MAX_BYTES`] constant). Use it wisely.
      */
     pub fn get_persistent_memory(&mut self) -> &mut [u8] {
-        return &mut self.ipcdata.persistent_data;
+        &mut self.ipcdata.persistent_data
     }
 
     /**
@@ -163,12 +163,10 @@ impl<'i> Api<'i> {
      */
     pub fn log(&mut self, text: &str) -> bool {
         // determine length of stored data
-        let startpos;
-
-        match self.ipcdata.log_data.iter().position(|&b| b == b'\0') {
-            Some(n) => startpos = n,
+        let startpos = match self.ipcdata.log_data.iter().position(|&b| b == b'\0') {
+            Some(n) => n,
             None => return false, // log memory is not properly initialized or corrupt
-        }
+        };
 
         if startpos + text.len() + 2 > self.ipcdata.log_data.len() {
             // log memory too full to append this message + newline + nullbyte
@@ -185,6 +183,6 @@ impl<'i> Api<'i> {
         pos += 1;
         self.ipcdata.log_data[pos] = b'\0';
 
-        return true;
+        true
     }
 }
