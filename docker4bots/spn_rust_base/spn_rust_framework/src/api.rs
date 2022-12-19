@@ -169,18 +169,12 @@ impl<'i> Api<'i> {
             .ok_or_else(|| "Log memory is not properly initialized or corrupt".to_string())?;
 
         if startpos + text.len() + 2 > self.ipcdata.log_data.len() {
-            return Err("Rate limit reached (Log memory too full to append this message + newline + nullbyte)".to_owned());
+            return Err("Log memory too full to append the log message".to_owned());
         }
 
-        let mut pos = startpos;
-        for byte in text.as_bytes() {
-            self.ipcdata.log_data[pos] = *byte;
-            pos += 1;
-        }
-
-        self.ipcdata.log_data[pos] = b'\n';
-        pos += 1;
-        self.ipcdata.log_data[pos] = b'\0';
+        self.ipcdata.log_data[startpos..startpos + text.len()].copy_from_slice(text.as_bytes());
+        self.ipcdata.log_data[startpos + text.len()] = b'\n';
+        self.ipcdata.log_data[startpos + text.len() + 1] = b'\0';
 
         Ok(())
     }
