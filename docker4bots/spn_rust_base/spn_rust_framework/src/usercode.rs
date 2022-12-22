@@ -49,8 +49,8 @@ pub fn step(api: &mut api::Api) -> (bool, f32, bool) {
     for seg in segments {
         if !seg.is_self && seg.dist < 20.0 {
             // you can send log messages to your browser or any other viewer with the
-            // appropriate Viewer Key. It's okay for the call to fail, e.g. when the
-            // rate limit is reached
+            // appropriate Viewer Key. It's okay for the call to fail,
+            // e.g. when the log memory is full
             let _ = api.log("Oh no, I'm going to die!");
             break;
         }
