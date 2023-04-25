@@ -2,6 +2,8 @@
 
 TARGET_DIR="../../website/docs/static/docs"
 
+mkdir -p "$TARGET_DIR"
+
 for d in spn_*_base
 do
 	PROGLANG=${d%_base}
